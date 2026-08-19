@@ -1,0 +1,115 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+}
+
+model JenisUsaha {
+  id               String   @id
+  nama             String
+  kategori         String
+  emoji            String
+  deskripsi        String   @db.Text
+  tags             String[]
+  modalMin         Int
+  modalMax         Int
+  peralatan        Int
+  bahanBakuBulanan Int
+  gajiKaryawan     Int
+  promosiBulanan   Int
+  revenueBulanan   Int
+  marginBulanan    Int
+  resiko           String
+  potensi          Int
+  cocokUntuk       String
+  createdAt        DateTime @default(now())
+
+  analisis      Analisis[]
+  rencanaBisnis RencanaBisnis[]
+}
+
+model Kota {
+  id         String   @id
+  nama       String
+  provinsi   String
+  umr        Int
+  sewaTempat Int
+  utilitas   Int
+  retribusi  Int
+
+  analisis      Analisis[]
+  rencanaBisnis RencanaBisnis[]
+}
+
+model Analisis {
+  id   String @id @default(cuid())
+  slug String @unique @default(cuid())
+
+  // Profil user
+  minat      String[]
+  skill      String[]
+  budget     Int
+  waktu      String // full | parttime | sampling
+  pengalaman String // pemula | pernah | sudah
+
+  // Hasil rekomendasi (JSON)
+  rekomendasi Json
+
+  // Pilihan usaha & kota
+  usahaId String?
+  usaha   JenisUsaha? @relation(fields: [usahaId], references: [id])
+  kotaId  String?
+  kota    Kota?       @relation(fields: [kotaId], references: [id])
+  skala   String? // kecil | sedang | besar
+
+  // Hasil kalkulasi modal (JSON)
+  hasilModal Json?
+
+  // SDG Impact
+  sdgImpact SdgImpact?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  rencanaBisnis RencanaBisnis?
+}
+
+model RencanaBisnis {
+  id         String     @id @default(cuid())
+  analisisId String     @unique
+  analisis   Analisis   @relation(fields: [analisisId], references: [id])
+  usahaId    String
+  usaha      JenisUsaha @relation(fields: [usahaId], references: [id])
+  kotaId     String
+  kota       Kota       @relation(fields: [kotaId], references: [id])
+
+  kontenMd String @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SdgImpact {
+  id         String   @id @default(cuid())
+  analisisId String   @unique
+  analisis   Analisis @relation(fields: [analisisId], references: [id])
+
+  estimasiLapanganKerja  Int    @default(0)
+  potensiPendapatanLokal Int    @default(0)
+  tingkatInklusivitas    String @default("menengah")
+  digitalReadiness       Int    @default(0)
+
+  createdAt DateTime @default(now())
+}
+
+model PlatformStats {
+  id                 String   @id @default("global")
+  totalAnalisis      Int      @default(0)
+  totalRencanaBisnis Int      @default(0)
+  totalEstimasiUMKM  Int      @default(0)
+  totalEstimasiKerja Int      @default(0)
+  updatedAt          DateTime @updatedAt
+}

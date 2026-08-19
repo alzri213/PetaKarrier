@@ -1,0 +1,164 @@
+[
+  {
+    "id": "jakarta",
+    "nama": "Jakarta",
+    "provinsi": "DKI Jakarta",
+    "umr": 5067381,
+    "sewaTempat": 1500000,
+    "utilitas": 600000,
+    "retribusi": 150000
+  },
+  {
+    "id": "bekasi",
+    "nama": "Kota Bekasi",
+    "provinsi": "Jawa Barat",
+    "umr": 5343430,
+    "sewaTempat": 1200000,
+    "utilitas": 500000,
+    "retribusi": 120000
+  },
+  {
+    "id": "depok",
+    "nama": "Kota Depok",
+    "provinsi": "Jawa Barat",
+    "umr": 5128136,
+    "sewaTempat": 1100000,
+    "utilitas": 500000,
+    "retribusi": 120000
+  },
+  {
+    "id": "tangerang",
+    "nama": "Kota Tangerang",
+    "provinsi": "Banten",
+    "umr": 4919458,
+    "sewaTempat": 1100000,
+    "utilitas": 500000,
+    "retribusi": 120000
+  },
+  {
+    "id": "bogor",
+    "nama": "Kota Bogor",
+    "provinsi": "Jawa Barat",
+    "umr": 4920864,
+    "sewaTempat": 950000,
+    "utilitas": 450000,
+    "retribusi": 100000
+  },
+  {
+    "id": "bandung",
+    "nama": "Kota Bandung",
+    "provinsi": "Jawa Barat",
+    "umr": 4209389,
+    "sewaTempat": 1100000,
+    "utilitas": 550000,
+    "retribusi": 120000
+  },
+  {
+    "id": "surabaya",
+    "nama": "Kota Surabaya",
+    "provinsi": "Jawa Timur",
+    "umr": 4725479,
+    "sewaTempat": 1200000,
+    "utilitas": 550000,
+    "retribusi": 120000
+  },
+  {
+    "id": "semarang",
+    "nama": "Kota Semarang",
+    "provinsi": "Jawa Tengah",
+    "umr": 3429561,
+    "sewaTempat": 850000,
+    "utilitas": 450000,
+    "retribusi": 100000
+  },
+  {
+    "id": "yogyakarta",
+    "nama": "Kota Yogyakarta",
+    "provinsi": "DI Yogyakarta",
+    "umr": 2305883,
+    "sewaTempat": 750000,
+    "utilitas": 400000,
+    "retribusi": 80000
+  },
+  {
+    "id": "solo",
+    "nama": "Kota Surakarta (Solo)",
+    "provinsi": "Jawa Tengah",
+    "umr": 2195707,
+    "sewaTempat": 700000,
+    "utilitas": 400000,
+    "retribusi": 80000
+  },
+  {
+    "id": "malang",
+    "nama": "Kota Malang",
+    "provinsi": "Jawa Timur",
+    "umr": 3316240,
+    "sewaTempat": 800000,
+    "utilitas": 400000,
+    "retribusi": 90000
+  },
+  {
+    "id": "medan",
+    "nama": "Kota Medan",
+    "provinsi": "Sumatera Utara",
+    "umr": 3721010,
+    "sewaTempat": 900000,
+    "utilitas": 450000,
+    "retribusi": 100000
+  },
+  {
+    "id": "palembang",
+    "nama": "Kota Palembang",
+    "provinsi": "Sumatera Selatan",
+    "umr": 3648116,
+    "sewaTempat": 850000,
+    "utilitas": 450000,
+    "retribusi": 100000
+  },
+  {
+    "id": "makassar",
+    "nama": "Kota Makassar",
+    "provinsi": "Sulawesi Selatan",
+    "umr": 3585338,
+    "sewaTempat": 900000,
+    "utilitas": 450000,
+    "retribusi": 100000
+  },
+  {
+    "id": "denpasar",
+    "nama": "Kota Denpasar",
+    "provinsi": "Bali",
+    "umr": 2955131,
+    "sewaTempat": 900000,
+    "utilitas": 500000,
+    "retribusi": 100000
+  },
+  {
+    "id": "pontianak",
+    "nama": "Kota Pontianak",
+    "provinsi": "Kalimantan Barat",
+    "umr": 2742998,
+    "sewaTempat": 700000,
+    "utilitas": 400000,
+    "retribusi": 80000
+  },
+  {
+    "id": "balikpapan",
+    "nama": "Kota Balikpapan",
+    "provinsi": "Kalimantan Timur",
+    "umr": 3446900,
+    "sewaTempat": 950000,
+    "utilitas": 500000,
+    "retribusi": 110000
+  },
+  {
+    "id": "banjarmasin",
+    "nama": "Kota Banjarmasin",
+    "provinsi": "Kalimantan Selatan",
+    "umr": 3319115,
+    "sewaTempat": 800000,
+    "utilitas": 400000,
+    "retribusi": 90000
+  }
+]
