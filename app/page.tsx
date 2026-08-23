@@ -1,4 +1,5 @@
 import Hero from "@/components/landing/Hero";
+import EvidenceSection from "@/components/landing/EvidenceSection";
 import FeaturesSection from "@/components/landing/FeaturesSection";
 import StatsSection from "@/components/landing/StatsSection";
 import SdgSection from "@/components/landing/SdgSection";
@@ -15,6 +16,7 @@ export default async function Home() {
   return (
     <>
       <Hero stats={stats} />
+      <EvidenceSection />
       <StatsSection stats={stats} />
       <FeaturesSection />
       <ServicesSection />

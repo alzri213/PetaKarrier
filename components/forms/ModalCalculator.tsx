@@ -124,7 +124,6 @@ export default function ModalCalculator({
 
   const be = hasil?.breakEvenBulan ?? 0;
   const bulanBE = Number.isFinite(be) ? Math.ceil(be) : 12;
-  const bulanBEBar = Math.min(bulanBE, 18);
 
   const areaData = hasil?.proyeksi12Bulan?.map((p) => ({
     bulan: `Bln ${p.bulan}`,
@@ -136,18 +135,19 @@ export default function ModalCalculator({
 
   return (
     <div className="mx-auto w-full max-w-5xl px-4">
-      <div className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 backdrop-blur-xl">
+      {/* Selector Form Card */}
+      <div className="rounded-3xl border-2 border-slate-200 bg-white p-6 sm:p-8 shadow-md">
         <div className="grid gap-6 lg:grid-cols-2">
           {/* Usaha selector */}
           <div>
-            <label className="mb-2 block text-xs font-extrabold uppercase tracking-wider text-slate-600">
+            <label className="mb-2 block text-xs font-extrabold uppercase tracking-wider text-slate-700">
               <Store className="mr-1.5 inline h-4 w-4 text-emerald-600" /> Pilih Jenis Usaha
             </label>
             <div className="relative">
               <select
                 value={usahaId}
                 onChange={(e) => setUsahaId(e.target.value)}
-                className="w-full appearance-none rounded-2xl border border-slate-200 bg-white px-4 py-3.5 pr-10 text-sm font-bold text-slate-900 outline-none transition focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20"
+                className="w-full appearance-none rounded-2xl border-2 border-slate-200 bg-slate-50 px-4 py-3.5 pr-10 text-sm font-bold text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white"
               >
                 <option value="">Pilih jenis usaha…</option>
                 {daftarUsaha.map((u) => (
@@ -156,84 +156,73 @@ export default function ModalCalculator({
                   </option>
                 ))}
               </select>
-              <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs">
-                ▼
-              </span>
             </div>
 
             {usaha && (
-              <motion.div
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mt-3 rounded-2xl border border-emerald-400/20 bg-emerald-500/10 p-4 text-xs text-slate-600 space-y-1"
-              >
-                <p className="font-extrabold text-slate-900 text-sm">
-                  {usaha.emoji} {usaha.nama}
+              <div className="mt-3 rounded-2xl border border-slate-200 bg-slate-50 p-3.5 text-xs">
+                <p className="font-extrabold text-slate-900 flex items-center gap-1.5">
+                  <span>{usaha.emoji}</span>
+                  <span>{usaha.nama}</span>
                 </p>
-                <p className="leading-relaxed">{usaha.deskripsi}</p>
-                <p className="text-slate-400 pt-1">
-                  ⚠️ Risiko: {usaha.resiko} · Rating Potensi: {"★".repeat(usaha.potensi)}
-                </p>
-              </motion.div>
+                <p className="mt-1 text-slate-600 text-[11px] leading-relaxed">{usaha.deskripsi}</p>
+                <div className="mt-2 flex items-center justify-between text-[11px] text-amber-700 font-bold border-t border-slate-200 pt-2">
+                  <span>⚠️ Risiko: {usaha.resiko}</span>
+                  <span className="text-emerald-700 font-extrabold">Rating Potensi: ★★★★☆</span>
+                </div>
+              </div>
             )}
           </div>
 
-          {/* Kota selector */}
+          {/* Kota selector & Skala */}
           <div>
-            <label className="mb-2 block text-xs font-extrabold uppercase tracking-wider text-slate-600">
+            <label className="mb-2 block text-xs font-extrabold uppercase tracking-wider text-slate-700">
               <Landmark className="mr-1.5 inline h-4 w-4 text-emerald-600" /> Kota Domisili Usaha
             </label>
-            <div className="relative">
-              <select
-                value={kotaId}
-                onChange={(e) => setKotaId(e.target.value)}
-                className="w-full appearance-none rounded-2xl border border-slate-200 bg-white px-4 py-3.5 pr-10 text-sm font-bold text-slate-900 outline-none transition focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20"
-              >
-                {daftarKota.map((k) => (
-                  <option key={k.id} value={k.id}>
-                    {k.nama} — UMR {formatRupiah(k.umr)}
-                  </option>
-                ))}
-              </select>
-              <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs">
-                ▼
-              </span>
-            </div>
+            <select
+              value={kotaId}
+              onChange={(e) => setKotaId(e.target.value)}
+              className="w-full appearance-none rounded-2xl border-2 border-slate-200 bg-slate-50 px-4 py-3.5 text-sm font-bold text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white"
+            >
+              {daftarKota.map((k) => (
+                <option key={k.id} value={k.id}>
+                  {k.nama} — UMR {formatRupiah(k.umr)}
+                </option>
+              ))}
+            </select>
 
             {kota && (
-              <div className="mt-3 flex items-center justify-between rounded-2xl border border-emerald-400/20 bg-emerald-500/10 px-4 py-3 text-xs">
-                <span className="text-slate-600 font-semibold">
-                  Standar UMR {kota.nama}:{" "}
-                  <span className="font-extrabold text-emerald-300">
-                    {formatRupiah(kota.umr)}
-                  </span>
+              <div className="mt-3 rounded-2xl border border-emerald-200 bg-emerald-50/70 p-3 text-xs flex items-center justify-between">
+                <span className="text-slate-700 font-medium">
+                  Standar UMR Kota {kota.nama}: <b className="text-emerald-800 font-extrabold">{formatRupiah(kota.umr)}</b>
                 </span>
-                    <span className="text-slate-500">/bulan</span>
+                <span className="text-[10px] text-emerald-800 font-bold uppercase tracking-wider">/bulan</span>
               </div>
             )}
 
-            {/* Skala usaha */}
-            <label className="mb-2 mt-5 block text-xs font-extrabold uppercase tracking-wider text-slate-600">
-              <Zap className="mr-1.5 inline h-4 w-4 text-amber-400" /> Skala Operasional
-            </label>
-            <div className="grid grid-cols-3 gap-2">
-              {SKALA_OPTIONS.map((s) => {
-                const active = skala === s.value;
-                return (
-                  <button
-                    key={s.value}
-                    onClick={() => setSkala(s.value)}
-                    className={`rounded-2xl border p-2.5 text-center transition-all duration-300 ${
-                      active
-                        ? "border-amber-400/60 bg-amber-500/15 ring-1 ring-amber-400/30"
-                        : "border-slate-200 bg-white hover:border-slate-300"
-                    }`}
-                  >
-                    <p className="text-xs font-extrabold text-slate-900">{s.label}</p>
-                    <p className="mt-0.5 text-[9px] text-slate-500 leading-tight">{s.desc}</p>
-                  </button>
-                );
-              })}
+            <div className="mt-4">
+              <label className="mb-2 block text-xs font-extrabold uppercase tracking-wider text-slate-700">
+                <Zap className="mr-1.5 inline h-4 w-4 text-emerald-600" /> Skala Operasional
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                {SKALA_OPTIONS.map((s) => {
+                  const active = skala === s.value;
+                  return (
+                    <button
+                      key={s.value}
+                      type="button"
+                      onClick={() => setSkala(s.value)}
+                      className={`rounded-2xl border-2 p-2.5 text-center text-xs transition-all ${
+                        active
+                          ? "border-emerald-500 bg-emerald-500/10 font-extrabold text-emerald-900 shadow-sm"
+                          : "border-slate-200 bg-white font-semibold text-slate-700 hover:border-slate-300"
+                      }`}
+                    >
+                      <p className="text-xs font-extrabold leading-none">{s.label}</p>
+                      <p className="mt-1 text-[9px] text-slate-500 leading-tight">{s.desc}</p>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>
@@ -241,11 +230,11 @@ export default function ModalCalculator({
         <button
           onClick={hitung}
           disabled={!usahaId || !kotaId || loading}
-          className="btn-shine mt-8 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-500 via-green-500 to-emerald-400 py-4 text-sm font-extrabold text-white shadow-xl shadow-emerald-500/25 transition hover:scale-[1.01] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-40"
+          className="btn-shine mt-6 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-green-500 py-4 text-sm font-extrabold text-white shadow-lg shadow-emerald-500/25 transition hover:scale-[1.01] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-40"
         >
           {loading ? (
             <>
-              <LoadingDots /> Menghitung Proyeksi Finansial & BEP…
+              <LoadingDots /> Mengkalkulasi Parameter Finansial…
             </>
           ) : (
             <>
@@ -279,36 +268,36 @@ export default function ModalCalculator({
                   label: "Operasional / Bulan",
                   value: hasil.operasionalBulanan,
                   icon: Briefcase,
-                  grad: "from-green-400 to-emerald-500",
+                  grad: "from-teal-500 to-emerald-500",
                 },
                 {
                   label: "Estimasi Laba Bersih",
                   value: hasil.labaBulanan,
                   icon: TrendingUp,
-                  grad: "from-emerald-400 to-green-500",
+                  grad: "from-emerald-600 to-green-500",
                 },
                 {
                   label: "Target Balik Modal",
                   value: bulanBE,
                   format: (v: number) => `±${Math.ceil(v)} Bulan`,
                   icon: CalendarClock,
-                  grad: "from-amber-400 to-orange-500",
+                  grad: "from-amber-500 to-orange-500",
                 },
-              ].map((c, i) => (
+              ].map((c) => (
                 <div
                   key={c.label}
-                  className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.04] p-5 backdrop-blur-xl"
+                  className="relative overflow-hidden rounded-3xl border-2 border-slate-200 bg-white p-5 shadow-md"
                 >
                   <div
-                    className={`pointer-events-none absolute -right-6 -top-6 h-20 w-20 rounded-full bg-gradient-to-br ${c.grad} opacity-20 blur-xl`}
+                    className={`pointer-events-none absolute -right-6 -top-6 h-20 w-20 rounded-full bg-gradient-to-br ${c.grad} opacity-15 blur-xl`}
                   />
                   <div className={`flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br ${c.grad} text-white shadow-md`}>
                     <c.icon className="h-5 w-5" />
                   </div>
-                  <p className="mt-4 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                  <p className="mt-4 text-[11px] font-extrabold uppercase tracking-wider text-slate-600">
                     {c.label}
                   </p>
-                  <p className="mt-1 text-xl sm:text-2xl font-extrabold text-white">
+                  <p className="mt-1 text-xl sm:text-2xl font-extrabold text-slate-900">
                     {c.format ? (
                       <AnimatedCounter value={c.value as number} format={c.format} />
                     ) : (
@@ -322,8 +311,8 @@ export default function ModalCalculator({
             {/* Charts Row */}
             <div className="grid gap-6 lg:grid-cols-2">
               {/* Pie Chart: Modal Allocation */}
-              <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 backdrop-blur-xl">
-                <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-300">
+              <div className="rounded-3xl border-2 border-slate-200 bg-white p-6 shadow-md">
+                <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-900">
                   Rincian Alokasi Modal Awal
                 </h3>
                 <div className="mt-4 h-56">
@@ -345,11 +334,12 @@ export default function ModalCalculator({
                       <Tooltip
                         formatter={(value) => formatRupiah(Number(value))}
                         contentStyle={{
-                          background: "#0d1226",
-                          border: "1px solid rgba(255,255,255,0.15)",
+                          background: "#ffffff",
+                          border: "1px solid #cbd5e1",
                           borderRadius: 16,
-                          color: "#fff",
+                          color: "#0f172a",
                           fontSize: 12,
+                          boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1)",
                         }}
                       />
                     </PieChart>
@@ -357,13 +347,13 @@ export default function ModalCalculator({
                 </div>
                 <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                   {pieData.map((p, i) => (
-                    <div key={p.name} className="flex items-center gap-2 text-slate-300">
+                    <div key={p.name} className="flex items-center gap-2 text-slate-700">
                       <span
                         className="h-2.5 w-2.5 shrink-0 rounded-full"
                         style={{ background: PIE_COLORS[i % PIE_COLORS.length] }}
                       />
-                      <span className="truncate">{p.name}</span>
-                      <span className="ml-auto font-bold text-white">
+                      <span className="truncate font-semibold">{p.name}</span>
+                      <span className="ml-auto font-extrabold text-slate-900">
                         {formatRupiah(p.value)}
                       </span>
                     </div>
@@ -372,28 +362,28 @@ export default function ModalCalculator({
               </div>
 
               {/* Area Chart: 12-Month Financial Curve */}
-              <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 backdrop-blur-xl">
-                <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-300 flex items-center justify-between">
+              <div className="rounded-3xl border-2 border-slate-200 bg-white p-6 shadow-md">
+                <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-900 flex items-center justify-between">
                   <span>Proyeksi Arus Kas 12 Bulan</span>
-                  <span className="text-emerald-400 font-mono text-[10px]">Ramp-up Curve</span>
+                  <span className="text-emerald-700 font-mono text-[10px]">Ramp-up Curve</span>
                 </h3>
                 <div className="mt-4 h-56">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={areaData}>
                       <defs>
                         <linearGradient id="gradRevenue" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.4} />
-                          <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                          <stop offset="5%" stopColor="#0284c7" stopOpacity={0.3} />
+                          <stop offset="95%" stopColor="#0284c7" stopOpacity={0} />
                         </linearGradient>
                         <linearGradient id="gradLaba" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#10b981" stopOpacity={0.4} />
-                          <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                          <stop offset="5%" stopColor="#059669" stopOpacity={0.3} />
+                          <stop offset="95%" stopColor="#059669" stopOpacity={0} />
                         </linearGradient>
                       </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                      <XAxis dataKey="bulan" stroke="#64748b" fontSize={10} tickLine={false} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                      <XAxis dataKey="bulan" stroke="#475569" fontSize={10} tickLine={false} />
                       <YAxis
-                        stroke="#64748b"
+                        stroke="#475569"
                         fontSize={10}
                         tickLine={false}
                         tickFormatter={(v) => formatRupiahSingkat(v)}
@@ -402,29 +392,30 @@ export default function ModalCalculator({
                       <Tooltip
                         formatter={(val, name) => [formatRupiah(Number(val)), name === "pendapatan" ? "Omzet" : "Laba Bersih"]}
                         contentStyle={{
-                          background: "#0d1226",
-                          border: "1px solid rgba(255,255,255,0.15)",
+                          background: "#ffffff",
+                          border: "1px solid #cbd5e1",
                           borderRadius: 16,
                           fontSize: 12,
-                          color: "#fff",
+                          color: "#0f172a",
+                          boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1)",
                         }}
                       />
-                      <Area type="monotone" dataKey="pendapatan" stroke="#3b82f6" fillOpacity={1} fill="url(#gradRevenue)" strokeWidth={2} />
-                      <Area type="monotone" dataKey="laba" stroke="#10b981" fillOpacity={1} fill="url(#gradLaba)" strokeWidth={2} />
+                      <Area type="monotone" dataKey="pendapatan" stroke="#0284c7" fillOpacity={1} fill="url(#gradRevenue)" strokeWidth={2} />
+                      <Area type="monotone" dataKey="laba" stroke="#059669" fillOpacity={1} fill="url(#gradLaba)" strokeWidth={2} />
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
-                <div className="flex items-center justify-between text-xs text-slate-400 mt-2 border-t border-white/10 pt-3">
+                <div className="flex items-center justify-between text-xs text-slate-600 mt-2 border-t border-slate-100 pt-3">
                   <div className="flex items-center gap-2">
-                    <span className="h-2.5 w-2.5 rounded-full bg-teal-500" />
-                    <span>Omzet Bulanan</span>
+                    <span className="h-2.5 w-2.5 rounded-full bg-sky-600" />
+                    <span className="font-semibold">Omzet Bulanan</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
-                    <span>Laba Bersih</span>
+                    <span className="h-2.5 w-2.5 rounded-full bg-emerald-600" />
+                    <span className="font-semibold">Laba Bersih</span>
                   </div>
-                  <span className="text-slate-300 font-semibold">
-                    Margin: <span className="text-emerald-300 font-bold">{hasil.marginBulanan}%</span>
+                  <span className="text-slate-700 font-semibold">
+                    Margin: <span className="text-emerald-700 font-extrabold">{hasil.marginBulanan}%</span>
                   </span>
                 </div>
               </div>
@@ -432,10 +423,10 @@ export default function ModalCalculator({
 
             {/* Decision Callout Banner */}
             <div
-              className={`rounded-3xl border p-6 backdrop-blur-xl ${
+              className={`rounded-3xl border-2 p-6 shadow-md ${
                 hasil.selisihVsUMR >= 0
-                  ? "border-emerald-500/30 bg-emerald-500/10"
-                  : "border-amber-500/30 bg-amber-500/10"
+                  ? "border-emerald-300 bg-emerald-50/70"
+                  : "border-amber-300 bg-amber-50/70"
               }`}
             >
               <div className="flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
@@ -444,12 +435,12 @@ export default function ModalCalculator({
                     {hasil.selisihVsUMR >= 0 ? "🚀" : "💡"}
                   </span>
                   <div>
-                    <h4 className="text-base font-extrabold text-white">
+                    <h4 className="text-base font-extrabold text-slate-900">
                       {hasil.selisihVsUMR >= 0
                         ? "Usaha Ini Memiliki Potensi di Atas Gaji UMR!"
                         : "Perlu Pendekatan Bertahap (Side-Hustle First)"}
                     </h4>
-                    <p className="mt-1 text-xs sm:text-sm text-slate-300 leading-relaxed">
+                    <p className="mt-1 text-xs sm:text-sm text-slate-700 leading-relaxed font-medium">
                       {hasil.kesimpulan}
                     </p>
                   </div>
@@ -458,13 +449,13 @@ export default function ModalCalculator({
                 <div className="flex flex-wrap sm:flex-nowrap gap-2 shrink-0">
                   <Link
                     href="/perbandingan"
-                    className="inline-flex items-center justify-center gap-1.5 rounded-2xl bg-white/10 px-5 py-3 text-xs font-bold text-white transition hover:bg-white/20"
+                    className="inline-flex items-center justify-center gap-1.5 rounded-2xl border border-slate-300 bg-white px-5 py-3 text-xs font-bold text-slate-800 transition hover:bg-slate-50"
                   >
                     Bandingkan UMR <ArrowRight className="h-3.5 w-3.5" />
                   </Link>
                   <Link
                     href="/rencana-bisnis"
-                    className="btn-shine inline-flex items-center justify-center gap-1.5 rounded-2xl bg-gradient-to-r from-emerald-400 to-teal-500 px-5 py-3 text-xs font-extrabold text-slate-950 shadow-lg shadow-emerald-500/25 transition hover:scale-105"
+                    className="btn-shine inline-flex items-center justify-center gap-1.5 rounded-2xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-green-500 px-5 py-3 text-xs font-extrabold text-white shadow-lg shadow-emerald-500/25 transition hover:scale-105"
                   >
                     Buat Rencana Bisnis <ArrowRight className="h-3.5 w-3.5" />
                   </Link>

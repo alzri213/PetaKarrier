@@ -16,13 +16,13 @@ const poppins = Poppins({
 
 export const metadata: Metadata = {
   title: {
-    default: "KonekUMKM — Ekosistem Pemberdayaan & Perencanaan Usaha Inklusif",
-    template: "%s · KonekUMKM",
+    default: "PetaKarier — Ekosistem Perencanaan Usaha & Karir Wirausaha",
+    template: "%s · PetaKarier",
   },
   description:
-    "KonekUMKM memberdayakan generasi muda dan pelaku usaha Indonesia melalui analisis potensi usaha cerdas, kalkulator modal & break-even per kota, komparasi UMR, serta penyusunan rencana bisnis otomatis selaras dengan SDG 8 (Pekerjaan Layak & Pertumbuhan Ekonomi) dan RAN TPB Matriks 4.",
+    "PetaKarier memberdayakan generasi muda dan pelaku usaha Indonesia melalui analisis potensi usaha cerdas, kalkulator modal & break-even per kota, komparasi UMR, serta penyusunan rencana bisnis otomatis selaras dengan SDG 8 (Pekerjaan Layak & Pertumbuhan Ekonomi) dan RAN TPB Matriks 4.",
   keywords: [
-    "KonekUMKM",
+    "PetaKarier",
     "Pemberdayaan UMKM",
     "SDG 8",
     "Pekerjaan Layak",
@@ -35,13 +35,18 @@ export const metadata: Metadata = {
     "Wirausaha Muda",
     "ITechnoCup 2026",
   ],
+  icons: {
+    icon: "/favicon.png",
+    shortcut: "/favicon.png",
+    apple: "/favicon.png",
+  },
   openGraph: {
-    title: "KonekUMKM — Ekosistem Pemberdayaan & Perencanaan Usaha Inklusif",
+    title: "PetaKarier — Ekosistem Perencanaan Usaha & Karir Wirausaha",
     description:
       "Akselerasi wirausaha muda Indonesia melalui peta karier bisnis terukur, simulasi modal real-time, dan roadmap aksi selaras SDG 8.",
     type: "website",
     locale: "id_ID",
-    siteName: "KonekUMKM",
+    siteName: "PetaKarier",
   },
 };
 
@@ -51,8 +56,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="id" className={`${poppins.variable}`}>
-        <body className="min-h-screen flex flex-col font-sans antialiased bg-white text-slate-900 selection:bg-green-500/30 selection:text-green-900">
+    <html lang="id" className={`${poppins.variable}`} suppressHydrationWarning>
+      <body suppressHydrationWarning className="min-h-screen flex flex-col font-sans antialiased bg-white text-slate-900 selection:bg-green-500/30 selection:text-green-900">
         <Navbar />
         <main className="flex-1">{children}</main>
         <Footer />

@@ -5,7 +5,7 @@ import QuestionnaireForm from "@/components/forms/QuestionnaireForm";
 export const metadata: Metadata = {
   title: "Analisis Potensi Usaha & Rekomendasi Wirausaha",
   description:
-    "Isi kuesioner interaktif minat, keahlian, dan budget modalmu — algoritma KonekUMKM mencocokkan profil dengan 14 jenis usaha terkurasi beserta skor kelayakan dan dampak SDG 8.",
+    "Isi kuesioner interaktif minat, keahlian, dan budget modalmu — algoritma PetaKarier mencocokkan profil dengan 14 jenis usaha terkurasi beserta skor kelayakan dan dampak SDG 8.",
 };
 
 export default function AnalisisPage() {

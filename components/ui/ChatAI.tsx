@@ -31,7 +31,7 @@ export default function ChatAI() {
     {
       role: "assistant",
       content:
-        "Halo! 👋 Saya asisten AI KonekUMKM. Ada yang bisa saya bantu seputar usaha, modal, atau rencana bisnis?",
+        "Halo! 👋 Saya asisten AI PetaKarier. Ada yang bisa saya bantu seputar usaha, modal, atau rencana bisnis?",
     },
   ]);
   const [input, setInput] = useState("");
@@ -104,7 +104,7 @@ export default function ChatAI() {
       {
         role: "assistant",
         content:
-          "Halo! 👋 Saya asisten AI KonekUMKM. Ada yang bisa saya bantu seputar usaha, modal, atau rencana bisnis?",
+          "Halo! 👋 Saya asisten AI PetaKarier. Ada yang bisa saya bantu seputar usaha, modal, atau rencana bisnis?",
       },
     ]);
     setInput("");
@@ -121,7 +121,7 @@ export default function ChatAI() {
                    transition-all duration-300 hover:scale-110 hover:shadow-xl hover:shadow-teal-500/40
                    active:scale-95"
         aria-label="Chat dengan AI"
-        title="Tanya AI KonekUMKM"
+        title="Tanya AI PetaKarier"
       >
         {isOpen ? (
           <X className="h-5 w-5" />
@@ -165,7 +165,7 @@ export default function ChatAI() {
                     <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-[#0d1226] bg-emerald-400" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-extrabold text-white">AI KonekUMKM</h3>
+                    <h3 className="text-sm font-extrabold text-white">Asisten PetaKarier</h3>
                     <p className="text-[10px] font-semibold text-emerald-400">Online</p>
                   </div>
                 </div>

@@ -245,8 +245,8 @@ export default function FeaturesSection() {
         {/* ── About section ── */}
         <Reveal className="mt-28">
           <div className="mx-auto max-w-4xl text-center">
-            <p className="text-xs font-bold uppercase tracking-[0.3em] text-slate-400">
-              Tentang KonekUMKM
+            <p className="text-xs font-extrabold uppercase tracking-[0.3em] text-emerald-700">
+              Tentang PetaKarier
             </p>
             <h3 className="mt-8 text-3xl font-bold leading-snug text-slate-900 sm:text-5xl md:text-[2.75rem]">
               <span className="text-slate-900">Platform kami</span>{" "}

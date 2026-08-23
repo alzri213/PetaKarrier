@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { Icon } from "@iconify/react";
 import {
   Globe2,
   TrendingUp,
@@ -20,13 +21,7 @@ const SDG_TARGETS = [
     code: "Target 8.3",
     title: "Formalisasi & Pertumbuhan UMKM",
     desc: "Mendorong formalisasi usaha mikro dan kecil melalui fasilitasi legalitas OSS NIB, pencatatan keuangan transparan, dan akses permodalan.",
-    svg: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="4" y="8" width="16" height="12" rx="2" stroke="white" strokeWidth="2" fill="none"/>
-      <path d="M4 8 L4 4 L8 4 L8 8" stroke="white" strokeWidth="2" fill="none"/>
-      <path d="M16 8 L16 4 L20 4 L20 8" stroke="white" strokeWidth="2" fill="none"/>
-      <rect x="8" y="12" width="3" height="3" fill="white"/>
-      <rect x="13" y="12" width="3" height="3" fill="white"/>
-    </svg>`,
+    icon: "solar:shop-2-bold",
     color: "from-emerald-500 to-emerald-600",
     impact: "14 Jenis Usaha Terstandar",
   },
@@ -34,12 +29,7 @@ const SDG_TARGETS = [
     code: "Target 8.5",
     title: "Pekerjaan Layak & Inklusif",
     desc: "Membuka peluang kerja produktif yang memberikan pendapatan layak di atas standar UMR bagi pemuda dan perempuan di seluruh daerah.",
-    svg: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="12" cy="8" r="4" stroke="white" strokeWidth="2" fill="none"/>
-      <path d="M6 20 C6 16 9 14 12 14 C15 14 18 16 18 20" stroke="white" strokeWidth="2" fill="none"/>
-      <circle cx="18" cy="6" r="2" fill="rgba(255,255,255,0.8)"/>
-      <circle cx="6" cy="10" r="1.5" fill="rgba(255,255,255,0.6)"/>
-    </svg>`,
+    icon: "solar:users-group-two-rounded-bold",
     color: "from-green-500 to-emerald-500",
     impact: "Benchmark UMR 18 Kota",
   },
@@ -47,11 +37,7 @@ const SDG_TARGETS = [
     code: "Target 8.6",
     title: "Pengurangan Angka Pengangguran Muda",
     desc: "Menurunkan persentase generasi muda tanpa kerja atau pelatihan (NEET) dengan menyediakan roadmap kewirausahaan siap pakai.",
-    svg: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M4 20 L4 8 L12 12 L20 4 L20 20" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-      <path d="M4 8 L4 4 L12 8 L20 0" stroke="rgba(255,255,255,0.5)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-      <circle cx="20" cy="4" r="2" fill="white"/>
-    </svg>`,
+    icon: "solar:chart-2-bold-duotone",
     color: "from-orange-500 to-amber-500",
     impact: "Roadmap 90 Hari Aksi",
   },
@@ -59,13 +45,9 @@ const SDG_TARGETS = [
     code: "Target 8.2",
     title: "Inovasi & Peningkatan Produktivitas",
     desc: "Mendorong transformasi digital UMKM melalui pemanfaatan teknologi, otomatisasi rencana bisnis, dan strategi pemasaran modern.",
-    svg: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="4" y="4" width="16" height="16" rx="2" stroke="white" strokeWidth="2" fill="none"/>
-      <path d="M8 12 L10 12 L10 10 L14 10 L14 12 L16 12 L16 14 L14 14 L14 16 L10 16 L10 14 L8 14 Z" fill="white"/>
-      <circle cx="18" cy="6" r="2" fill="rgba(255,255,255,0.8)"/>
-    </svg>`,
+    icon: "solar:cpu-bolt-bold",
     color: "from-yellow-500 to-orange-500",
-    impact: "Automasi AI + Database",
+    impact: "Validasi Finansial Terpadu",
   },
 ];
 
@@ -104,7 +86,7 @@ export default function SdgSection() {
             Menjawab Amanat <span className="bg-gradient-to-r from-emerald-600 to-green-500 bg-clip-text text-transparent">SDG 8 & Matriks 4</span>
           </h2>
           <p className="mt-6 text-base sm:text-lg leading-relaxed text-slate-600">
-            KonekUMKM bukan sekadar solusi teknologi, tetapi wujud nyata kontribusi sektor digital bagi pencapaian <b className="text-slate-900">SDG 8: Pekerjaan Layak & Pertumbuhan Ekonomi</b>, khususnya mendukung peran strategis <b className="text-emerald-700">Pelaku Usaha (Matriks 4)</b> dalam RAN TPB Bappenas.
+            PetaKarier bukan sekadar solusi teknologi, tetapi wujud nyata kontribusi sektor digital bagi pencapaian <b className="text-slate-900">SDG 8: Pekerjaan Layak & Pertumbuhan Ekonomi</b>, khususnya mendukung peran strategis <b className="text-emerald-700">Pelaku Usaha (Matriks 4)</b> dalam RAN TPB Bappenas.
           </p>
         </Reveal>
 
@@ -121,9 +103,9 @@ export default function SdgSection() {
                     <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-700">
                       {t.code}
                     </span>
-                    <span className={`flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${t.color} text-white shadow-xl border-2 border-white/30`}
-                      dangerouslySetInnerHTML={{ __html: t.svg }}
-                    />
+                    <span className={`flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${t.color} text-white shadow-xl border-2 border-white/30`}>
+                      <Icon icon={t.icon} className="h-6 w-6" />
+                    </span>
                   </div>
                   <h3 className="mt-5 text-lg font-extrabold text-slate-900">
                     {t.title}

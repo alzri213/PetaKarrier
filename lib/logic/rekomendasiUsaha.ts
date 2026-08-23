@@ -8,6 +8,9 @@ const SKILL_KATEGORI: Record<string, string[]> = {
   Kreatif: ["desain", "fotografi", "editing-video", "sosial-media", "public-speaking"],
   Jasa: ["ketelitian", "pelayanan", "teknik", "negosiasi", "manajemen-waktu"],
   Agribisnis: ["berkebun", "teknologi", "riset"],
+  Digital: ["teknologi", "editing-video", "sosial-media", "desain", "negosiasi"],
+  Kecantikan: ["pelayanan", "ketelitian", "sosial-media", "fashion"],
+  Pendidikan: ["public-speaking", "ketelitian", "manajemen-waktu", "teknologi"],
 };
 
 function skorMinat(usaha: JenisUsaha, minat: string[]): number {
@@ -36,7 +39,7 @@ function skorBudget(usaha: JenisUsaha, budget: number): number {
 
 function bonusWaktu(usaha: JenisUsaha, waktu: string): number {
   if (waktu === "parttime") {
-    const ringan = ["jastip", "les-privat", "content-creator", "makanan-rumahan"];
+    const ringan = ["jastip", "les-privat", "content-creator", "makanan-rumahan", "jasa-web-digital"];
     return ringan.includes(usaha.id) ? 5 : 0;
   }
   return 2;

@@ -145,6 +145,16 @@ body {
 
 @utility card-glow {
   position: relative;
+  box-shadow: 0 10px 30px -10px rgba(22, 163, 74, 0.12);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@utility card-hover-lift {
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  &:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 40px -15px rgba(22, 163, 74, 0.18);
+  }
 }
 
 @utility shimmer-bg {

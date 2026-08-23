@@ -16,7 +16,7 @@ export function generateRencana(data: RencanaBisnisData): string {
 
   return `# 📋 Dokumen Rencana Bisnis — ${usaha.nama}
 
-**Diterbitkan Oleh:** Platform KonekUMKM · Selaras RAN TPB / SDG 8 Indonesia
+**Diterbitkan Oleh:** Platform PetaKarier · Selaras RAN TPB / SDG 8 Indonesia
 **Tanggal Pembuatan:** ${data.dibuatPada}
 **Status Validasi:** Siap Eksekusi & Pengajuan Pendanaan
 
@@ -122,6 +122,6 @@ Minggu 1-2: Legalitas & Setup ──► Minggu 3-4: Pengadaan & Uji Coba ──�
 - **Minggu 9–12:** Evaluasi unit economics bulanan, rekrutmen reseller/mitra lokal, penambahan kapasitas batch.
 
 ---
-*Dokumen ini disusun otomatis secara objektif oleh AI Engine KonekUMKM. Pastikan validasi pasar lapangan sebelum komitmen modal penuh.*
+*Dokumen ini disusun otomatis secara objektif oleh AI Engine PetaKarier. Pastikan validasi pasar lapangan sebelum komitmen modal penuh.*
 `;
 }

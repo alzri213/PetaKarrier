@@ -18,16 +18,20 @@ import type { KategoriUsaha, ProfilUser, Rekomendasi } from "@/types";
 import { SKILL_KATEGORI } from "@/lib/logic/rekomendasiUsaha";
 import ScoreBar from "@/components/ui/ScoreBar";
 import LoadingDots from "@/components/ui/LoadingDots";
+import Image from "next/image";
 import Link from "next/link";
 import { formatRupiah } from "@/lib/utils/formatCurrency";
 import { submitAnalisisAction } from "@/lib/actions/analisis";
 
-const KATEGORI_META: { key: KategoriUsaha; label: string; emoji: string }[] = [
-  { key: "Kuliner", label: "Kuliner", emoji: "🍜" },
-  { key: "Fashion", label: "Fashion", emoji: "👕" },
-  { key: "Kreatif", label: "Kreatif", emoji: "🎨" },
-  { key: "Jasa", label: "Jasa", emoji: "🔧" },
-  { key: "Agribisnis", label: "Agribisnis", emoji: "🌱" },
+const KATEGORI_META: { key: KategoriUsaha; label: string; emoji: string; image: string }[] = [
+  { key: "Kuliner", label: "Kuliner", emoji: "🍜", image: "/categories/kuliner.jpg" },
+  { key: "Fashion", label: "Fashion", emoji: "👕", image: "/categories/fashion.jpg" },
+  { key: "Kreatif", label: "Kreatif", emoji: "🎨", image: "/categories/kreatif.jpg" },
+  { key: "Jasa", label: "Jasa", emoji: "🔧", image: "/categories/jasa.jpg" },
+  { key: "Agribisnis", label: "Agribisnis", emoji: "🌱", image: "/categories/agribisnis.jpg" },
+  { key: "Digital", label: "Digital & IT", emoji: "💻", image: "/categories/digital.jpg" },
+  { key: "Kecantikan", label: "Kecantikan", emoji: "💄", image: "/categories/kecantikan.jpg" },
+  { key: "Pendidikan", label: "Pendidikan", emoji: "📚", image: "/categories/pendidikan.jpg" },
 ];
 
 const SKILL_META: Record<string, string> = {
@@ -97,13 +101,17 @@ export default function QuestionnaireForm() {
   const [pilihan, setPilihan] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const toggleMinat = (k: KategoriUsaha) =>
+  const toggleMinat = (k: KategoriUsaha) => {
     setMinat((prev) =>
-      prev.includes(k) ? prev.filter((x) => x !== k) : [...prev, k]
+      prev.includes(k) ? prev.filter((item) => item !== k) : [...prev, k]
     );
+  };
 
-  const toggleSkill = (s: string) =>
-    setSkill((prev) => (prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]));
+  const toggleSkill = (s: string) => {
+    setSkill((prev) =>
+      prev.includes(s) ? prev.filter((item) => item !== s) : [...prev, s]
+    );
+  };
 
   const canNext =
     (step === 0 && minat.length > 0) ||
@@ -112,42 +120,37 @@ export default function QuestionnaireForm() {
     step === 3;
 
   const submit = async () => {
-    if (!budget) return;
+    if (minat.length === 0 || skill.length === 0 || budget === null) return;
     setIsSubmitting(true);
     setStep(4);
+    setHasil(null);
 
-    const profil: ProfilUser = {
-      minat,
-      skill,
-      budget,
-      waktu: waktu as ProfilUser["waktu"],
-      pengalaman: pengalaman as ProfilUser["pengalaman"],
-    };
+    const profil: ProfilUser = { minat, skill, budget, waktu: waktu as any, pengalaman: pengalaman as any };
 
+    let currentStep = 0;
     const interval = setInterval(() => {
-      setLoadingStep((s) => Math.min(s + 1, ANALISIS_TEKS.length - 1));
-    }, 650);
+      currentStep++;
+      if (currentStep < ANALISIS_TEKS.length) {
+        setLoadingStep(currentStep);
+      } else {
+        clearInterval(interval);
+      }
+    }, 700);
 
     try {
       const res = await submitAnalisisAction(profil);
-      await new Promise((r) => setTimeout(r, 2200));
-      clearInterval(interval);
-
       if (!res.success || !res.rekomendasi) {
         throw new Error(res.error ?? "Gagal memproses rekomendasi");
       }
-
       setHasil(res.rekomendasi);
       setAnalisisId(res.id ?? null);
-      setPilihan(res.rekomendasi[0]?.usaha.id ?? null);
-
+      if (res.rekomendasi.length > 0) {
+        setPilihan(res.rekomendasi[0].usaha.id);
+      }
       localStorage.setItem(
         "konekumkm-profil",
-        JSON.stringify({ profil, analisisId: res.id, tanggal: new Date().toISOString() })
+        JSON.stringify({ profil, analisisId: res.id })
       );
-      toast.success("Analisis berhasil diproses!", {
-        description: "Rekomendasi usaha terbaik siap untuk dieksplorasi.",
-      });
     } catch (err) {
       clearInterval(interval);
       toast.error(err instanceof Error ? err.message : "Terjadi kesalahan");
@@ -206,7 +209,7 @@ export default function QuestionnaireForm() {
                 <p className="mt-2 text-sm text-slate-500">
                   Pilih satu atau beberapa kategori yang menarik bagimu (bisa lebih dari satu).
                 </p>
-                <div className="mt-6 grid grid-cols-2 gap-3.5 sm:grid-cols-3">
+                <div className="mt-6 grid grid-cols-2 gap-3.5 sm:grid-cols-4">
                   {KATEGORI_META.map((k, i) => {
                     const active = minat.includes(k.key);
                     return (
@@ -214,26 +217,69 @@ export default function QuestionnaireForm() {
                         key={k.key}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: i * 0.05 }}
-                        whileHover={{ scale: 1.03 }}
-                        whileTap={{ scale: 0.97 }}
+                        transition={{ delay: i * 0.04 }}
+                        whileHover={{ scale: 1.04 }}
+                        whileTap={{ scale: 0.96 }}
                         onClick={() => toggleMinat(k.key)}
-                        className={`relative overflow-hidden rounded-2xl border p-5 text-left transition-all duration-300 ${
+                        className={`relative min-h-[140px] overflow-hidden rounded-2xl border p-4 text-left transition-all duration-500 flex flex-col justify-between ${
                           active
-                            ? "border-emerald-400/60 bg-gradient-to-br from-emerald-500/20 to-green-500/10 shadow-lg shadow-emerald-500/15"
-                            : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
+                            ? "border-emerald-400 shadow-xl ring-2 ring-emerald-400/50"
+                            : "border-slate-200 bg-white hover:border-slate-300 hover:shadow-md"
                         }`}
                       >
+                        {/* Background Photo overlay when active */}
+                        {active && (
+                          <motion.div
+                            initial={{ opacity: 0, scale: 1.1 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ duration: 0.4 }}
+                            className="absolute inset-0 z-0 overflow-hidden"
+                          >
+                            <Image
+                              src={k.image}
+                              alt={k.label}
+                              fill
+                              className="object-cover brightness-[0.70] contrast-105"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/50 to-slate-950/20" />
+                          </motion.div>
+                        )}
+
+                        {/* Top checkmark icon */}
                         {active && (
                           <motion.span
-                            layoutId="minat-check"
-                            className="absolute right-3 top-3 flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-r from-emerald-500 to-green-400 text-xs font-bold text-white shadow-md"
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            className="absolute right-2.5 top-2.5 z-20 flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 text-xs font-extrabold text-white shadow-md border border-white"
                           >
                             ✓
                           </motion.span>
                         )}
-                        <span className="text-4xl">{k.emoji}</span>
-                        <p className="mt-3 font-extrabold text-slate-900">{k.label}</p>
+
+                        {/* Category Emoji Icon */}
+                        <div className="relative z-10 flex items-center justify-between">
+                          <span className={`flex h-11 w-11 items-center justify-center rounded-xl text-2xl transition-all ${
+                            active
+                              ? "bg-white/20 backdrop-blur-md text-white border border-white/30 shadow-md"
+                              : "bg-slate-100 text-slate-800"
+                          }`}>
+                            {k.emoji}
+                          </span>
+                        </div>
+
+                        {/* Category Title */}
+                        <div className="relative z-10 mt-3">
+                          <p className={`font-extrabold text-base transition-colors ${
+                            active ? "text-white drop-shadow-md" : "text-slate-900"
+                          }`}>
+                            {k.label}
+                          </p>
+                          <p className={`text-[10px] font-semibold transition-colors mt-0.5 ${
+                            active ? "text-emerald-300" : "text-slate-600"
+                          }`}>
+                            {active ? "✓ Terpilih" : "Klik untuk melihat foto"}
+                          </p>
+                        </div>
                       </motion.button>
                     );
                   })}
@@ -400,7 +446,7 @@ export default function QuestionnaireForm() {
                   disabled={isSubmitting}
                   className="btn-shine inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-emerald-500 via-green-500 to-emerald-400 px-7 py-3 text-xs sm:text-sm font-extrabold text-white shadow-xl shadow-emerald-500/25 transition hover:scale-105 active:scale-95 disabled:opacity-50"
                 >
-                  <Sparkles className="h-4 w-4" /> Proses Analisis AI Sekarang
+                  <Sparkles className="h-4 w-4" /> Proses Analisis Usaha Sekarang
                 </button>
               )}
             </div>
@@ -440,7 +486,7 @@ export default function QuestionnaireForm() {
                 {ANALISIS_TEKS[loadingStep]}
               </motion.p>
             </AnimatePresence>
-            <p className="text-xs text-slate-500 mt-2">Menyinkronkan kalkulasi dengan data PostgreSQL & target SDG 8...</p>
+            <p className="text-xs text-slate-500 mt-2">Menyinkronkan pemetaan dengan data UMR 18 kota & indikator SDG 8...</p>
             <div className="mt-6 flex gap-1.5">
               <LoadingDots />
             </div>

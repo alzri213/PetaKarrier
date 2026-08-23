@@ -3,7 +3,10 @@ export type KategoriUsaha =
   | "Fashion"
   | "Kreatif"
   | "Jasa"
-  | "Agribisnis";
+  | "Agribisnis"
+  | "Digital"
+  | "Kecantikan"
+  | "Pendidikan";
 
 export interface JenisUsaha {
   id: string;

@@ -19,7 +19,7 @@ export default async function AnalisisDetailPage({ params }: PageProps) {
     return (
       <div className="min-h-screen pb-24">
         <PageHero
-          badge="KonekUMKM · Hasil Analisis"
+          badge="PetaKarier · Hasil Analisis"
           title={<>Analisis <span className="text-gradient">Tidak Ditemukan</span></>}
           description="ID analisis ini mungkin sudah kedaluwarsa atau belum tersimpan di cloud database."
         />

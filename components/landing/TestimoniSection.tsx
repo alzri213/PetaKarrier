@@ -13,7 +13,7 @@ const TESTIMONI = [
     foto: "☕",
     rating: 5,
     testimoni:
-      "KonekUMKM ngasih perhitungan break-even yang sangat akurat. Dulu ragu mulai karena takut modal habis di sewa, tapi dengan simulasi 18 kota, saya bisa pilih skala yang pas dan balik modal di bulan ke-5!",
+      "PetaKarier ngasih perhitungan break-even yang sangat akurat. Dulu ragu mulai karena takut modal habis di sewa, tapi dengan simulasi 18 kota, saya bisa pilih skala yang pas dan balik modal di bulan ke-5!",
   },
   {
     nama: "Nadia Anggraini",
@@ -33,7 +33,7 @@ const TESTIMONI = [
     foto: "🎨",
     rating: 5,
     testimoni:
-      "Sebagai freelancer yang mau bikin studio, KonekUMKM membantu saya menyusun proyeksi keuangan 12 bulan dan alokasi modal legalitas NIB. Sekarang studio saya sudah menyerap 2 karyawan pemuda lokal!",
+      "Sebagai freelancer yang mau bikin studio, PetaKarier membantu saya menyusun proyeksi keuangan 12 bulan dan alokasi modal legalitas NIB. Sekarang studio saya sudah menyerap 2 karyawan pemuda lokal!",
   },
 ];
 
@@ -56,7 +56,7 @@ export default function TestimoniSection() {
         <div className="mt-14 grid gap-6 md:grid-cols-3">
           {TESTIMONI.map((t, i) => (
             <Reveal key={t.nama} delay={i * 0.12}>
-              <div className="flex h-full flex-col justify-between rounded-3xl border-slate-200 bg-white p-7 backdrop-blur-xl transition-all duration-300 hover:border-emerald-200 hover:bg-emerald-50/50">
+              <div className="flex h-full flex-col justify-between rounded-3xl border-2 border-slate-200 bg-white p-7 shadow-md transition-all duration-300 hover:border-emerald-300 hover:shadow-xl">
                 <div>
                   <div className="flex items-center justify-between">
                     <div className="flex gap-1 text-amber-400">

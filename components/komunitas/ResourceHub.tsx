@@ -200,11 +200,11 @@ export default function ResourceHub() {
               Butuh Pendampingan atau Mau Berkolaborasi?
             </h3>
             <p className="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
-              Bergabunglah dengan jaringan ratusan wirausaha muda binaan KonekUMKM di seluruh Indonesia. Saling berbagi supplier, strategi promosi digital, dan peluang pasar bersama.
+              Bergabunglah dengan jaringan ratusan wirausaha muda binaan PetaKarier di seluruh Indonesia. Saling berbagi supplier, strategi promosi digital, dan peluang pasar bersama.
             </p>
           </div>
           <a
-            href="https://wa.me/?text=Halo%20KonekUMKM%2C%20saya%20tertarik%20bergabung%20dengan%20komunitas%20wirausaha%20muda."
+            href="https://wa.me/?text=Halo%20PetaKarier%2C%20saya%20tertarik%20bergabung%20dengan%20komunitas%20wirausaha%20muda."
             target="_blank"
             rel="noopener noreferrer"
             className="btn-shine inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-teal-500 via-teal-600 to-cyan-400 px-7 py-4 text-xs font-extrabold text-white shadow-xl shadow-teal-500/25 transition hover:scale-105 shrink-0"

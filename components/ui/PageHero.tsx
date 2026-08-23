@@ -21,9 +21,9 @@ export default function PageHero({ badge, title, description }: PageHeroProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="inline-flex items-center gap-2 rounded-full border border-emerald-400/25 bg-emerald-500/10 px-4 py-1.5 text-xs font-semibold text-emerald-200"
+          className="inline-flex items-center gap-2 rounded-full border border-emerald-200/80 bg-emerald-50 px-4 py-1.5 text-xs font-bold text-emerald-700 shadow-sm"
         >
-          <Sparkles className="h-3.5 w-3.5" />
+          <Sparkles className="h-3.5 w-3.5 text-emerald-600" />
           {badge}
         </motion.div>
 
@@ -40,7 +40,7 @@ export default function PageHero({ badge, title, description }: PageHeroProps) {
           initial={{ opacity: 0, y: 28 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.2 }}
-          className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-slate-500 sm:text-lg"
+          className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-slate-600 font-medium sm:text-lg"
         >
           {description}
         </motion.p>

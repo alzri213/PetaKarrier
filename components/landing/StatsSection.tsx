@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { Icon } from "@iconify/react";
 import AnimatedCounter from "@/components/ui/AnimatedCounter";
 import Reveal from "@/components/ui/Reveal";
 
@@ -19,38 +20,21 @@ export default function StatsSection({ stats }: StatsSectionProps) {
     {
       label: "Analisis Usaha Dijalankan",
       value: stats?.totalAnalisis ?? 1420,
-      svg: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 2 L13 7 L18 8 L13 9 L12 14 L11 9 L6 8 L11 7 Z" fill="white"/>
-        <circle cx="18" cy="5" r="2" fill="rgba(255,255,255,0.8)"/>
-        <circle cx="6" cy="18" r="1.5" fill="rgba(255,255,255,0.6)"/>
-      </svg>`,
+      icon: "solar:magic-stick-3-bold",
       color: "from-emerald-500 to-emerald-600",
       desc: "Simulasi kecocokan potensi wirausaha",
     },
     {
       label: "Rencana Bisnis Terbit",
       value: stats?.totalRencanaBisnis ?? 890,
-      svg: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="5" y="3" width="14" height="18" rx="2" stroke="white" strokeWidth="2" fill="none"/>
-        <path d="M9 8 L15 8" stroke="white" strokeWidth="2"/>
-        <path d="M9 12 L15 12" stroke="white" strokeWidth="2"/>
-        <path d="M9 16 L12 16" stroke="white" strokeWidth="2"/>
-        <path d="M5 6 L3 6" stroke="white" strokeWidth="2"/>
-        <path d="M5 10 L3 10" stroke="white" strokeWidth="2"/>
-        <path d="M5 14 L3 14" stroke="white" strokeWidth="2"/>
-      </svg>`,
+      icon: "solar:document-add-bold",
       color: "from-green-500 to-emerald-500",
       desc: "Dokumen terstruktur siap eksekusi",
     },
     {
       label: "Proyeksi Serapan Tenaga Kerja",
       value: stats?.totalEstimasiKerja ?? 1680,
-      svg: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="12" cy="8" r="4" stroke="white" strokeWidth="2" fill="none"/>
-        <path d="M6 20 C6 16 9 14 12 14 C15 14 18 16 18 20" stroke="white" strokeWidth="2" fill="none"/>
-        <circle cx="18" cy="6" r="2" fill="rgba(255,255,255,0.8)"/>
-        <circle cx="6" cy="10" r="1.5" fill="rgba(255,255,255,0.6)"/>
-      </svg>`,
+      icon: "solar:users-group-two-rounded-bold",
       color: "from-amber-500 to-yellow-500",
       desc: "Dukungan SDG 8.5 lapangan kerja inklusif",
     },
@@ -58,12 +42,8 @@ export default function StatsSection({ stats }: StatsSectionProps) {
       label: "Kota Terintegrasi UMR",
       value: stats?.totalKotaAktif ?? 18,
       suffix: " Kota",
-      svg: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 2 C7 2 3 6 3 11 C3 16 12 22 12 22 C12 22 21 16 21 11 C21 6 17 2 12 2" stroke="white" strokeWidth="2" fill="none"/>
-        <circle cx="12" cy="11" r="4" fill="white"/>
-        <circle cx="18" cy="5" r="1.5" fill="rgba(255,255,255,0.8)"/>
-      </svg>`,
-      color: "from-yellow-400 to-amber-400",
+      icon: "solar:city-bold",
+      color: "from-yellow-500 to-amber-500",
       desc: "Standar upah minimum terverifikasi 2026",
     },
   ];
@@ -76,7 +56,7 @@ export default function StatsSection({ stats }: StatsSectionProps) {
             Dampak Nyata Platform
           </p>
           <h2 className="mt-4 text-3xl sm:text-4xl font-extrabold text-slate-900">
-            Statistik Pemberdayaan Ekosistem KonekUMKM
+            Statistik Pemberdayaan Ekosistem PetaKarier
           </h2>
         </Reveal>
 
@@ -90,9 +70,9 @@ export default function StatsSection({ stats }: StatsSectionProps) {
                 <div
                   className={`pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-gradient-to-br ${item.color} opacity-20 blur-3xl`}
                 />
-                <div className={`flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br ${item.color} text-white shadow-xl border-2 border-white/30`}
-                  dangerouslySetInnerHTML={{ __html: item.svg }}
-                />
+                <div className={`flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br ${item.color} text-white shadow-xl border-2 border-white/30`}>
+                  <Icon icon={item.icon} className="h-7 w-7" />
+                </div>
                 <p className="mt-6 text-4xl font-extrabold text-slate-900">
                   <AnimatedCounter
                     value={item.value}

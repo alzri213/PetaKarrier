@@ -3,616 +3,463 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import Image from "next/image";
 import {
-  ArrowRight,
   Sparkles,
-  Globe2,
   TrendingUp,
   LineChart,
   Scale,
   FileText,
   CheckCircle2,
-  Zap,
-  ChevronRight,
-  Store,
-  Coins,
-  BarChart3,
-  Star,
+  ArrowRight,
+  ShieldCheck,
   Building2,
-  ShoppingCart,
-  Users,
-  MousePointer2,
-  ArrowUpRight,
-  Play,
+  MapPin,
+  Coins,
+  ChevronRight,
+  Zap,
+  BarChart3,
+  Award,
+  BookOpen,
+  Globe2,
+  Navigation,
+  Eye,
 } from "lucide-react";
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  CartesianGrid,
-} from "recharts";
-import { formatRupiah, formatRupiahSingkat } from "@/lib/utils/formatCurrency";
+import { formatRupiah } from "@/lib/utils/formatCurrency";
 
-interface HeroProps {
-  stats?: {
-    totalAnalisis: number;
-    totalRencanaBisnis: number;
-    totalEstimasiUMKM: number;
-    totalKotaAktif: number;
+const KOTA_MAP = [
+  {
+    id: "jakarta",
+    nama: "DKI Jakarta",
+    provinsi: "DKI Jakarta",
+    umr: 5067381,
+    umkmAktif: "4.200+",
+    topUsaha: "Kedai Kopi & Jasa Kreatif",
+    x: 28, // % from left
+    y: 65, // % from top
+  },
+  {
+    id: "bandung",
+    nama: "Bandung",
+    provinsi: "Jawa Barat",
+    umr: 4209389,
+    umkmAktif: "2.850+",
+    topUsaha: "Distro & Kuliner Kekinian",
+    x: 32,
+    y: 69,
+  },
+  {
+    id: "surabaya",
+    nama: "Surabaya",
+    provinsi: "Jawa Timur",
+    umr: 4725479,
+    umkmAktif: "3.100+",
+    topUsaha: "Katering & Logistik Usaha",
+    x: 41,
+    y: 71,
+  },
+  {
+    id: "yogyakarta",
+    nama: "Yogyakarta",
+    provinsi: "DI Yogyakarta",
+    umr: 2159000,
+    umkmAktif: "2.400+",
+    topUsaha: "Studio Desain & Kerajinan",
+    x: 35,
+    y: 73,
+  },
+  {
+    id: "medan",
+    nama: "Medan",
+    provinsi: "Sumatera Utara",
+    umr: 3769000,
+    umkmAktif: "1.950+",
+    topUsaha: "Olahan Makanan & Perdagangan",
+    x: 13,
+    y: 26,
+  },
+  {
+    id: "makassar",
+    nama: "Makassar",
+    provinsi: "Sulawesi Selatan",
+    umr: 3650000,
+    umkmAktif: "1.700+",
+    topUsaha: "Jasa Boga & Kuliner Lokal",
+    x: 58,
+    y: 57,
+  },
+  {
+    id: "bali",
+    nama: "Denpasar",
+    provinsi: "Bali",
+    umr: 3200000,
+    umkmAktif: "1.600+",
+    topUsaha: "Souvenir & Hospitality",
+    x: 46,
+    y: 74,
+  },
+];
+
+const SIMULASI_USAHA = [
+  {
+    id: "kuliner",
+    nama: "Kedai Kopi & Toast",
+    kategori: "Kuliner Kekinian",
+    emoji: "☕",
+    modal: 18500000,
+    labaBulan: 6500000,
+    bep: "4,5 Bulan",
+    umr: "Rp 4.209.389 (Bandung)",
+    skor: 94,
+    serapan: "3 Orang Pemuda",
+  },
+  {
+    id: "katering",
+    nama: "Katering Nasi Box Rumahan",
+    kategori: "Jasa Boga",
+    emoji: "🍱",
+    modal: 8500000,
+    labaBulan: 4200000,
+    bep: "3,8 Bulan",
+    umr: "Rp 3.527.000 (Semarang)",
+    skor: 91,
+    serapan: "2–3 Orang",
+  },
+  {
+    id: "desain",
+    nama: "Studio Desain & Printing",
+    kategori: "Kreatif & Digital",
+    emoji: "🎨",
+    modal: 11000000,
+    labaBulan: 6800000,
+    bep: "3,2 Bulan",
+    umr: "Rp 2.159.000 (Yogyakarta)",
+    skor: 96,
+    serapan: "2 Orang",
+  },
+];
+
+export default function Hero() {
+  const [selectedSim, setSelectedSim] = useState(SIMULASI_USAHA[0]);
+  const [hoveredKota, setHoveredKota] = useState<(typeof KOTA_MAP)[0] | null>(KOTA_MAP[0]);
+  const [isHeroHovered, setIsHeroHovered] = useState(false);
+  const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    setMousePos({ x, y });
   };
-}
-
-const BUSINESSES = [
-  { id: "makanan", nama: "Makanan Rumahan", emoji: "🍱", modal: 8500000,  laba: 4200000, bep: 4, margin: "38%", serapan: "2–3 Orang", umr: 4209389 },
-  { id: "kopi",    nama: "Kedai Kopi",      emoji: "☕", modal: 18500000, laba: 6500000, bep: 5, margin: "42%", serapan: "3 Orang",   umr: 4209389 },
-  { id: "desain",  nama: "Studio Desain",   emoji: "🎨", modal: 11000000, laba: 6800000, bep: 3, margin: "55%", serapan: "2 Orang",   umr: 4209389 },
-  { id: "laundry", nama: "Laundry Kiloan",  emoji: "🧺", modal: 19000000, laba: 5400000, bep: 6, margin: "34%", serapan: "2 Orang",   umr: 4209389 },
-];
-
-const CHART = [
-  { b: "Bln 1", o: 5200000,  l: 1800000 },
-  { b: "Bln 2", o: 6800000,  l: 3000000 },
-  { b: "Bln 3", o: 8500000,  l: 4200000 },
-  { b: "Bln 4", o: 9600000,  l: 4800000 },
-  { b: "Bln 5", o: 11200000, l: 6000000 },
-  { b: "Bln 6", o: 12500000, l: 6900000 },
-];
-
-const PIE = [
-  { name: "Peralatan & Aset", value: 3800000, color: "#10b981" },
-  { name: "Sewa Tempat",      value: 2400000, color: "#16a34a" },
-  { name: "Bahan Baku",       value: 1500000, color: "#f59e0b" },
-  { name: "Legalitas NIB",    value: 500000,  color: "#eab308" },
-  { name: "Promosi Awal",     value: 300000,  color: "#059669" },
-];
-
-const TABS = [
-  { id: "financial", label: "Kalkulator",     icon: LineChart },
-  { id: "benchmark", label: "vs UMR",         icon: Scale },
-  { id: "matching",  label: "Pencocokan",     icon: Sparkles },
-  { id: "plan",      label: "Rencana Bisnis", icon: FileText },
-] as const;
-type TabId = (typeof TABS)[number]["id"];
-
-const TIP: React.CSSProperties = {
-  background: "#0d1226",
-  border: "1px solid rgba(255,255,255,0.12)",
-  borderRadius: 12,
-  fontSize: 11,
-  color: "#fff",
-};
-
-/* ── Decorative slanted elements matching reference design ── */
-function SlantedDecor() {
-  return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-      {/* Slanted lines - top left */}
-      <motion.div 
-        animate={{ x: [0, 20, 0] }}
-        transition={{ repeat: Infinity, duration: 8, ease: "easeInOut" }}
-        className="absolute left-0 top-[10%] w-1 h-32 bg-gradient-to-b from-emerald-400 to-transparent -rotate-12 origin-top"
-      />
-      <motion.div 
-        animate={{ x: [0, -15, 0] }}
-        transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
-        className="absolute left-8 top-[15%] w-1 h-24 bg-gradient-to-b from-orange-400 to-transparent -rotate-6 origin-top"
-      />
-      
-      {/* Slanted lines - top right */}
-      <motion.div 
-        animate={{ x: [0, -20, 0] }}
-        transition={{ repeat: Infinity, duration: 7, ease: "easeInOut" }}
-        className="absolute right-0 top-[12%] w-1 h-28 bg-gradient-to-b from-green-400 to-transparent rotate-12 origin-top"
-      />
-      <motion.div 
-        animate={{ x: [0, 15, 0] }}
-        transition={{ repeat: Infinity, duration: 9, ease: "easeInOut" }}
-        className="absolute right-12 top-[18%] w-1 h-20 bg-gradient-to-b from-yellow-400 to-transparent rotate-6 origin-top"
-      />
-
-      {/* Cursor pointer elements - SVG graphics */}
-      <motion.div
-        animate={{ y: [0, -15, 0], rotate: [0, -5, 0] }}
-        transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
-        className="absolute left-[15%] top-[25%]"
-      >
-        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M16 4 L16 28" stroke="#16a34a" strokeWidth="3" strokeLinecap="round"/>
-          <path d="M10 10 L16 4 L22 10" stroke="#16a34a" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-          <circle cx="16" cy="28" r="3" fill="#16a34a"/>
-        </svg>
-      </motion.div>
-      <motion.div
-        animate={{ y: [0, 12, 0], rotate: [0, 5, 0] }}
-        transition={{ repeat: Infinity, duration: 5, ease: "easeInOut" }}
-        className="absolute right-[20%] top-[30%]"
-      >
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M4 20 L20 4" stroke="#f59e0b" strokeWidth="3" strokeLinecap="round"/>
-          <path d="M20 4 L20 12" stroke="#f59e0b" strokeWidth="3" strokeLinecap="round"/>
-          <path d="M20 4 L12 4" stroke="#f59e0b" strokeWidth="3" strokeLinecap="round"/>
-        </svg>
-      </motion.div>
-
-      {/* Decorative dots pattern */}
-      <div className="absolute left-[5%] bottom-[30%] grid grid-cols-3 gap-2 opacity-40">
-        {[...Array(9)].map((_, i) => (
-          <motion.div
-            key={i}
-            animate={{ scale: [1, 1.2, 1] }}
-            transition={{ repeat: Infinity, duration: 2, delay: i * 0.1 }}
-            className="w-2 h-2 rounded-full bg-emerald-400"
-          />
-        ))}
-      </div>
-      <div className="absolute right-[8%] bottom-[25%] grid grid-cols-2 gap-2 opacity-40">
-        {[...Array(6)].map((_, i) => (
-          <motion.div
-            key={i}
-            animate={{ scale: [1, 1.3, 1] }}
-            transition={{ repeat: Infinity, duration: 2.5, delay: i * 0.15 }}
-            className="w-2 h-2 rounded-full bg-amber-400"
-          />
-        ))}
-      </div>
-
-      {/* Background gradient blobs */}
-      <div className="absolute -left-32 top-[20%] h-64 w-64 rounded-full bg-emerald-200 blur-3xl opacity-30" />
-      <div className="absolute -right-32 top-[15%] h-72 w-72 rounded-full bg-amber-200 blur-3xl opacity-25" />
-      <div className="absolute bottom-[15%] left-[30%] h-48 w-48 rounded-full bg-green-200 blur-3xl opacity-20" />
-    </div>
-  );
-}
-
-export default function Hero({ stats }: HeroProps) {
-  const [tab, setTab] = useState<TabId>("financial");
-  const [biz, setBiz] = useState(BUSINESSES[0]);
 
   return (
-    <section className="relative isolate flex flex-col overflow-hidden">
+    <section
+      onMouseEnter={() => setIsHeroHovered(true)}
+      onMouseLeave={() => setIsHeroHovered(false)}
+      onMouseMove={handleMouseMove}
+      className="relative isolate pt-28 pb-20 overflow-hidden bg-gradient-to-b from-white via-emerald-50/20 to-white transition-colors duration-700"
+    >
+      {/* Smooth White Gradient & Blur Fade Overlay at Top & Bottom of Hero */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-white via-white/80 to-transparent z-10" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-52 bg-gradient-to-b from-transparent via-white/80 to-white backdrop-blur-[1px] z-10" />
 
       {/* ══════════════════════════════════════════════════════════════════
-          HERO HEAD — REFERENCE DESIGN WITH UMKM THEME
+          DYNAMIC HOVER REVEAL: REAL SATELLITE MAP OF INDONESIA BACKGROUND
       ══════════════════════════════════════════════════════════════════ */}
-      <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-gradient-to-b from-white via-emerald-50/50 to-white pt-28 pb-16">
-        <SlantedDecor />
+      <div
+        className={`pointer-events-none absolute inset-0 -z-10 transition-all duration-1000 ease-out ${
+          isHeroHovered ? "opacity-95 scale-100" : "opacity-0 scale-105"
+        }`}
+      >
+        <Image
+          src="/indonesia-real-map.jpg"
+          alt="Foto Asli Peta Indonesia PetaKarier"
+          fill
+          className="object-cover brightness-95 contrast-105"
+          priority
+        />
+        {/* Dark Spotlight Gradient Overlay for readability of white text */}
+        <div
+          className="absolute inset-0 bg-slate-950/70 backdrop-blur-[2px] transition-opacity duration-700"
+          style={{
+            background: `radial-gradient(circle 600px at ${mousePos.x}% ${mousePos.y}%, rgba(15,23,42,0.65) 0%, rgba(2,6,23,0.92) 100%)`,
+          }}
+        />
+      </div>
 
-        {/* Left decorative graphic */}
-        <motion.div
-          initial={{ opacity: 0, x: -30, y: 20 }}
-          animate={{ opacity: 1, x: 0, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="pointer-events-none absolute left-8 top-[15%] hidden lg:block"
-        >
-          <div className="relative h-64 w-56 overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-500 via-emerald-600 to-green-500 shadow-2xl shadow-emerald-500/40 border-4 border-white/30">
-            <div className="absolute inset-0 flex items-center justify-center">
-              <motion.div
-                animate={{ y: [0, -8, 0] }}
-                transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
-              >
-                {/* Storefront building illustration */}
-                <svg width="120" height="110" viewBox="0 0 120 110" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  {/* Building body */}
-                  <rect x="20" y="35" width="80" height="65" rx="4" fill="rgba(255,255,255,0.2)" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5"/>
-                  {/* Roof/Awning */}
-                  <path d="M10 38 L60 10 L110 38" stroke="rgba(255,255,255,0.6)" strokeWidth="3" fill="rgba(255,255,255,0.15)" strokeLinecap="round" strokeLinejoin="round"/>
-                  {/* Awning stripes */}
-                  <path d="M15 38 L60 14 L105 38" stroke="rgba(255,255,255,0.3)" strokeWidth="1" fill="none"/>
-                  {/* Door */}
-                  <rect x="45" y="60" width="30" height="40" rx="3" fill="rgba(255,255,255,0.3)" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5"/>
-                  <circle cx="70" cy="82" r="2.5" fill="rgba(255,255,255,0.7)"/>
-                  {/* Windows */}
-                  <rect x="25" y="45" width="16" height="14" rx="2" fill="rgba(255,255,255,0.35)" stroke="rgba(255,255,255,0.5)" strokeWidth="1"/>
-                  <line x1="33" y1="45" x2="33" y2="59" stroke="rgba(255,255,255,0.4)" strokeWidth="1"/>
-                  <line x1="25" y1="52" x2="41" y2="52" stroke="rgba(255,255,255,0.4)" strokeWidth="1"/>
-                  <rect x="79" y="45" width="16" height="14" rx="2" fill="rgba(255,255,255,0.35)" stroke="rgba(255,255,255,0.5)" strokeWidth="1"/>
-                  <line x1="87" y1="45" x2="87" y2="59" stroke="rgba(255,255,255,0.4)" strokeWidth="1"/>
-                  <line x1="79" y1="52" x2="95" y2="52" stroke="rgba(255,255,255,0.4)" strokeWidth="1"/>
-                  {/* Sign board */}
-                  <rect x="35" y="20" width="50" height="12" rx="6" fill="rgba(255,255,255,0.35)"/>
-                  <text x="60" y="29" textAnchor="middle" fill="rgba(255,255,255,0.9)" fontSize="7" fontWeight="bold">TOKO</text>
-                  {/* Sparkle */}
-                  <circle cx="95" cy="15" r="3" fill="rgba(255,255,255,0.6)"/>
-                  <path d="M95 10 L95 20 M90 15 L100 15" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5"/>
-                </svg>
-              </motion.div>
-            </div>
-            <div className="absolute bottom-6 left-6 right-6">
-              <div className="rounded-2xl bg-white/30 backdrop-blur-md px-4 py-3 border-2 border-white/40">
-                <p className="text-[10px] font-bold text-white/90">UMKM aktif</p>
-                <p className="text-2xl font-extrabold text-white">12.000+</p>
-              </div>
-            </div>
-          </div>
-        </motion.div>
+      {/* Default Subtle Background Glow Blobs (when not hovered) */}
+      <div
+        className={`pointer-events-none absolute left-1/2 top-10 -z-20 h-[32rem] w-[56rem] -translate-x-1/2 rounded-full bg-emerald-400/15 blur-[140px] transition-opacity duration-700 ${
+          isHeroHovered ? "opacity-0" : "opacity-100"
+        }`}
+      />
 
-        {/* Right decorative graphic */}
-        <motion.div
-          initial={{ opacity: 0, x: 30, y: 20 }}
-          animate={{ opacity: 1, x: 0, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.3 }}
-          className="pointer-events-none absolute right-8 top-[18%] hidden lg:block"
-        >
-          <div className="relative h-60 w-52 overflow-hidden rounded-3xl bg-gradient-to-br from-orange-400 via-amber-400 to-yellow-400 shadow-2xl shadow-orange-400/40 border-4 border-white/30">
-            <div className="absolute inset-0 flex items-center justify-center">
-              <motion.div
-                animate={{ y: [0, -8, 0] }}
-                transition={{ repeat: Infinity, duration: 2.8, ease: "easeInOut" }}
-              >
-                {/* Growth chart illustration */}
-                <svg width="110" height="100" viewBox="0 0 110 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  {/* Chart background */}
-                  <rect x="10" y="10" width="90" height="65" rx="6" fill="rgba(255,255,255,0.2)" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5"/>
-                  {/* Grid lines */}
-                  <line x1="20" y1="25" x2="90" y2="25" stroke="rgba(255,255,255,0.2)" strokeWidth="0.8"/>
-                  <line x1="20" y1="40" x2="90" y2="40" stroke="rgba(255,255,255,0.2)" strokeWidth="0.8"/>
-                  <line x1="20" y1="55" x2="90" y2="55" stroke="rgba(255,255,255,0.2)" strokeWidth="0.8"/>
-                  {/* Bar chart */}
-                  <rect x="22" y="48" width="10" height="22" rx="2" fill="rgba(255,255,255,0.4)"/>
-                  <rect x="37" y="38" width="10" height="32" rx="2" fill="rgba(255,255,255,0.5)"/>
-                  <rect x="52" y="30" width="10" height="40" rx="2" fill="rgba(255,255,255,0.6)"/>
-                  <rect x="67" y="22" width="10" height="48" rx="2" fill="rgba(255,255,255,0.8)"/>
-                  {/* Trend line */}
-                  <path d="M27 46 L42 36 L57 28 L72 18" stroke="rgba(255,255,255,0.95)" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
-                  <circle cx="27" cy="46" r="3" fill="white"/>
-                  <circle cx="42" cy="36" r="3" fill="white"/>
-                  <circle cx="57" cy="28" r="3" fill="white"/>
-                  <circle cx="72" cy="18" r="3.5" fill="white" stroke="rgba(255,255,255,0.5)" strokeWidth="2"/>
-                  {/* Arrow up */}
-                  <path d="M82 14 L82 6 M78 10 L82 6 L86 10" stroke="rgba(255,255,255,0.8)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  {/* Coins */}
-                  <circle cx="30" cy="85" r="8" fill="rgba(255,255,255,0.3)" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5"/>
-                  <text x="30" y="88" textAnchor="middle" fill="rgba(255,255,255,0.8)" fontSize="8" fontWeight="bold">Rp</text>
-                  <circle cx="50" cy="88" r="6" fill="rgba(255,255,255,0.25)" stroke="rgba(255,255,255,0.4)" strokeWidth="1"/>
-                  <circle cx="65" cy="85" r="7" fill="rgba(255,255,255,0.2)" stroke="rgba(255,255,255,0.35)" strokeWidth="1"/>
-                </svg>
-              </motion.div>
-            </div>
-            <div className="absolute bottom-6 left-6 right-6">
-              <div className="rounded-2xl bg-white/30 backdrop-blur-md px-4 py-3 border-2 border-white/40">
-                <p className="text-[10px] font-bold text-white/90">Total Modal</p>
-                <p className="text-2xl font-extrabold text-white">Rp 14JT</p>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* ── Main Content ── */}
-        <div className="relative z-10 flex w-full max-w-6xl flex-col items-center px-6 text-center">
-
-          {/* Sub-label */}
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-20">
+        {/* ── Top Pill Badge ── */}
+        <div className="flex justify-center">
           <motion.div
             initial={{ opacity: 0, y: -15 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="mb-8 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-emerald-50 to-green-50 px-6 py-2 border border-emerald-200"
+            transition={{ duration: 0.5 }}
+            className={`inline-flex items-center gap-2.5 rounded-full border-2 px-5 py-2 shadow-md backdrop-blur-md transition-all duration-500 ${
+              isHeroHovered
+                ? "border-emerald-400/50 bg-slate-900/90 text-white shadow-emerald-500/20"
+                : "border-emerald-200 bg-white/90 text-slate-800"
+            }`}
           >
-            <span className="text-xs font-semibold text-emerald-700">✨ Platform Akselerator UMKM</span>
+            <span className="relative flex h-3 w-3">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500" />
+            </span>
+            <span className="text-xs font-extrabold">
+              Platform Akselerator Wirausaha Muda & UMKM Indonesia
+            </span>
+            <span className="rounded-full bg-emerald-500 px-2.5 py-0.5 text-[10px] font-extrabold text-white border border-emerald-300">
+              {isHeroHovered ? "🗺️ Peta Riil Aktif" : "SDG 8 Ready"}
+            </span>
           </motion.div>
+        </div>
 
-          {/* Main headline */}
+        {/* ── Hero Main Headline ── */}
+        <div className="mt-8 text-center max-w-4xl mx-auto space-y-6">
           <motion.h1
-            initial="hidden"
-            animate="visible"
-            variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.08, delayChildren: 0.15 } } }}
-            className="font-extrabold tracking-tight text-slate-900 leading-[1.15]
-                       text-5xl sm:text-6xl md:text-7xl lg:text-8xl"
-          >
-            <motion.span className="inline-block" variants={{ hidden: { opacity: 0, y: 30, scale: 0.9 }, visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.6, type: "spring" } } }}>
-              Petakan{" "}
-            </motion.span>
-            <motion.span className="inline-block" variants={{ hidden: { opacity: 0, y: 30, scale: 0.9 }, visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.6, type: "spring" } } }}>
-              Peluang{" "}
-            </motion.span>
-            <motion.span
-              className="inline-flex items-center gap-3"
-              variants={{ hidden: { opacity: 0, y: 30, scale: 0.9 }, visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.6, type: "spring" } } }}
-            >
-              Usaha{" "}
-              <motion.span 
-                whileHover={{ scale: 1.1, rotate: 10 }}
-                className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-green-400 shadow-xl shadow-emerald-500/40 border-2 border-white/30"
-              >
-                <svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M8 24 L8 12 L16 16 L24 8 L24 24" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-                  <path d="M8 12 L8 8 L16 12 L24 4" stroke="rgba(255,255,255,0.5)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-                  <circle cx="24" cy="8" r="3" fill="white"/>
-                </svg>
-              </motion.span>
-              {" "}dengan{" "}
-            </motion.span>
-            <br />
-            <motion.span
-              className="inline-block rounded-3xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-green-400 px-6 py-2.5 text-white shadow-xl shadow-emerald-500/40 border-2 border-white/30"
-              variants={{ hidden: { opacity: 0, y: 30, scale: 0.9 }, visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.6, type: "spring" } } }}
-            >
-              KonekUMKM
-            </motion.span>
-          </motion.h1>
-
-          {/* Sub-headline */}
-          <motion.h2
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.5 }}
-            className="mt-8 font-extrabold tracking-tight text-slate-900
-                       text-3xl sm:text-4xl md:text-5xl lg:text-6xl"
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className={`text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.15] transition-colors duration-500 ${
+              isHeroHovered ? "text-white drop-shadow-md" : "text-slate-900"
+            }`}
           >
-            Bangun Bisnis{" "}
-            <motion.span
-              whileHover={{ scale: 1.05 }}
-              className="inline-block rounded-2xl bg-gradient-to-r from-orange-200 to-amber-200 px-4 py-2 text-orange-700 border-2 border-orange-300"
-            >
-              Mandiri
-            </motion.span>{" "}
-            Berkelanjutan
-          </motion.h2>
+            Akselerasi Karier Wirausahamu dengan Validasi Data Riil Bersama{" "}
+            <span className="inline-block rounded-2xl bg-gradient-to-r from-emerald-500 via-emerald-600 to-green-500 px-5 py-1.5 text-white shadow-xl shadow-emerald-500/40 border-2 border-white/40 align-middle">
+              PetaKarier
+            </span>
+          </motion.h1>
 
-          {/* Subtitle */}
           <motion.p
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.6 }}
-            className="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-slate-600 sm:text-lg"
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className={`text-base sm:text-lg md:text-xl max-w-2xl mx-auto leading-relaxed font-normal transition-colors duration-500 ${
+              isHeroHovered ? "text-slate-200" : "text-slate-600"
+            }`}
           >
-            Platform akselerator digital untuk menganalisis kecocokan profil, menghitung
-            simulasi modal berbasis UMR 18 kota, dan menyusun{" "}
-            <span className="font-bold text-slate-800">rencana bisnis</span> yang siap
-            dieksekusi — selaras SDG 8.
+            Petakan peluang usaha cerdas, hitung simulasi modal berbasis UMR 18 kota, dan terbitkan dokumen rencana bisnis otomatis yang akuntabel untuk KUR & investor.
           </motion.p>
 
-          {/* CTA Buttons */}
+          {/* Hover Status Trigger Indicator */}
+          <div className="flex items-center justify-center gap-2 text-xs font-bold transition-all duration-500">
+            <span className={`inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 border transition-all ${
+              isHeroHovered
+                ? "bg-emerald-500/20 text-emerald-300 border-emerald-400/40"
+                : "bg-emerald-50 text-emerald-700 border-emerald-200"
+            }`}>
+              <Eye className="h-3.5 w-3.5 animate-pulse" />
+              <span>{isHeroHovered ? "✨ Peta Asli Indonesia Muncul (Arahkan Kursor)" : "💡 Dekatkan kursor mouse untuk memunculkan Foto Peta Asli Indonesia"}</span>
+            </span>
+          </div>
+
+          {/* ── Dual CTA Action Buttons ── */}
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.75 }}
-            className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row"
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2"
           >
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Link
-                href="/analisis"
-                className="btn-shine group inline-flex items-center gap-3 rounded-full
-                           bg-gradient-to-r from-emerald-600 via-emerald-500 to-green-400 px-8 py-4
-                           text-base font-extrabold text-white shadow-xl shadow-emerald-500/40
-                           transition-all duration-300 hover:shadow-2xl hover:shadow-emerald-500/50 border-2 border-white/30"
-              >
-                <motion.div
-                  animate={{ rotate: [0, 360] }}
-                  transition={{ repeat: Infinity, duration: 3, ease: "linear" }}
-                >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 2 L13 7 L18 8 L13 9 L12 14 L11 9 L6 8 L11 7 Z" fill="white"/>
-                    <circle cx="18" cy="5" r="2" fill="rgba(255,255,255,0.8)"/>
-                    <circle cx="6" cy="18" r="1.5" fill="rgba(255,255,255,0.6)"/>
-                  </svg>
-                </motion.div>
-                Mulai Analisis Gratis
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="transition-transform duration-300 group-hover:translate-x-1">
-                  <path d="M5 12 L19 12" stroke="white" strokeWidth="3" strokeLinecap="round"/>
-                  <path d="M12 5 L19 12 L12 19" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </Link>
-            </motion.div>
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Link
-                href="/sdg-impact"
-                className="inline-flex items-center gap-3 rounded-full border-2 border-slate-300
-                           bg-white px-8 py-4 text-base font-bold text-slate-700 shadow-lg
-                           transition-all duration-300 hover:border-emerald-400 hover:bg-emerald-50 hover:text-emerald-700 hover:shadow-xl"
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2"/>
-                  <path d="M12 3 C12 3 15 6 15 9 C15 12 12 15 12 15 C12 15 9 12 9 9 C9 6 12 3 12 3" stroke="currentColor" strokeWidth="2" fill="none"/>
-                  <path d="M12 15 L12 21" stroke="currentColor" strokeWidth="2"/>
-                  <path d="M9 18 L15 18" stroke="currentColor" strokeWidth="2"/>
-                </svg>
-                Lihat Dampak SDG 8
-              </Link>
-            </motion.div>
-          </motion.div>
-
-          {/* Trust badges */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.9 }}
-            className="mt-12 flex flex-wrap items-center justify-center gap-x-8 gap-y-3"
-          >
-            {[
-              { c: "text-emerald-500", bg: "bg-emerald-50", border: "border-emerald-200", label: "18 Kota UMR Riil" },
-              { c: "text-amber-500", bg: "bg-amber-50", border: "border-amber-200", label: "BEP 12-Bulan" },
-              { c: "text-rose-500", bg: "bg-rose-50", border: "border-rose-200", label: "Dokumen Siap KUR" },
-              { c: "text-yellow-500", bg: "bg-yellow-50", border: "border-yellow-200", label: "Gratis & Tanpa Registrasi" },
-            ].map(({ c, bg, border, label }) => (
-              <motion.span
-                key={label}
-                whileHover={{ scale: 1.05 }}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full ${bg} ${border} border text-sm font-semibold text-slate-600 shadow-sm`}
-              >
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M8 2 L9 5 L13 6 L9 7 L8 10 L7 7 L3 6 L7 5 Z" fill="currentColor"/>
-                </svg>
-                {label}
-              </motion.span>
-            ))}
-          </motion.div>
-
-          {/* Lihat Demo Live */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 1.05 }}
-            className="mt-16 flex flex-col items-center gap-2"
-          >
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Link
-                href="#demo"
-                className="inline-flex items-center gap-3 rounded-full border-2 border-slate-300
-                           bg-white px-8 py-3 text-xs font-extrabold uppercase tracking-widest
-                           text-slate-500 transition-all duration-300 shadow-md
-                           hover:border-emerald-400 hover:bg-emerald-50 hover:text-emerald-600 hover:shadow-lg"
-              >
-                Lihat Demo Live
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M3 8 L13 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                  <path d="M8 3 L13 8 L8 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </Link>
-            </motion.div>
-            <motion.div
-              animate={{ y: [0, 8, 0] }}
-              transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-              className="mt-3 h-6 w-6 rounded-full border-2 border-emerald-300 flex items-center justify-center bg-emerald-50"
+            <Link
+              href="/analisis"
+              className="btn-shine group w-full sm:w-auto inline-flex items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-green-500 px-8 py-4 text-base font-extrabold text-white shadow-xl shadow-emerald-500/40 transition-all duration-300 hover:scale-105 border-2 border-white/30"
             >
-              <svg width="12" height="12" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M8 3 L8 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                <path d="M5 10 L8 13 L11 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </motion.div>
+              <Sparkles className="h-5 w-5 text-emerald-100" />
+              <span>Mulai Analisis Potensi Usaha</span>
+              <ArrowRight className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" />
+            </Link>
+
+            <Link
+              href="/kalkulator"
+              className={`w-full sm:w-auto inline-flex items-center justify-center gap-3 rounded-2xl border-2 px-8 py-4 text-base font-bold shadow-md transition-all duration-300 ${
+                isHeroHovered
+                  ? "border-emerald-400/60 bg-slate-900/80 text-white hover:bg-emerald-600 hover:border-emerald-400"
+                  : "border-slate-300 bg-white text-slate-800 hover:border-emerald-400 hover:bg-emerald-50 hover:text-emerald-700"
+              }`}
+            >
+              <LineChart className="h-5 w-5 text-emerald-400" />
+              <span>Kalkulator Modal & UMR</span>
+            </Link>
+          </motion.div>
+
+          {/* ── Trust Indicators Bar ── */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className={`flex flex-wrap items-center justify-center gap-x-6 gap-y-2 pt-4 text-xs sm:text-sm font-semibold transition-colors duration-500 ${
+              isHeroHovered ? "text-slate-300" : "text-slate-600"
+            }`}
+          >
+            <div className="flex items-center gap-1.5 text-emerald-400 font-bold">
+              <CheckCircle2 className="h-4 w-4" /> Data UMR 18 Kota 2026
+            </div>
+            <div className="flex items-center gap-1.5 text-emerald-400 font-bold">
+              <CheckCircle2 className="h-4 w-4" /> Proyeksi BEP 12 Bulan
+            </div>
+            <div className="flex items-center gap-1.5 text-emerald-400 font-bold">
+              <CheckCircle2 className="h-4 w-4" /> Standar Matriks 4 Bappenas
+            </div>
           </motion.div>
         </div>
-      </div>
 
-      {/* ══════════════════════════════════════════════════════════════════
-          FEATURE SHOWCASE SECTION (below the fold)
-      ══════════════════════════════════════════════════════════════════ */}
-      <div className="relative bg-gradient-to-b from-white to-emerald-50 px-4 py-20 sm:px-6 lg:px-8">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-emerald-50 to-transparent" />
-
+        {/* ══════════════════════════════════════════════════════════════════
+            PETA INTERAKTIF INDONESIA MAP EXPLORER SHOWCASE
+        ══════════════════════════════════════════════════════════════════ */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 0.7, ease: "easeOut" }}
-          className="relative mx-auto max-w-6xl"
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.45 }}
+          className={`mt-14 relative mx-auto max-w-6xl rounded-[2.5rem] border-2 shadow-2xl overflow-hidden p-6 sm:p-8 transition-all duration-500 ${
+            isHeroHovered
+              ? "border-emerald-400/50 bg-slate-950/90 text-white shadow-emerald-500/20 backdrop-blur-xl"
+              : "border-emerald-200 bg-white text-slate-900 shadow-slate-300/60"
+          }`}
         >
-          {/* Section header */}
-          <div className="text-center mb-12">
-            <motion.div
-              initial={{ opacity: 0, y: -15 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="mb-6 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-emerald-50 to-green-50 px-6 py-2 border border-emerald-200"
-            >
-              <span className="text-xs font-semibold text-emerald-700">✨ Fitur Unggulan</span>
-            </motion.div>
-            <motion.h2
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              className="text-4xl sm:text-5xl font-extrabold text-slate-900 mb-4"
-            >
-              Solusi Lengkap untuk UMKM
-            </motion.h2>
-            <motion.p
-              initial={{ opacity: 0, y: 15 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="text-lg text-slate-600 max-w-2xl mx-auto"
-            >
-              Platform all-in-one untuk memulai dan mengembangkan bisnis Anda dengan data yang akurat dan strategi yang terukur.
-            </motion.p>
+          {/* Header Map Section */}
+          <div className={`flex flex-col sm:flex-row items-center justify-between gap-4 border-b pb-5 transition-colors duration-500 ${
+            isHeroHovered ? "border-slate-800" : "border-slate-100"
+          }`}>
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-green-500 text-white shadow-lg shadow-emerald-500/30 border border-white/30">
+                <Globe2 className="h-6 w-6" />
+              </div>
+              <div>
+                <span className="text-[10px] font-extrabold uppercase tracking-widest text-emerald-400">
+                  Peta Interaktif UMR & Ekosistem UMKM
+                </span>
+                <h3 className={`text-base sm:text-lg font-extrabold leading-snug transition-colors duration-500 ${
+                  isHeroHovered ? "text-white" : "text-slate-900"
+                }`}>
+                  Eksplorasi Parameter Wilayah Indonesia
+                </h3>
+              </div>
+            </div>
+            <div className={`flex items-center gap-2 text-xs font-bold px-3.5 py-1.5 rounded-full border transition-all ${
+              isHeroHovered
+                ? "bg-slate-900 text-emerald-300 border-slate-700"
+                : "bg-slate-100 text-slate-600 border-slate-200"
+            }`}>
+              <Navigation className="h-3.5 w-3.5 text-emerald-400 animate-bounce" />
+              <span>Sentuh / arahkan kursor ke titik kota pada peta</span>
+            </div>
           </div>
 
-          {/* Feature cards grid */}
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {[
-              {
-                title: "Analisis Potensi",
-                desc: "Kecocokan profil dengan 14 jenis usaha berdasarkan skill, minat, dan budget Anda.",
-                icon: `<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="16" cy="16" r="11" stroke="currentColor" strokeWidth="2"/>
-                  <path d="M16 5 L16 8" stroke="currentColor" strokeWidth="2"/>
-                  <path d="M16 24 L16 27" stroke="currentColor" strokeWidth="2"/>
-                  <path d="M5 16 L8 16" stroke="currentColor" strokeWidth="2"/>
-                  <path d="M24 16 L27 16" stroke="currentColor" strokeWidth="2"/>
-                  <circle cx="16" cy="16" r="4" fill="currentColor"/>
-                </svg>`,
-                color: "from-emerald-500 to-emerald-600",
-              },
-              {
-                title: "Kalkulator Modal",
-                desc: "Simulasi modal awal dan BEP berdasarkan data UMR 18 kota di Indonesia.",
-                icon: `<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <rect x="5" y="9" width="22" height="18" rx="2" stroke="currentColor" strokeWidth="2" fill="none"/>
-                  <path d="M9 13 L23 13" stroke="currentColor" strokeWidth="2"/>
-                  <path d="M9 17 L18 17" stroke="currentColor" strokeWidth="2"/>
-                  <path d="M9 21 L13 21" stroke="currentColor" strokeWidth="2"/>
-                  <path d="M5 9 L5 5 L9 5" stroke="currentColor" strokeWidth="2" fill="none"/>
-                </svg>`,
-                color: "from-green-500 to-green-600",
-              },
-              {
-                title: "Komparasi UMR",
-                desc: "Bandingkan potensi laba usaha dengan standar upah minimum di kota Anda.",
-                icon: `<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M5 24 L5 12 L16 16 L27 8 L27 24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-                  <path d="M5 12 L5 8 L16 12 L27 4" stroke="rgba(0,0,0,0.3)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-                  <circle cx="27" cy="8" r="3" fill="currentColor"/>
-                </svg>`,
-                color: "from-amber-500 to-amber-600",
-              },
-              {
-                title: "Rencana Bisnis",
-                desc: "Dokumen proposal lengkap dengan analisis SWOT dan strategi 90 hari.",
-                icon: `<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <rect x="7" y="5" width="18" height="22" rx="2" stroke="currentColor" strokeWidth="2" fill="none"/>
-                  <path d="M11 11 L21 11" stroke="currentColor" strokeWidth="2"/>
-                  <path d="M11 16 L21 16" stroke="currentColor" strokeWidth="2"/>
-                  <path d="M11 21 L15 21" stroke="currentColor" strokeWidth="2"/>
-                  <path d="M7 9 L5 9" stroke="currentColor" strokeWidth="2"/>
-                  <path d="M7 14 L5 14" stroke="currentColor" strokeWidth="2"/>
-                  <path d="M7 19 L5 19" stroke="currentColor" strokeWidth="2"/>
-                </svg>`,
-                color: "from-yellow-500 to-orange-500",
-              },
-              {
-                title: "Dampak SDG 8",
-                desc: "Pantau kontribusi Anda terhadap target pembangunan berkelanjutan.",
-                icon: `<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="16" cy="16" r="11" stroke="currentColor" strokeWidth="2"/>
-                  <path d="M16 5 C16 5 19 8 19 11 C19 14 16 17 16 17 C16 17 13 14 13 11 C13 8 16 5 16 5" stroke="currentColor" strokeWidth="2" fill="none"/>
-                  <path d="M16 17 L16 25" stroke="currentColor" strokeWidth="2"/>
-                  <path d="M13 21 L19 21" stroke="currentColor" strokeWidth="2"/>
-                </svg>`,
-                color: "from-teal-500 to-emerald-600",
-              },
-              {
-                title: "Resource Hub",
-                desc: "Akses panduan legalitas, sertifikasi, dan komunitas wirausaha.",
-                icon: `<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <rect x="7" y="7" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="2" fill="none"/>
-                  <path d="M11 11 L21 11" stroke="currentColor" strokeWidth="2"/>
-                  <path d="M11 16 L19 16" stroke="currentColor" strokeWidth="2"/>
-                  <path d="M11 21 L15 21" stroke="currentColor" strokeWidth="2"/>
-                  <path d="M16 5 L16 7" stroke="currentColor" strokeWidth="2"/>
-                  <circle cx="16" cy="4" r="2" fill="currentColor"/>
-                </svg>`,
-                color: "from-green-400 to-emerald-500",
-              },
-            ].map((feature, index) => (
-              <motion.div
-                key={feature.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-50px" }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                whileHover={{ y: -5, scale: 1.02 }}
-                className="group rounded-3xl border-2 border-slate-200 bg-white p-8 shadow-lg transition-all duration-300 hover:border-emerald-300 hover:shadow-xl"
-              >
-                <div className={`flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br ${feature.color} text-white shadow-lg border-2 border-white/30`}
-                  dangerouslySetInnerHTML={{ __html: feature.icon }}
-                />
-                <h3 className="mt-6 text-xl font-extrabold text-slate-900">{feature.title}</h3>
-                <p className="mt-3 text-sm leading-relaxed text-slate-600">{feature.desc}</p>
-              </motion.div>
-            ))}
+          {/* Interactive Map Visual Container */}
+          <div className="relative mt-6 min-h-[360px] sm:min-h-[420px] w-full rounded-3xl border-2 border-slate-700 overflow-hidden bg-slate-950 shadow-2xl">
+            {/* Real Map Image Background */}
+            <Image
+              src="/indonesia-real-map.jpg"
+              alt="Interactive Indonesia Map PetaKarier"
+              fill
+              className="object-cover opacity-90 hover:opacity-100 transition-opacity duration-700"
+              priority
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-transparent to-slate-950/40 pointer-events-none" />
+
+            {/* Interactive City Pins Layer */}
+            {KOTA_MAP.map((k) => {
+              const isHovered = hoveredKota?.id === k.id;
+              return (
+                <div
+                  key={k.id}
+                  style={{ top: `${k.y}%`, left: `${k.x}%` }}
+                  className="absolute -translate-x-1/2 -translate-y-1/2 z-20 cursor-pointer group"
+                  onMouseEnter={() => setHoveredKota(k)}
+                  onClick={() => setHoveredKota(k)}
+                >
+                  {/* Glowing Radar Pulse */}
+                  <span className={`absolute -inset-3 rounded-full animate-ping opacity-75 ${isHovered ? "bg-emerald-400" : "bg-teal-400/50"}`} />
+
+                  {/* City Pin Marker */}
+                  <motion.div
+                    animate={{ scale: isHovered ? 1.35 : 1 }}
+                    className={`relative flex h-8 w-8 items-center justify-center rounded-full border-2 shadow-xl transition-all ${
+                      isHovered
+                        ? "bg-emerald-500 text-white border-white ring-4 ring-emerald-400/60"
+                        : "bg-white text-emerald-700 border-emerald-400 hover:bg-emerald-50"
+                    }`}
+                  >
+                    <MapPin className="h-4 w-4" />
+                  </motion.div>
+
+                  {/* Pin City Label */}
+                  <span className={`absolute top-9 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md px-2 py-0.5 text-[10px] font-extrabold transition-all shadow-md ${
+                    isHovered
+                      ? "bg-emerald-500 text-white border border-emerald-300"
+                      : "bg-slate-900/90 text-slate-200 border border-slate-700 group-hover:bg-emerald-600 group-hover:text-white"
+                  }`}>
+                    {k.nama}
+                  </span>
+                </div>
+              );
+            })}
+
+            {/* Glassmorphism City Popover Insight Card (Overlay) */}
+            <AnimatePresence mode="wait">
+              {hoveredKota && (
+                <motion.div
+                  key={hoveredKota.id}
+                  initial={{ opacity: 0, y: 15, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 15, scale: 0.95 }}
+                  transition={{ duration: 0.3 }}
+                  className="absolute bottom-4 left-4 right-4 sm:left-6 sm:right-auto sm:max-w-md z-30 rounded-2xl border-2 border-emerald-400/50 bg-slate-950/95 p-5 backdrop-blur-2xl text-white shadow-2xl"
+                >
+                  <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
+                        <MapPin className="h-4 w-4" />
+                      </span>
+                      <div>
+                        <h4 className="text-base font-extrabold text-white leading-none">
+                          {hoveredKota.nama}
+                        </h4>
+                        <p className="text-[11px] text-slate-400 font-semibold">{hoveredKota.provinsi}</p>
+                      </div>
+                    </div>
+                    <span className="rounded-full bg-emerald-500/20 border border-emerald-400/40 px-2.5 py-0.5 text-[10px] font-bold text-emerald-300">
+                      Terverifikasi 2026
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 pt-3 text-xs">
+                    <div className="rounded-xl border border-slate-800 bg-white/5 p-2.5">
+                      <span className="text-[10px] text-slate-400 font-bold uppercase">Standar UMR Resmi</span>
+                      <p className="text-sm font-extrabold text-emerald-400 mt-0.5">
+                        {formatRupiah(hoveredKota.umr)}
+                      </p>
+                    </div>
+
+                    <div className="rounded-xl border border-slate-800 bg-white/5 p-2.5">
+                      <span className="text-[10px] text-slate-400 font-bold uppercase">Potensi UMKM Aktif</span>
+                      <p className="text-sm font-extrabold text-white mt-0.5">
+                        {hoveredKota.umkmAktif} Unit
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-3 flex items-center justify-between text-xs pt-1">
+                    <span className="text-slate-300">
+                      Sektor Favorit: <strong className="text-white">{hoveredKota.topUsaha}</strong>
+                    </span>
+                    <Link
+                      href={`/kalkulator?kota=${hoveredKota.id}`}
+                      className="inline-flex items-center gap-1 text-[11px] font-extrabold text-emerald-400 hover:text-emerald-300"
+                    >
+                      <span>Simulasi Modal</span>
+                      <ChevronRight className="h-3.5 w-3.5" />
+                    </Link>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </motion.div>
       </div>

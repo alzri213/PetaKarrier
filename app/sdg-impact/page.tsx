@@ -6,7 +6,7 @@ import { getPlatformStats } from "@/lib/actions/sdg-impact";
 export const metadata: Metadata = {
   title: "Dashboard Dampak SDG 8 & RAN TPB Matriks 4",
   description:
-    "Pantau kontribusi platform KonekUMKM terhadap pencapaian SDG 8 (Pekerjaan Layak & Pertumbuhan Ekonomi) dan Rencana Aksi Nasional TPB Pelaku Usaha Bappenas RI.",
+    "Pantau kontribusi platform PetaKarier terhadap pencapaian SDG 8 (Pekerjaan Layak & Pertumbuhan Ekonomi) dan Rencana Aksi Nasional TPB Pelaku Usaha Bappenas RI.",
 };
 
 export default async function SdgImpactPage() {
@@ -21,7 +21,7 @@ export default async function SdgImpactPage() {
             Dashboard Kontribusi <span className="text-gradient">SDG 8 Indonesia</span>
           </>
         }
-        description="Transparansi dampak platform KonekUMKM dalam menciptakan lapangan kerja berbasis teknologi, formalisasi UMKM, dan perputaran ekonomi lokal sesuai Matriks 4 Bappenas RI."
+        description="Transparansi dampak platform PetaKarier dalam menciptakan lapangan kerja berbasis teknologi, formalisasi UMKM, dan perputaran ekonomi lokal sesuai Matriks 4 Bappenas RI."
       />
       <SdgDashboard stats={stats} />
     </div>
