@@ -96,21 +96,21 @@ export default function SdgDashboard({ stats }: SdgDashboardProps) {
             label: "Total Usaha Dianalisis",
             value: stats.totalAnalisis,
             icon: Building2,
-            color: "from-teal-500 to-teal-600",
+            textColor: "text-[#16a34a]",
             badge: "Target 8.3",
           },
           {
             label: "Proyeksi Serapan Kerja",
             value: stats.totalEstimasiKerja,
             icon: Users,
-            color: "from-emerald-500 to-teal-500",
+            textColor: "text-emerald-600",
             badge: "Target 8.5",
           },
           {
             label: "Rencana Bisnis Diterbitkan",
             value: stats.totalRencanaBisnis,
             icon: FileCheck2,
-            color: "from-cyan-500 to-blue-600",
+            textColor: "text-sky-600",
             badge: "Target 8.6",
           },
           {
@@ -118,32 +118,29 @@ export default function SdgDashboard({ stats }: SdgDashboardProps) {
             value: stats.totalKotaAktif,
             suffix: " Kota",
             icon: Globe2,
-            color: "from-amber-500 to-orange-500",
+            textColor: "text-amber-500",
             badge: "Pilar Daerah",
           },
         ].map((c, i) => (
           <Reveal key={c.label} delay={i * 0.08}>
-            <div className="relative overflow-hidden rounded-3xl border-2 border-slate-200 bg-white p-6 shadow-md transition hover:shadow-lg hover:border-emerald-300">
-              <div
-                className={`pointer-events-none absolute -right-6 -top-6 h-20 w-20 rounded-full bg-gradient-to-br ${c.color} opacity-15 blur-xl`}
-              />
-              <div className="flex items-center justify-between">
-                <span className={`flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br ${c.color} text-white shadow-md`}>
-                  <c.icon className="h-5 w-5" />
-                </span>
-                <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[10px] font-extrabold text-slate-700 border border-slate-200">
-                  {c.badge}
-                </span>
+            <div className="relative overflow-hidden rounded-3xl border-2 border-slate-200 bg-white p-6 shadow-md transition hover:shadow-lg hover:border-emerald-300 flex flex-col justify-between h-full">
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <c.icon className={`h-8 w-8 ${c.textColor}`} />
+                  <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[10px] font-extrabold text-slate-700 border border-slate-200">
+                    {c.badge}
+                  </span>
+                </div>
+                <p className="text-3xl sm:text-4xl font-extrabold text-slate-900">
+                  <AnimatedCounter
+                    value={c.value}
+                    format={(n) => `${n.toLocaleString("id-ID")}${c.suffix ?? "+"}`}
+                  />
+                </p>
+                <h3 className="mt-1.5 text-xs font-extrabold uppercase tracking-wider text-slate-600">
+                  {c.label}
+                </h3>
               </div>
-              <p className="mt-5 text-3xl sm:text-4xl font-extrabold text-slate-900">
-                <AnimatedCounter
-                  value={c.value}
-                  format={(n) => `${n.toLocaleString("id-ID")}${c.suffix ?? "+"}`}
-                />
-              </p>
-              <h3 className="mt-1.5 text-xs font-extrabold uppercase tracking-wider text-slate-600">
-                {c.label}
-              </h3>
             </div>
           </Reveal>
         ))}

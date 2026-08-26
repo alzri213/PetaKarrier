@@ -1,17 +1,14 @@
 "use client";
 
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { Icon } from "@iconify/react";
 import {
-  Globe2,
-  TrendingUp,
-  Users,
-  ShieldCheck,
   Building2,
-  Cpu,
   BookCheck,
   ArrowRight,
   ExternalLink,
+  FileText,
 } from "lucide-react";
 import Link from "next/link";
 import Reveal from "@/components/ui/Reveal";
@@ -22,7 +19,7 @@ const SDG_TARGETS = [
     title: "Formalisasi & Pertumbuhan UMKM",
     desc: "Mendorong formalisasi usaha mikro dan kecil melalui fasilitasi legalitas OSS NIB, pencatatan keuangan transparan, dan akses permodalan.",
     icon: "solar:shop-2-bold",
-    color: "from-emerald-500 to-emerald-600",
+    color: "text-emerald-600",
     impact: "14 Jenis Usaha Terstandar",
   },
   {
@@ -30,7 +27,7 @@ const SDG_TARGETS = [
     title: "Pekerjaan Layak & Inklusif",
     desc: "Membuka peluang kerja produktif yang memberikan pendapatan layak di atas standar UMR bagi pemuda dan perempuan di seluruh daerah.",
     icon: "solar:users-group-two-rounded-bold",
-    color: "from-green-500 to-emerald-500",
+    color: "text-green-600",
     impact: "Benchmark UMR 18 Kota",
   },
   {
@@ -38,7 +35,7 @@ const SDG_TARGETS = [
     title: "Pengurangan Angka Pengangguran Muda",
     desc: "Menurunkan persentase generasi muda tanpa kerja atau pelatihan (NEET) dengan menyediakan roadmap kewirausahaan siap pakai.",
     icon: "solar:chart-2-bold-duotone",
-    color: "from-orange-500 to-amber-500",
+    color: "text-orange-500",
     impact: "Roadmap 90 Hari Aksi",
   },
   {
@@ -46,7 +43,7 @@ const SDG_TARGETS = [
     title: "Inovasi & Peningkatan Produktivitas",
     desc: "Mendorong transformasi digital UMKM melalui pemanfaatan teknologi, otomatisasi rencana bisnis, dan strategi pemasaran modern.",
     icon: "solar:cpu-bolt-bold",
-    color: "from-yellow-500 to-orange-500",
+    color: "text-amber-500",
     impact: "Validasi Finansial Terpadu",
   },
 ];
@@ -56,37 +53,42 @@ const MATRIKS_PILLARS = [
     title: "Pemberdayaan Pelaku Usaha (Matriks 4)",
     desc: "Fasilitasi inkubasi mandiri dan literasi finansial digital agar pelaku usaha rintisan mampu bertahan dan bertumbuh melampaui fase break-even.",
     badge: "Pilar Ekonomi",
+    imageSrc:
+      "https://images.unsplash.com/photo-1452860606245-08befc0ff44b?auto=format&fit=crop&w=600&q=80",
+    imageAlt: "Pengrajin tangan UMKM Indonesia",
   },
   {
     title: "Kemitraan Inklusif & Rantai Pasok Lokal",
     desc: "Mengintegrasikan UMKM lokal dengan ekosistem pemasok bahan baku dan pasar kota untuk memperkuat sirkulasi ekonomi daerah.",
     badge: "Pilar Pembangunan",
+    imageSrc:
+      "https://images.unsplash.com/photo-1533900298318-6b8da08a523e?auto=format&fit=crop&w=600&q=80",
+    imageAlt: "Pasar tradisional Indonesia",
   },
   {
     title: "Transparansi & Akuntabilitas Finansial",
     desc: "Memberikan model kalkulasi biaya investasi dan proyeksi arus kas riil sehingga UMKM bankable untuk akses KUR & modal ventura.",
     badge: "Pilar Tata Kelola",
+    imageSrc:
+      "https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=600&q=80",
+    imageAlt: "Wirausaha startup kecil bekerja di laptop",
   },
 ];
 
 export default function SdgSection() {
   return (
-    <section className="relative px-4 py-28 sm:px-6 lg:px-8 bg-gradient-to-b from-white to-emerald-50">
-      <div className="pointer-events-none absolute right-1/4 top-10 h-96 w-96 rounded-full bg-emerald-200/30 blur-[130px]" />
-      <div className="pointer-events-none absolute left-10 bottom-10 h-80 w-80 rounded-full bg-orange-200/30 blur-[120px]" />
+    <section className="relative bg-gradient-to-b from-white to-emerald-50 px-4 py-28 transition-colors duration-500 dark:from-slate-900 dark:via-slate-900 dark:to-slate-950 sm:px-6 lg:px-8">
+      <div className="pointer-events-none absolute right-1/4 top-10 h-96 w-96 rounded-full bg-emerald-200/30 dark:bg-emerald-500/10 blur-[130px]" />
+      <div className="pointer-events-none absolute left-10 bottom-10 h-80 w-80 rounded-full bg-orange-200/30 dark:bg-orange-500/10 blur-[120px]" />
 
       <div className="mx-auto max-w-7xl">
         {/* Section Header */}
         <Reveal className="mx-auto max-w-3xl text-center">
-          <div className="inline-flex items-center gap-2 rounded-full border-2 border-emerald-300 bg-emerald-50 px-5 py-2 text-xs font-bold text-emerald-700">
-            <Globe2 className="h-4 w-4" />
-            <span>Rencana Aksi Nasional (RAN) TPB/SDGs Indonesia</span>
-          </div>
-          <h2 className="mt-6 text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900">
-            Menjawab Amanat <span className="bg-gradient-to-r from-emerald-600 to-green-500 bg-clip-text text-transparent">SDG 8 & Matriks 4</span>
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 dark:text-white">
+            Menjawab Amanat <span className="text-emerald-700 dark:text-emerald-400">SDG 8 & Matriks 4</span>
           </h2>
-          <p className="mt-6 text-base sm:text-lg leading-relaxed text-slate-600">
-            PetaKarier bukan sekadar solusi teknologi, tetapi wujud nyata kontribusi sektor digital bagi pencapaian <b className="text-slate-900">SDG 8: Pekerjaan Layak & Pertumbuhan Ekonomi</b>, khususnya mendukung peran strategis <b className="text-emerald-700">Pelaku Usaha (Matriks 4)</b> dalam RAN TPB Bappenas.
+          <p className="mt-6 text-base sm:text-lg leading-relaxed text-slate-600 dark:text-slate-300">
+            PetaKarier bukan sekadar solusi teknologi, tetapi wujud nyata kontribusi sektor digital bagi pencapaian <b className="text-slate-900 dark:text-white">SDG 8: Pekerjaan Layak & Pertumbuhan Ekonomi</b>, khususnya mendukung peran strategis <b className="text-emerald-700 dark:text-emerald-400">Pelaku Usaha (Matriks 4)</b> dalam RAN TPB Bappenas.
           </p>
         </Reveal>
 
@@ -96,27 +98,25 @@ export default function SdgSection() {
             <Reveal key={t.code} delay={i * 0.1}>
               <motion.div
                 whileHover={{ y: -8, scale: 1.02 }}
-                className="h-full rounded-[2rem] border-2 border-slate-200 bg-white p-8 shadow-lg transition-all duration-300 hover:border-emerald-300 hover:shadow-xl flex flex-col justify-between"
+                className="h-full rounded-[2rem] border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-8 shadow-lg transition-all duration-300 hover:border-emerald-300 dark:hover:border-emerald-500 hover:shadow-xl flex flex-col justify-between"
               >
                 <div>
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-700">
+                    <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
                       {t.code}
                     </span>
-                    <span className={`flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${t.color} text-white shadow-xl border-2 border-white/30`}>
-                      <Icon icon={t.icon} className="h-6 w-6" />
-                    </span>
+                    <Icon icon={t.icon} className={`h-8 w-8 ${t.color}`} />
                   </div>
-                  <h3 className="mt-5 text-lg font-extrabold text-slate-900">
+                  <h3 className="mt-5 text-lg font-extrabold text-slate-900 dark:text-white">
                     {t.title}
                   </h3>
-                  <p className="mt-3 text-sm leading-relaxed text-slate-600">
+                  <p className="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
                     {t.desc}
                   </p>
                 </div>
-                <div className="mt-6 border-t border-slate-200 pt-4">
-                  <span className="text-sm font-bold text-slate-700">
-                    Solusi: <span className="text-emerald-700">{t.impact}</span>
+                <div className="mt-6 border-t border-slate-200 dark:border-slate-800 pt-4">
+                  <span className="text-sm font-bold text-slate-700 dark:text-slate-300">
+                    Solusi: <span className="text-emerald-700 dark:text-emerald-400">{t.impact}</span>
                   </span>
                 </div>
               </motion.div>
@@ -126,51 +126,78 @@ export default function SdgSection() {
 
         {/* RAN TPB Matriks 4 Deep-dive Box */}
         <Reveal delay={0.3} className="mt-16">
-          <div className="relative overflow-hidden rounded-[2rem] border-2 border-emerald-300 bg-gradient-to-br from-emerald-50 via-white to-amber-50 p-10 sm:p-12 shadow-xl">
+          <div className="relative overflow-hidden rounded-[2rem] border-2 border-emerald-300 dark:border-slate-800 bg-gradient-to-br from-emerald-50 via-white to-amber-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-950 p-10 sm:p-12 shadow-xl">
             <div className="grid gap-8 lg:grid-cols-3">
-              <div className="lg:col-span-1 space-y-4">
-                <span className="rounded-full bg-emerald-100 px-4 py-2 text-xs font-extrabold text-emerald-700 border-2 border-emerald-300">
-                  Dokumen Bappenas RI
-                </span>
-                <h3 className="text-2xl font-extrabold text-slate-900">
-                  Matriks 4: Pelaku Usaha & Startup Berkelanjutan
-                </h3>
-                <p className="text-sm leading-relaxed text-slate-600">
-                  Sesuai Lampiran III RAN TPB Indonesia, pelaku usaha didorong menciptakan model bisnis sirkular, inklusif, dan membuka kesempatan kerja berbasis digitalisasi.
-                </p>
+              <div className="lg:col-span-1 flex flex-col justify-between space-y-5">
+                <div className="space-y-4">
+                  <div>
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 dark:border-emerald-500/40 bg-emerald-100/90 dark:bg-emerald-950/60 px-3.5 py-1 text-xs font-extrabold text-emerald-800 dark:text-emerald-300 shadow-sm">
+                      <Building2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                      <span>Dokumen Bappenas RI</span>
+                    </span>
+                  </div>
+
+                  <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white leading-tight">
+                    <span className="text-[#16a34a] dark:text-emerald-400">Matriks 4:</span> Pelaku Usaha & Startup Berkelanjutan
+                  </h3>
+
+                  <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-300 font-medium">
+                    Sesuai Lampiran III RAN TPB Indonesia, pelaku usaha didorong menciptakan model bisnis sirkular, inklusif, dan membuka kesempatan kerja berbasis digitalisasi.
+                  </p>
+                </div>
+
                 <div className="pt-2">
                   <a
                     href="https://sdgs.bappenas.go.id/website/wp-content/uploads/2023/11/Lampiran-III-RAN-Matriks-3-dan-4.pdf"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 text-sm font-bold text-emerald-700 hover:text-emerald-700 transition"
+                    className="btn-shine group inline-flex items-center gap-2.5 rounded-2xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-green-500 px-6 py-3.5 text-xs font-extrabold text-white shadow-md shadow-emerald-600/20 transition-all duration-300 hover:scale-105 hover:shadow-lg"
                   >
-                    <span>Unduh PDF Resmi Lampiran III Bappenas</span>
-                    <ExternalLink className="h-4 w-4" />
+                    <FileText className="h-4 w-4 shrink-0 text-white transition-transform duration-300 group-hover:scale-110" />
+                    <span className="text-white font-extrabold">Unduh PDF Resmi Lampiran III Bappenas</span>
+                    <ExternalLink className="h-3.5 w-3.5 shrink-0 text-white/90 transition-transform duration-300 group-hover:translate-x-0.5" />
                   </a>
                 </div>
               </div>
 
-              <div className="lg:col-span-2 grid gap-6 sm:grid-cols-3">
+              <div className="lg:col-span-2 grid gap-5 sm:grid-cols-3">
                 {MATRIKS_PILLARS.map((p, idx) => (
-                  <div key={idx} className="rounded-2xl border-2 border-slate-200 bg-white p-6 shadow-md">
-                    <span className="rounded-md bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">
-                      {p.badge}
-                    </span>
-                    <h4 className="mt-3 text-sm font-bold text-slate-900 leading-snug">
-                      {p.title}
-                    </h4>
-                    <p className="mt-2 text-xs leading-relaxed text-slate-600">
-                      {p.desc}
-                    </p>
+                  <div
+                    key={idx}
+                    className="group overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm hover:shadow-xl hover:border-emerald-300 dark:hover:border-emerald-500 transition-all duration-300"
+                  >
+                    {/* Card Image */}
+                    <div className="relative h-28 w-full overflow-hidden">
+                      <Image
+                        src={p.imageSrc}
+                        alt={p.imageAlt}
+                        fill
+                        sizes="(max-width: 768px) 100vw, 33vw"
+                        className="object-cover"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/15 via-transparent to-transparent" />
+                    </div>
+
+                    {/* Card Content */}
+                    <div className="p-5 pt-4">
+                      <span className="inline-block rounded-full border border-emerald-200 dark:border-emerald-500/40 bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-0.5 text-[11px] font-extrabold tracking-wide text-[#16a34a] dark:text-emerald-400">
+                        {p.badge}
+                      </span>
+                      <h4 className="mt-2.5 text-sm font-extrabold text-slate-900 dark:text-white leading-snug">
+                        {p.title}
+                      </h4>
+                      <p className="mt-2 text-xs leading-relaxed text-slate-600 dark:text-slate-400 font-medium">
+                        {p.desc}
+                      </p>
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 border-t-2 border-slate-200 pt-6">
-              <div className="flex items-center gap-3 text-sm text-slate-600">
-                <BookCheck className="h-5 w-5 text-emerald-700 shrink-0" />
+            <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 border-t-2 border-slate-200 dark:border-slate-800 pt-6">
+              <div className="flex items-center gap-3 text-sm text-slate-600 dark:text-slate-400">
+                <BookCheck className="h-5 w-5 text-emerald-700 dark:text-emerald-400 shrink-0" />
                 <span>Simulasi rencana bisnis otomatis kami telah mengintegrasikan metrik kepatuhan SDG 8.</span>
               </div>
               <Link

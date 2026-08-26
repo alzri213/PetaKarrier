@@ -262,48 +262,47 @@ export default function ModalCalculator({
                   label: "Total Investasi Awal",
                   value: hasil.modalAwal,
                   icon: Banknote,
-                  grad: "from-emerald-500 to-emerald-600",
+                  color: "text-[#16a34a]",
                 },
                 {
                   label: "Operasional / Bulan",
                   value: hasil.operasionalBulanan,
                   icon: Briefcase,
-                  grad: "from-teal-500 to-emerald-500",
+                  color: "text-emerald-600",
                 },
                 {
                   label: "Estimasi Laba Bersih",
                   value: hasil.labaBulanan,
                   icon: TrendingUp,
-                  grad: "from-emerald-600 to-green-500",
+                  color: "text-green-600",
                 },
                 {
                   label: "Target Balik Modal",
                   value: bulanBE,
                   format: (v: number) => `±${Math.ceil(v)} Bulan`,
                   icon: CalendarClock,
-                  grad: "from-amber-500 to-orange-500",
+                  color: "text-amber-500",
                 },
               ].map((c) => (
                 <div
                   key={c.label}
-                  className="relative overflow-hidden rounded-3xl border-2 border-slate-200 bg-white p-5 shadow-md"
+                  className="relative overflow-hidden rounded-3xl border-2 border-slate-200 bg-white p-5 shadow-md flex flex-col justify-between"
                 >
-                  <div
-                    className={`pointer-events-none absolute -right-6 -top-6 h-20 w-20 rounded-full bg-gradient-to-br ${c.grad} opacity-15 blur-xl`}
-                  />
-                  <div className={`flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br ${c.grad} text-white shadow-md`}>
-                    <c.icon className="h-5 w-5" />
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <p className="text-[11px] font-extrabold uppercase tracking-wider text-slate-600">
+                        {c.label}
+                      </p>
+                      <c.icon className={`h-7 w-7 ${c.color}`} />
+                    </div>
+                    <p className="mt-3 text-xl sm:text-2xl font-extrabold text-slate-900">
+                      {c.format ? (
+                        <AnimatedCounter value={c.value as number} format={c.format} />
+                      ) : (
+                        <AnimatedCounter value={c.value as number} format={formatRupiah} />
+                      )}
+                    </p>
                   </div>
-                  <p className="mt-4 text-[11px] font-extrabold uppercase tracking-wider text-slate-600">
-                    {c.label}
-                  </p>
-                  <p className="mt-1 text-xl sm:text-2xl font-extrabold text-slate-900">
-                    {c.format ? (
-                      <AnimatedCounter value={c.value as number} format={c.format} />
-                    ) : (
-                      <AnimatedCounter value={c.value as number} format={formatRupiah} />
-                    )}
-                  </p>
                 </div>
               ))}
             </div>

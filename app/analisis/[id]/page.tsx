@@ -54,7 +54,7 @@ export default async function AnalisisDetailPage({ params }: PageProps) {
         <div className="mb-6 flex items-center justify-between">
           <Link
             href="/analisis"
-            className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-bold text-slate-300 transition hover:bg-white/10"
+            className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-600 transition hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10"
           >
             <ArrowLeft className="h-3.5 w-3.5" /> Analisis Ulang
           </Link>
@@ -65,23 +65,23 @@ export default async function AnalisisDetailPage({ params }: PageProps) {
           {rekomendasi.map((r, i) => (
             <div
               key={r.usaha.id}
-              className="rounded-3xl border border-white/10 bg-white/[0.03] p-7 backdrop-blur-xl transition hover:border-white/20"
+              className="rounded-3xl border border-slate-200 bg-white p-7 shadow-md backdrop-blur-xl transition hover:border-emerald-300 dark:border-white/10 dark:bg-white/[0.03] dark:hover:border-white/20"
             >
               <div className="flex items-start gap-5">
-                <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-white/5 text-4xl ring-1 ring-white/10">
+                <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-4xl ring-1 ring-slate-200 dark:bg-white/5 dark:ring-white/10">
                   {r.usaha.emoji}
                 </span>
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="text-xl font-extrabold text-white">{r.usaha.nama}</h3>
-                    <span className="rounded-full bg-white/5 px-2.5 py-0.5 text-xs font-bold text-slate-300 ring-1 ring-white/10">
+                    <h3 className="text-xl font-extrabold text-slate-900 dark:text-white">{r.usaha.nama}</h3>
+                    <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-bold text-slate-600 ring-1 ring-slate-200 dark:bg-white/5 dark:text-slate-300 dark:ring-white/10">
                       {r.usaha.kategori}
                     </span>
                     <span className="rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-xs font-bold text-emerald-300 border border-emerald-400/30">
                       Skor SDG 8: {r.sdgScore ?? 85}%
                     </span>
                   </div>
-                  <p className="mt-2 text-sm leading-relaxed text-slate-300">{r.alasan}</p>
+                  <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300">{r.alasan}</p>
                   <div className="mt-4 space-y-2 max-w-xl">
                     <ScoreBar label="Kecocokan minat" value={r.skorMinat} color="from-blue-500 to-blue-600" />
                     <ScoreBar label="Kecocokan keahlian" value={r.skorSkill} color="from-cyan-400 to-blue-500" />
@@ -94,7 +94,7 @@ export default async function AnalisisDetailPage({ params }: PageProps) {
                     >
                       Hitung Modal Usaha Ini <ArrowRight className="h-3.5 w-3.5" />
                     </Link>
-                    <span className="rounded-xl bg-white/5 px-3 py-2 text-xs font-bold text-slate-300">
+                    <span className="rounded-xl bg-slate-100 px-3 py-2 text-xs font-bold text-slate-600 dark:bg-white/5 dark:text-slate-300">
                       Estimasi Modal: {formatRupiah(r.estimasiModal)}
                     </span>
                   </div>

@@ -50,6 +50,8 @@ export const metadata: Metadata = {
   },
 };
 
+import { ThemeProvider } from "@/components/providers/ThemeProvider";
+
 export default function RootLayout({
   children,
 }: {
@@ -57,13 +59,22 @@ export default function RootLayout({
 }) {
   return (
     <html lang="id" className={`${poppins.variable}`} suppressHydrationWarning>
-      <body suppressHydrationWarning className="min-h-screen flex flex-col font-sans antialiased bg-white text-slate-900 selection:bg-green-500/30 selection:text-green-900">
-        <Navbar />
-        <main className="flex-1">{children}</main>
-        <Footer />
-        <Toaster position="top-right" richColors />
-        <AccessibilityPanel />
-        <ChatAI />
+      <body
+        suppressHydrationWarning
+        className="min-h-screen flex flex-col font-sans antialiased bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300"
+      >
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+        >
+          <Navbar />
+          <main className="flex-1">{children}</main>
+          <Footer />
+          <Toaster position="top-right" richColors />
+          <AccessibilityPanel />
+          <ChatAI />
+        </ThemeProvider>
       </body>
     </html>
   );

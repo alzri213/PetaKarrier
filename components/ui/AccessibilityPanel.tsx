@@ -14,7 +14,10 @@ import {
   ArrowUpDown,
   X,
   PanelRightOpen,
+  Moon,
+  Sun,
 } from "lucide-react";
+import { useTheme } from "next-themes";
 
 interface A11ySettings {
   fontSize: number;
@@ -63,6 +66,7 @@ export default function AccessibilityPanel() {
   const [isOpen, setIsOpen] = useState(false);
   const [settings, setSettings] = useState<A11ySettings>(DEFAULTS);
   const [mounted, setMounted] = useState(false);
+  const { theme, setTheme, resolvedTheme } = useTheme();
 
   /* ── Mount & load from localStorage ── */
   useEffect(() => {
@@ -242,6 +246,15 @@ export default function AccessibilityPanel() {
       onToggle: () => toggle("isDyslexia"),
     },
     {
+      key: "darkMode" as const,
+      icon: resolvedTheme === "dark" ? Sun : Moon,
+      label: resolvedTheme === "dark" ? "Mode Terang" : "Mode Gelap",
+      type: "toggle" as const,
+      active: resolvedTheme === "dark",
+      onToggle: () => setTheme(resolvedTheme === "dark" ? "light" : "dark"),
+      badge: resolvedTheme === "dark" ? "Dark" : "Light",
+    },
+    {
       key: "lineHeight" as const,
       icon: ArrowUpDown,
       label: "Tinggi Garis",
@@ -301,21 +314,22 @@ export default function AccessibilityPanel() {
           {/* Panel — highest z-index, fully in DOM only when open */}
           <div
             className="fixed right-0 top-0 z-[80] flex h-full w-full max-w-[400px] flex-col
-                       border-l border-white/10 bg-[#0a0e1c] shadow-2xl shadow-black/50
+                       border-l border-slate-200 bg-white text-slate-900 shadow-2xl shadow-slate-900/15
+                       dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:shadow-black/50
                        animate-slide-in-right"
             role="dialog"
             aria-modal="true"
             aria-label="Menu Aksesibilitas"
           >
             {/* Header */}
-            <div className="shrink-0 border-b border-white/10 bg-[#0a0e1c]/95 backdrop-blur-xl">
+            <div className="shrink-0 border-b border-slate-200 bg-white/95 backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/95">
               <div className="flex items-center justify-between px-5 py-4">
                 <div className="flex items-center gap-3">
                   <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-green-600/20">
                     <PanelRightOpen className="h-4.5 w-4.5 text-green-400" />
                   </div>
                   <div>
-                    <h2 className="text-sm font-extrabold text-white">
+                    <h2 className="text-sm font-extrabold text-slate-900 dark:text-white">
                       Menu Aksesibilitas
                     </h2>
                     <p className="text-[10px] font-semibold text-slate-500">
@@ -335,7 +349,7 @@ export default function AccessibilityPanel() {
               </div>
 
               {/* Sub-header */}
-              <div className="border-t border-white/8 px-5 py-3">
+              <div className="border-t border-slate-200 px-5 py-3 dark:border-slate-800">
                 <p className="text-[11px] font-bold uppercase tracking-widest text-green-400">
                   Profil Aksesibilitas
                 </p>
@@ -411,7 +425,7 @@ export default function AccessibilityPanel() {
             </div>
 
             {/* Footer */}
-            <div className="shrink-0 border-t border-white/8 px-5 py-4">
+            <div className="shrink-0 border-t border-slate-200 px-5 py-4 dark:border-slate-800">
               <p className="text-center text-[10px] text-slate-600">
                 Semua pengaturan disimpan di localStorage browser kamu.
               </p>

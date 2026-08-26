@@ -356,12 +356,12 @@ export default function AccessibilityPanel() {
                   >
                     <div
                       className={`mb-2 p-3 rounded-full ${
-                        feature.active ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-600'
+                        feature.active ? 'bg-green-600 text-white' : 'bg-gray-100 text-black'
                       }`}
                     >
                       <feature.icon className="w-6 h-6" />
                     </div>
-                    <span className="text-xs font-medium text-gray-700 text-center mb-1">
+                    <span className="text-xs font-medium text-gray-900 text-center mb-1">
                       {feature.label}
                     </span>
                     {feature.badge && (

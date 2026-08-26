@@ -4,7 +4,7 @@ import { Heart, Sparkles, Globe2, ShieldCheck, ArrowUpRight } from "lucide-react
 
 export default function Footer() {
   return (
-    <footer className="relative border-t border-slate-800 bg-slate-950 px-4 pt-16 pb-12 sm:px-6 lg:px-8 text-slate-400">
+    <footer className="relative border-t border-slate-200 bg-slate-50 px-4 pt-16 pb-12 text-slate-600 transition-colors duration-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400 sm:px-6 lg:px-8">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent" />
 
       <div className="mx-auto max-w-7xl">
@@ -21,7 +21,7 @@ export default function Footer() {
                   className="h-full w-full object-contain p-0.5"
                 />
               </span>
-              <span className="text-xl font-extrabold tracking-tight text-white">
+              <span className="text-xl font-extrabold tracking-tight text-slate-900 dark:text-white">
                 Peta<span className="text-emerald-400">Karier</span>
               </span>
             </Link>
@@ -36,7 +36,7 @@ export default function Footer() {
 
           {/* Col 2: Fitur Utama */}
           <div className="space-y-3">
-            <p className="text-xs font-extrabold uppercase tracking-widest text-slate-200">
+            <p className="text-xs font-extrabold uppercase tracking-widest text-slate-800 dark:text-slate-200">
               Fitur Platform
             </p>
             <ul className="space-y-2 text-sm">
@@ -65,7 +65,7 @@ export default function Footer() {
 
           {/* Col 3: Ekosistem & Dampak */}
           <div className="space-y-3">
-            <p className="text-xs font-extrabold uppercase tracking-widest text-slate-200">
+            <p className="text-xs font-extrabold uppercase tracking-widest text-slate-800 dark:text-slate-200">
               Ekosistem & Dampak
             </p>
             <ul className="space-y-2 text-sm">
@@ -104,11 +104,11 @@ export default function Footer() {
 
           {/* Col 4: Standar & Validasi */}
           <div className="space-y-3">
-            <p className="text-xs font-extrabold uppercase tracking-widest text-slate-200">
+            <p className="text-xs font-extrabold uppercase tracking-widest text-slate-800 dark:text-slate-200">
               Kompetisi & Inisiatif
             </p>
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 text-xs space-y-2">
-              <div className="flex items-center gap-1.5 text-white font-bold">
+            <div className="space-y-2 rounded-2xl border border-slate-200 bg-white p-4 text-xs dark:border-slate-800 dark:bg-slate-900/60">
+              <div className="flex items-center gap-1.5 font-bold text-slate-900 dark:text-white">
                 <Sparkles className="h-3.5 w-3.5 text-emerald-400" /> ITechnoCup 2026
               </div>
               <p className="text-slate-400 leading-relaxed">

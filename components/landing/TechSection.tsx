@@ -16,7 +16,7 @@ const TEKNOLOGI = [
 
 export default function TechSection() {
   return (
-    <section className="relative overflow-hidden px-4 pb-28 pt-12 sm:px-6 lg:px-8 bg-slate-50/50">
+    <section className="relative overflow-hidden px-4 pb-28 pt-12 sm:px-6 lg:px-8 bg-slate-50/50 dark:bg-slate-950 transition-colors duration-300">
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-96">
         <div className="absolute bottom-0 left-1/2 h-[26rem] w-[50rem] -translate-x-1/2 animate-blob rounded-full bg-emerald-500/10 blur-[130px]" />
         <div className="absolute bottom-0 right-1/4 h-72 w-72 animate-blob rounded-full bg-green-400/10 blur-[110px] [animation-delay:-6s]" />
@@ -24,10 +24,7 @@ export default function TechSection() {
 
       <div className="relative mx-auto max-w-5xl text-center">
         <Reveal>
-          <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-1.5 text-xs font-extrabold uppercase tracking-widest text-emerald-700 shadow-sm">
-            Arsitektur & Teknologi
-          </span>
-          <h2 className="mt-4 text-3xl font-extrabold text-slate-900 sm:text-4xl">
+          <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white sm:text-4xl">
             Full-Stack Modern, Handal, dan <span className="text-gradient">Scalable</span>
           </h2>
         </Reveal>
@@ -37,14 +34,14 @@ export default function TechSection() {
             <Reveal key={t.nama} delay={i * 0.08}>
               <motion.div
                 whileHover={{ y: -6, scale: 1.02 }}
-                className="flex items-center gap-3.5 rounded-2xl border border-slate-200 bg-white p-4.5 text-left shadow-sm transition-all duration-300 hover:border-emerald-400 hover:shadow-md"
+                className="flex items-center gap-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4.5 text-left shadow-sm transition-all duration-300 hover:border-emerald-400 dark:hover:border-emerald-500 hover:shadow-md"
               >
-                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 ring-1 ring-emerald-200/60 shadow-inner">
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 ring-1 ring-emerald-200/60 dark:ring-emerald-500/40 shadow-inner">
                   <t.icon className="h-5 w-5" />
                 </span>
                 <div>
-                  <p className="text-sm font-extrabold text-slate-900 leading-snug">{t.nama}</p>
-                  <p className="text-xs font-medium text-slate-500 mt-0.5">{t.desc}</p>
+                  <p className="text-sm font-extrabold text-slate-900 dark:text-white leading-snug">{t.nama}</p>
+                  <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-0.5">{t.desc}</p>
                 </div>
               </motion.div>
             </Reveal>

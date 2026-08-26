@@ -1,106 +1,224 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { UserPlus, ClipboardList, Search, Calculator, Scale, FileDown } from "lucide-react";
+import { useRef } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { motion, useScroll, useSpring } from "framer-motion";
+import { Icon } from "@iconify/react";
 import Reveal from "@/components/ui/Reveal";
 
-const LANGKAH = [
+export interface TimelineStep {
+  icon: string;
+  title: string;
+  desc: string;
+  imageSrc: string;
+  imageAlt: string;
+  href?: string;
+}
+
+export const DEFAULT_STEPS: TimelineStep[] = [
   {
-    icon: UserPlus,
+    icon: "solar:user-plus-bold",
     title: "Isi Profil Usaha & Budget",
     desc: "Mulai dengan memasukkan minat, keahlian, dan ketersediaan modal awalmu.",
-    grad: "from-emerald-500 to-emerald-600",
+    imageSrc:
+      "https://images.unsplash.com/photo-1452860606245-08befc0ff44b?auto=format&fit=crop&w=600&q=80",
+    imageAlt: "Perajin wanita menyulam benang emas pada kain tapis tradisional",
+    href: "/analisis",
   },
   {
-    icon: ClipboardList,
+    icon: "solar:clipboard-list-bold",
     title: "Kuesioner Interaktif 2 Menit",
     desc: "Jawab beberapa pertanyaan singkat mengenai kesiapan dan komitmen usahamu.",
-    grad: "from-emerald-600 to-emerald-700",
+    imageSrc:
+      "https://images.unsplash.com/photo-1533900298318-6b8da08a523e?auto=format&fit=crop&w=600&q=80",
+    imageAlt: "Nenek yang semangat berjualan kerajinan di pasar tradisional",
+    href: "/analisis",
   },
   {
-    icon: Search,
+    icon: "solar:magnifier-bold",
     title: "Pencocokan Rekomendasi Usaha",
     desc: "Sistem mencocokkan profilmu dengan 14 jenis usaha terkurasi dan analisis risiko.",
-    grad: "from-emerald-500 to-emerald-700",
+    imageSrc:
+      "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=600&q=80",
+    imageAlt: "Studio desain kertas dan pengrajin berkreasi dengan berbagai alat",
+    href: "/analisis",
   },
   {
-    icon: Calculator,
+    icon: "solar:calculator-bold",
     title: "Simulasi Modal & Parameter Kota",
     desc: "Pilih kota domisili untuk menghitung biaya sewa, UMR, utilitas, dan margin laba.",
-    grad: "from-emerald-600 to-green-600",
+    imageSrc:
+      "https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=600&q=80",
+    imageAlt: "Close-up tangan desainer memegang sampel cetak di dekat laptop",
+    href: "/kalkulator",
   },
   {
-    icon: Scale,
+    icon: "solar:scale-bold",
     title: "Komparasi Finansial vs UMR",
     desc: "Bandingkan kelayakan return usaha vs gaji upah minimum di wilayah pilihanmu.",
-    grad: "from-emerald-500 to-teal-600",
+    imageSrc:
+      "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&w=600&q=80",
+    imageAlt: "Pria dengan janggut memegang papan OPEN di depan barbershop",
+    href: "/perbandingan",
   },
   {
-    icon: FileDown,
+    icon: "solar:document-text-bold",
     title: "Dokumen Rencana Bisnis Otomatis",
     desc: "Dapatkan dokumen rencana bisnis profesional standar KUR/perbankan, siap diunduh.",
-    grad: "from-emerald-600 to-emerald-500",
+    imageSrc:
+      "https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=600&q=80",
+    imageAlt: "Pemandangan dalam sebuah studio desain dengan seorang pekerja kreatif",
+    href: "/rencana-bisnis",
   },
 ];
 
-export default function FlowSection() {
+interface VerticalUserFlowTimelineProps {
+  steps?: TimelineStep[];
+  badgeText?: string;
+  titlePrefix?: string;
+  titleHighlight?: string;
+  subtitle?: string;
+}
+
+export default function FlowSection({
+  steps = DEFAULT_STEPS,
+  titlePrefix = "Dari Nol Menuju ",
+  titleHighlight = "Rencana Bisnis Matang",
+  subtitle = "Hanya butuh kurang dari 5 menit untuk mendapatkan simulasi modal dan dokumen rencana bisnis pertamamu.",
+}: VerticalUserFlowTimelineProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // 1. Scroll Progress tied strictly to this section container
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start 65%", "end 80%"],
+  });
+
+  // 2. Spring physics for smooth drawing/undrawing line effect
+  const scaleY = useSpring(scrollYProgress, {
+    stiffness: 220,
+    damping: 28,
+    restDelta: 0.001,
+  });
+
   return (
-    <section id="cara-kerja" className="relative px-4 py-24 sm:px-6 lg:px-8 bg-slate-50/50">
-      <div className="pointer-events-none absolute right-0 top-0 h-72 w-72 rounded-full bg-emerald-500/10 blur-[110px]" />
-      <div className="mx-auto max-w-4xl">
+    <section
+      id="cara-kerja"
+      ref={containerRef}
+      className="relative overflow-hidden bg-slate-50/60 px-4 py-24 transition-colors duration-500 dark:bg-slate-950 sm:px-6 lg:px-8"
+    >
+      {/* Ambient background glow */}
+      <div className="pointer-events-none absolute right-1/4 top-1/3 h-96 w-96 rounded-full bg-[#16a34a]/10 blur-[130px]" />
+      <div className="pointer-events-none absolute left-1/4 bottom-1/4 h-96 w-96 rounded-full bg-emerald-500/10 blur-[130px]" />
+
+      <div className="mx-auto max-w-5xl">
+        {/* Section Header */}
         <Reveal className="text-center">
-          <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-1.5 text-xs font-extrabold uppercase tracking-widest text-emerald-700 shadow-sm">
-            Alur Pengguna
-          </span>
-          <h2 className="mt-4 text-3xl font-extrabold text-slate-900 sm:text-4xl">
-            Dari Nol Menuju <span className="text-gradient">Rencana Bisnis Matang</span>
+          <h2 className="text-3xl font-extrabold leading-tight text-slate-900 dark:text-white sm:text-5xl">
+            <span>{titlePrefix}</span>
+            <span className="text-[#16a34a]">{titleHighlight}</span>
           </h2>
-          <p className="mt-4 text-base text-slate-600 max-w-xl mx-auto leading-relaxed">
-            Hanya butuh kurang dari 5 menit untuk mendapatkan simulasi modal dan dokumen rencana bisnis pertamamu.
+
+          <p className="mx-auto mt-4 max-w-xl text-base font-medium leading-relaxed text-slate-600 dark:text-slate-300">
+            {subtitle}
           </p>
         </Reveal>
 
-        <div className="relative mt-16">
-          <motion.span
-            initial={{ scaleY: 0 }}
-            whileInView={{ scaleY: 1 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 1.6, ease: "easeOut" }}
-            className="absolute left-[27px] top-2 h-[calc(100%-16px)] w-1 origin-top bg-gradient-to-b from-emerald-500 via-green-500 to-emerald-400 sm:left-1/2 sm:-translate-x-1/2 rounded-full"
+        {/* Vertical Zigzag Flow Container */}
+        <div className="relative mt-20">
+          {/* Base Background Central Line (Gray Track) */}
+          <div className="absolute left-[27px] top-4 h-[calc(100%-32px)] w-1 rounded-full bg-slate-200 dark:bg-slate-800 sm:left-1/2 sm:-translate-x-1/2" />
+
+          {/* Animated Scroll-Linked Green Filling Line (Draws/Undraws dynamically) */}
+          <motion.div
+            style={{ scaleY }}
+            className="absolute left-[27px] top-4 h-[calc(100%-32px)] w-1.5 origin-top rounded-full bg-[#16a34a] shadow-[0_0_12px_rgba(22,163,74,0.6)] sm:left-1/2 sm:-translate-x-1/2"
           />
-          <div className="space-y-10">
-            {LANGKAH.map((l, i) => {
-              const left = i % 2 === 0;
+
+          {/* Timeline Steps List */}
+          <div className="space-y-12 sm:space-y-16">
+            {steps.map((step, index) => {
+              const isEven = index % 2 === 0;
+
               return (
-                <Reveal key={l.title} delay={0.1}>
-                  <div
-                    className={`relative flex items-start gap-6 sm:gap-0 ${
-                      left
-                        ? "sm:flex-row sm:pr-[calc(50%+3rem)]"
-                        : "sm:flex-row-reverse sm:pl-[calc(50%+3rem)] sm:text-right"
-                    }`}
+                <div
+                  key={step.title}
+                  className={`relative flex items-center gap-6 sm:gap-0 ${
+                    isEven
+                      ? "sm:flex-row sm:pr-[calc(50%+3.5rem)]"
+                      : "sm:flex-row-reverse sm:pl-[calc(50%+3.5rem)]"
+                  }`}
+                >
+                  {/* Central Line Icon Badge (Scales & Highlights when Scrolled Into View) */}
+                  <motion.div
+                    initial={{ scale: 0.75, opacity: 0.5 }}
+                    whileInView={{ scale: 1.15, opacity: 1 }}
+                    viewport={{ once: false, amount: 0.5 }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 350,
+                      damping: 20,
+                    }}
+                    className="relative z-20 flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[#16a34a] text-white shadow-lg shadow-[#16a34a]/30 border-4 border-white sm:absolute sm:left-1/2 sm:-translate-x-1/2"
                   >
-                    <motion.div
-                      whileHover={{ scale: 1.15, rotate: -6 }}
-                      className={`relative z-10 flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br ${l.grad} shadow-lg shadow-emerald-500/25 sm:absolute sm:left-1/2 sm:-translate-x-1/2`}
-                    >
-                      <l.icon className="h-6 w-6 text-white" />
-                    </motion.div>
-                    <div
-                      className={`flex-1 rounded-2xl border border-slate-200 bg-white p-6 shadow-md transition-all duration-300 hover:border-emerald-300 hover:shadow-xl ${
-                        left ? "sm:text-right" : ""
-                      }`}
-                    >
-                      <span className="inline-block rounded-full bg-emerald-50 px-3 py-0.5 text-xs font-extrabold text-emerald-700 border border-emerald-200 mb-2">
-                        LANGKAH {i + 1}
-                      </span>
-                      <h3 className="text-lg font-extrabold text-slate-900">
-                        {l.title}
-                      </h3>
-                      <p className="mt-2 text-sm leading-relaxed text-slate-600 font-normal">{l.desc}</p>
+                    <Icon icon={step.icon} className="h-6 w-6 text-white" />
+                  </motion.div>
+
+                  {/* Reactive Step Card with Image (Reverses animation on scroll up: once: false) */}
+                  <motion.div
+                    initial={{ opacity: 0, x: isEven ? -60 : 60 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: false, amount: 0.2 }}
+                    transition={{
+                      duration: 0.6,
+                      ease: [0.34, 1.56, 0.64, 1], // Cubic-bezier spring easing
+                    }}
+                    className="group flex-1 overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-md transition-all duration-300 hover:scale-[1.02] hover:border-emerald-300 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900"
+                  >
+                    {/* Top Image Container */}
+                    <div className="relative h-44 w-full overflow-hidden sm:h-48">
+                      <Image
+                        src={step.imageSrc}
+                        alt={step.imageAlt}
+                        fill
+                        sizes="(max-width: 768px) 100vw, 50vw"
+                        className="object-cover"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent" />
                     </div>
-                  </div>
-                </Reveal>
+
+                    {/* Bottom Card Content */}
+                    <div className="p-6">
+                      <span className="inline-block rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-extrabold uppercase tracking-wider text-[#16a34a] mb-2.5">
+                        LANGKAH {index + 1}
+                      </span>
+                      <h3 className="text-lg font-extrabold leading-snug text-slate-900 dark:text-white sm:text-xl">
+                        {step.title}
+                      </h3>
+                      <p className="mt-2 text-sm font-medium leading-relaxed text-slate-600 dark:text-slate-400">
+                        {step.desc}
+                      </p>
+
+                      {/* Bottom Interactive Link */}
+                      <div className="mt-5 pt-3.5 border-t border-slate-100 flex items-center justify-between">
+                        <Link
+                          href={step.href || "/analisis"}
+                          className="inline-flex items-center gap-1.5 text-xs font-bold text-[#16a34a] hover:text-emerald-800 transition-colors"
+                        >
+                          <span>Selengkapnya</span>
+                          <Icon
+                            icon="solar:arrow-right-linear"
+                            className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1"
+                          />
+                        </Link>
+                        <span className="text-[11px] font-medium text-slate-400">
+                          Estimasi ~1 Menit
+                        </span>
+                      </div>
+                    </div>
+                  </motion.div>
+                </div>
               );
             })}
           </div>

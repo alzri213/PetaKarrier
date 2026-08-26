@@ -408,7 +408,7 @@ export default function QuestionnaireForm() {
                         onClick={() => setPengalaman(p.value)}
                         className={`rounded-xl border p-3.5 text-left text-sm font-semibold transition-all duration-300 flex items-center justify-between ${
                           active
-                            ? "border-emerald-400/60 bg-emerald-500/15 text-slate-900 ring-1 ring-emerald-400/30"
+                            ? "border-emerald-400/60 bg-emerald-500/15 text-emerald-950 ring-1 ring-emerald-400/30"
                             : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
                         }`}
                       >

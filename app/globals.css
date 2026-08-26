@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --color-night: #f8fafc;
   --color-night-soft: #f1f5f9;
@@ -8,7 +10,7 @@
   --color-brand-dark: #15803d;
   --color-brand-light: #22c55e;
   --color-brand-lighter: #4ade80;
-  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
 
   --animate-blob: blob 14s ease-in-out infinite;
   --animate-float: float 7s ease-in-out infinite;
@@ -18,7 +20,6 @@
   --animate-gradient-x: gradient-x 8s ease infinite;
   --animate-pulse-ring: pulse-ring 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   --animate-spin-slow: spin 18s linear infinite;
-  --animate-bounce-soft: bounce-soft 2.6s ease-in-out infinite;
   --animate-slide-in-right: slide-in-right 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
 
   @keyframes blob {
@@ -64,17 +65,66 @@ html.a11y-panel-open {
 
 html {
   scroll-behavior: smooth;
+  color-scheme: light;
 }
 
 body {
   background-color: #ffffff;
   color: #0f172a;
   overflow-x: hidden;
+  transition: background-color 0.45s ease, color 0.45s ease;
+}
+
+.dark body {
+  background-color: #020617;
+  color: #f8fafc;
+}
+
+.dark {
+  color-scheme: dark;
+}
+
+body,
+body * {
+  border-color: color-mix(in srgb, currentColor 14%, transparent);
+  transition-property: background-color, border-color, color, box-shadow, fill, stroke;
+  transition-duration: 0.35s;
+  transition-timing-function: ease;
+}
+
+/* Keep older light-only utility classes readable when the theme changes. */
+.dark [class~="bg-white"]:not([class*="dark:bg-"]) {
+  background-color: #0f172a;
+}
+
+.dark [class~="bg-slate-50"]:not([class*="dark:bg-"]),
+.dark [class~="bg-slate-100"]:not([class*="dark:bg-"]) {
+  background-color: #111c2e;
+}
+
+.dark [class~="text-slate-900"]:not([class*="dark:text-"]),
+.dark [class~="text-slate-800"]:not([class*="dark:text-"]) {
+  color: #f8fafc;
+}
+
+.dark [class~="text-slate-700"]:not([class*="dark:text-"]),
+.dark [class~="text-slate-600"]:not([class*="dark:text-"]) {
+  color: #cbd5e1;
+}
+
+.dark [class~="border-slate-200"]:not([class*="dark:border-"]),
+.dark [class~="border-slate-300"]:not([class*="dark:border-"]) {
+  border-color: #334155;
 }
 
 ::selection {
   background: rgba(22, 163, 74, 0.3);
   color: #14532d;
+}
+
+.dark ::selection {
+  background: rgba(34, 197, 94, 0.35);
+  color: #86efac;
 }
 
 ::-webkit-scrollbar {
@@ -83,10 +133,16 @@ body {
 ::-webkit-scrollbar-track {
   background: #f1f5f9;
 }
+.dark ::-webkit-scrollbar-track {
+  background: #090d16;
+}
 ::-webkit-scrollbar-thumb {
   background: linear-gradient(180deg, #16a34a, #15803d);
   border-radius: 8px;
   border: 2px solid #f1f5f9;
+}
+.dark ::-webkit-scrollbar-thumb {
+  border-color: #090d16;
 }
 
 /* ===== Utility layers ===== */
@@ -97,26 +153,28 @@ body {
   backdrop-filter: blur(18px);
 }
 
+.dark .glass {
+  background: rgba(15, 23, 42, 0.72);
+  border-color: rgba(148, 163, 184, 0.16);
+}
+
 @utility glass-strong {
   background: rgba(255, 255, 255, 0.88);
   border: 1px solid rgba(0, 0, 0, 0.08);
   backdrop-filter: blur(24px);
 }
 
+.dark .glass-strong {
+  background: rgba(15, 23, 42, 0.9);
+  border-color: rgba(148, 163, 184, 0.2);
+}
+
 @utility text-gradient {
-  background: linear-gradient(100deg, #16a34a 0%, #22c55e 45%, #15803d 100%);
-  background-size: 200% auto;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  animation: gradient-x 6s ease infinite;
+  color: #15803d;
 }
 
 @utility text-gradient-blue {
-  background: linear-gradient(100deg, #16a34a 0%, #22c55e 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: #15803d;
 }
 
 /* === 3D Depth Extrusion Text (clean, no glow box) === */
@@ -192,6 +250,20 @@ body {
   75% { transform: translateX(5px); }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  body,
+  body * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 /* Shine sweep effect on buttons */
 .btn-shine {
   position: relative;
@@ -212,6 +284,10 @@ body {
   left: 130%;
 }
 
+.transition-all {
+  transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform !important;
+}
+
 /* === Metallic 3D Extrusion Text (gradient + shadow layered via pseudo) === */
 .text-3d-metallic {
   position: relative;
@@ -223,11 +299,7 @@ body {
   position: absolute;
   inset: 0;
   z-index: 2;
-  background: linear-gradient(135deg, #FBBF24 0%, #F59E0B 15%, #22C55E 40%, #16A34A 60%, #15803D 80%, #14532D 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
+  color: #15803d;
 }
 
 .text-3d-metallic::after {

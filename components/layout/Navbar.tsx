@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, ArrowUpRight, ShieldCheck, Sparkles } from "lucide-react";
+import ThemeToggle from "@/components/ui/ThemeToggle";
 
 const LEFT_LINKS = [
   { href: "/", label: "Beranda" },
@@ -53,11 +54,11 @@ export default function Navbar() {
       <header
         className={`fixed inset-x-0 top-0 z-40 transition-all duration-300 ${
           scrolled || !isHome
-            ? "bg-white/90 backdrop-blur-xl shadow-md border-b border-slate-200"
-            : "bg-white/80 backdrop-blur-md border-b border-slate-200/80"
+            ? "bg-white/90 dark:bg-slate-950/90 backdrop-blur-xl shadow-md border-b border-slate-200 dark:border-slate-800"
+            : "bg-white/80 dark:bg-slate-950/80 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800/80"
         }`}
       >
-        <nav className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 sm:px-8 lg:px-12">
+        <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:h-20 sm:px-8 lg:px-12">
           {/* Left Navigation Links */}
           <div className="hidden lg:flex items-center gap-8 flex-1">
             {LEFT_LINKS.map((link) => {
@@ -69,8 +70,8 @@ export default function Navbar() {
                   href={link.href}
                   className={`text-sm font-semibold transition-colors duration-200 ${
                     active
-                      ? "text-slate-900 font-extrabold"
-                      : "text-slate-600 hover:text-slate-900"
+                      ? "text-slate-900 dark:text-white font-extrabold"
+                      : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
                   }`}
                 >
                   {link.label}
@@ -91,8 +92,8 @@ export default function Navbar() {
                 priority
               />
             </div>
-            <span className="text-xl font-extrabold tracking-tight text-slate-900">
-              Peta<span className="text-emerald-600">Karier</span>
+            <span className="text-xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+              Peta<span className="text-emerald-600 dark:text-emerald-400">Karier</span>
             </span>
           </Link>
 
@@ -106,8 +107,8 @@ export default function Navbar() {
                   href={link.href}
                   className={`text-sm font-semibold transition-colors duration-200 ${
                     active
-                      ? "text-slate-900 font-extrabold"
-                      : "text-slate-600 hover:text-slate-900"
+                      ? "text-slate-900 dark:text-white font-extrabold"
+                      : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
                   }`}
                 >
                   {link.label}
@@ -115,24 +116,30 @@ export default function Navbar() {
               );
             })}
 
-            {/* Pill Outline Button with Upward Diagonal Arrow (Like Contact Us ↗) */}
+            {/* Dark Mode Toggle Button */}
+            <ThemeToggle />
+
+            {/* Pill Outline Button with Upward Diagonal Arrow */}
             <Link
               href="/analisis"
-              className="inline-flex items-center gap-1.5 rounded-full border-2 border-emerald-600 px-5 py-2 text-xs font-extrabold text-emerald-700 hover:bg-emerald-600 hover:text-white transition-all duration-300 shadow-sm"
+              className="inline-flex items-center gap-1.5 rounded-full border-2 border-emerald-600 dark:border-emerald-500 px-5 py-2 text-xs font-extrabold text-emerald-700 dark:text-emerald-400 hover:bg-emerald-600 hover:text-white dark:hover:bg-emerald-500 dark:hover:text-white transition-all duration-300 shadow-sm"
             >
               <span>Mulai Analisis</span>
               <ArrowUpRight className="h-4 w-4" />
             </Link>
           </div>
 
-          {/* Mobile Menu Hamburger Trigger */}
-          <button
-            onClick={() => setOpen(true)}
-            className="flex h-10 w-10 items-center justify-center rounded-xl border-2 border-slate-200 bg-white text-slate-700 transition hover:bg-slate-50 hover:border-emerald-300 lg:hidden"
-            aria-label="Buka menu navigasi"
-          >
-            <Menu className="h-5 w-5" />
-          </button>
+          {/* Mobile Right Controls: ThemeToggle + Hamburger Trigger */}
+          <div className="flex lg:hidden items-center gap-2">
+            <ThemeToggle />
+            <button
+              onClick={() => setOpen(true)}
+              className="flex h-10 w-10 items-center justify-center rounded-xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 transition hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-emerald-300"
+              aria-label="Buka menu navigasi"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
+          </div>
         </nav>
       </header>
 
@@ -153,10 +160,10 @@ export default function Navbar() {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              className="absolute inset-y-0 right-0 flex w-full max-w-[300px] flex-col bg-white p-6 shadow-2xl justify-between"
+              className="absolute inset-y-0 right-0 flex w-full max-w-[300px] flex-col bg-white p-6 text-slate-900 shadow-2xl transition-colors dark:bg-slate-950 dark:text-slate-100 justify-between"
             >
               <div>
-                <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-4 dark:border-slate-800">
                   <div className="flex items-center gap-2">
                     <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 border border-emerald-200">
                       <Image
@@ -167,11 +174,11 @@ export default function Navbar() {
                         className="object-contain p-0.5"
                       />
                     </span>
-                    <span className="font-extrabold text-slate-900">PetaKarier</span>
+                    <span className="font-extrabold text-slate-900 dark:text-white">PetaKarier</span>
                   </div>
                   <button
                     onClick={() => setOpen(false)}
-                    className="p-1 text-slate-400 hover:text-slate-700"
+                    className="p-1 text-slate-400 transition-colors hover:text-slate-700 dark:hover:text-white"
                   >
                     <X className="h-5 w-5" />
                   </button>
@@ -183,7 +190,7 @@ export default function Navbar() {
                       key={link.href}
                       href={link.href}
                       onClick={() => setOpen(false)}
-                      className="rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-50 hover:text-emerald-700 transition"
+                      className="rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-50 hover:text-emerald-700 dark:text-slate-300 dark:hover:bg-slate-900 dark:hover:text-emerald-400"
                     >
                       {link.label}
                     </Link>
@@ -191,11 +198,11 @@ export default function Navbar() {
                 </div>
               </div>
 
-              <div className="pt-6 border-t border-slate-100">
+              <div className="border-t border-slate-100 pt-6 dark:border-slate-800">
                 <Link
                   href="/analisis"
                   onClick={() => setOpen(false)}
-                  className="flex w-full items-center justify-center gap-2 rounded-full border-2 border-emerald-600 py-3 text-xs font-extrabold text-emerald-700 hover:bg-emerald-600 hover:text-white transition"
+                  className="flex w-full items-center justify-center gap-2 rounded-full border-2 border-emerald-600 py-3 text-xs font-extrabold text-emerald-700 transition hover:bg-emerald-600 hover:text-white dark:border-emerald-500 dark:text-emerald-400"
                 >
                   <span>Mulai Analisis</span>
                   <ArrowUpRight className="h-4 w-4" />
