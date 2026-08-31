@@ -1,4 +1,4 @@
-# 🌐 KonekUMKM — Ekosistem Pemberdayaan & Perencanaan Usaha Inklusif
+# 🌐 PetaKarier — Ekosistem Pemberdayaan & Perencanaan Usaha Inklusif
 
 > **Proyek Inovasi Digital untuk ITechnoCup 2026**  
 > **Tema:** Pencapaian **SDG 8: Pekerjaan Layak & Pertumbuhan Ekonomi**  
