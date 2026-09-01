@@ -74,6 +74,27 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
       return session;
     },
+    async redirect({ url, baseUrl }) {
+      // If the url is a relative path, resolve it against the baseUrl
+      if (url.startsWith("/")) {
+        // Don't redirect back to login or signup pages after auth
+        if (url.startsWith("/login") || url.startsWith("/signup")) {
+          return baseUrl;
+        }
+        return `${baseUrl}${url}`;
+      }
+      // If the url is on the same origin, allow it
+      if (url.startsWith(baseUrl)) {
+        // Don't redirect back to login or signup pages after auth
+        const path = url.replace(baseUrl, "");
+        if (path.startsWith("/login") || path.startsWith("/signup")) {
+          return baseUrl;
+        }
+        return url;
+      }
+      // Default: redirect to home
+      return baseUrl;
+    },
     async authorized({ auth, request }) {
       const isLoggedIn = !!auth?.user;
       const { pathname } = request.nextUrl;

@@ -33,7 +33,7 @@ export default function SignupPage() {
   const passwordLongEnough = password.length >= 6;
 
   const handleGoogleSignIn = () => {
-    signIn("google", { callbackUrl: "/analisis" });
+    signIn("google", { callbackUrl: "/" });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -73,8 +73,20 @@ export default function SignupPage() {
         return;
       }
 
-      // Redirect to login with success message
-      router.push("/login?registered=true");
+      // Auto-login after successful signup
+      const loginResult = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
+
+      if (loginResult?.error) {
+        // Fallback: redirect to login page if auto-login fails
+        router.push("/login?registered=true");
+      } else {
+        router.push("/");
+        router.refresh();
+      }
     } catch {
       setError("Terjadi kesalahan koneksi. Silakan coba lagi.");
     } finally {
@@ -366,7 +378,7 @@ export default function SignupPage() {
                 {/* GitHub Sign-Up */}
                 <button
                   type="button"
-                  onClick={() => signIn("github", { callbackUrl: "/analisis" })}
+                  onClick={() => signIn("github", { callbackUrl: "/" })}
                   className="flex w-full items-center justify-center gap-3 rounded-full border border-slate-200 bg-white py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 hover:shadow-md active:scale-[0.99] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
                 >
                   <svg className="h-4.5 w-4.5 fill-current text-slate-900 dark:text-white" viewBox="0 0 24 24">
