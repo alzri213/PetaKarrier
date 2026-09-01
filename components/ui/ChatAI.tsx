@@ -112,23 +112,29 @@ export default function ChatAI() {
 
   return (
     <>
-      {/* ═══ Floating trigger button ═══ */}
-      <button
+      {/* ═══ Floating trigger button (Draggable anywhere on screen) ═══ */}
+      <motion.button
         id="chat-ai-trigger"
+        drag
+        dragMomentum={false}
+        dragElastic={0.1}
+        whileDrag={{ scale: 1.15, cursor: "grabbing" }}
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.95 }}
         onClick={() => setIsOpen((v) => !v)}
         className="fixed bottom-5 right-4 sm:right-6 z-[45] flex h-11 w-11 sm:h-13 sm:w-13 items-center justify-center
                    rounded-full bg-[#00df82] text-slate-950 shadow-xl shadow-emerald-500/30
-                   transition-all duration-300 hover:scale-110 hover:bg-[#00c975]
-                   active:scale-95 border-2 border-emerald-300/60 cursor-pointer touch-manipulation"
-        aria-label="Chat dengan AI"
-        title="Tanya AI PetaKarier"
+                   transition-shadow duration-300 hover:bg-[#00c975]
+                   border-2 border-emerald-300/60 cursor-grab active:cursor-grabbing touch-none select-none"
+        aria-label="Chat dengan AI (Bisa digeser)"
+        title="Tanya AI PetaKarier (Tahan & Geser untuk memindahkan)"
       >
         {isOpen ? (
-          <X className="h-4 w-4 sm:h-5 sm:w-5 text-slate-950" />
+          <X className="h-4 w-4 sm:h-5 sm:w-5 text-slate-950 pointer-events-none" />
         ) : (
-          <MessageCircle className="h-5 w-5 sm:h-6 sm:w-6 text-slate-950 fill-slate-950/20" />
+          <MessageCircle className="h-5 w-5 sm:h-6 sm:w-6 text-slate-950 fill-slate-950/20 pointer-events-none" />
         )}
-      </button>
+      </motion.button>
 
       {/* ═══ Chat window ═══ */}
       <AnimatePresence>

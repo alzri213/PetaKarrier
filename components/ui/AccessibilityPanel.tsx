@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import { motion } from "framer-motion";
 import {
   Accessibility,
   Volume2,
@@ -309,21 +310,27 @@ export default function AccessibilityPanel() {
   return (
     <>
       {/* ══════════════════════════════════════════════════════════════════
-          1. FLOATING ACCESSIBILITY TRIGGER BUTTON (Bottom-Right)
+          1. FLOATING ACCESSIBILITY TRIGGER BUTTON (Draggable anywhere on screen)
           ══════════════════════════════════════════════════════════════════ */}
-      <button
+      <motion.button
         id="a11y-trigger"
+        drag
+        dragMomentum={false}
+        dragElastic={0.1}
+        whileDrag={{ scale: 1.15, cursor: "grabbing" }}
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.95 }}
         onClick={() => setIsOpen((v) => !v)}
         className="fixed bottom-20 right-4 sm:right-6 z-[45] flex h-11 w-11 sm:h-13 sm:w-13 items-center justify-center
                    rounded-full bg-[#00df82] text-slate-950 shadow-xl
-                   shadow-emerald-500/30 transition-all duration-300 hover:scale-110 hover:bg-[#00c975]
-                   active:scale-95 border-2 border-emerald-300/60 group font-black text-base sm:text-lg cursor-pointer touch-manipulation"
-        aria-label="Buka Menu Aksesibilitas"
-        title="Menu Aksesibilitas (Pintasan: CTRL+U)"
+                   shadow-emerald-500/30 transition-shadow duration-300 hover:bg-[#00c975]
+                   border-2 border-emerald-300/60 group font-black text-base sm:text-lg cursor-grab active:cursor-grabbing touch-none select-none"
+        aria-label="Buka Menu Aksesibilitas (Bisa digeser)"
+        title="Menu Aksesibilitas (Pintasan: CTRL+U — Tahan & Geser untuk memindahkan)"
       >
-        <span className="font-extrabold text-lg sm:text-xl leading-none select-none">?</span>
+        <span className="font-extrabold text-lg sm:text-xl leading-none select-none pointer-events-none">?</span>
         <span className="sr-only">Menu Aksesibilitas (CTRL+U)</span>
-      </button>
+      </motion.button>
 
       {/* ══════════════════════════════════════════════════════════════════
           2. FLOATING VOICE MODE LIVE PLAYER (Visible when Voice is ON)
