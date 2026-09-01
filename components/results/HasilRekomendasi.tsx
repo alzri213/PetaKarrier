@@ -44,11 +44,18 @@ export default function HasilRekomendasi() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Read profil from localStorage
+    let hasLocalData = false;
+    // Read profil and rekomendasi from localStorage
     try {
       const stored = localStorage.getItem("konekumkm-profil");
       if (stored) {
-        setProfil(JSON.parse(stored));
+        const parsed = JSON.parse(stored);
+        setProfil(parsed);
+        if (parsed.rekomendasi && Array.isArray(parsed.rekomendasi) && parsed.rekomendasi.length > 0) {
+          setRekomendasi(parsed.rekomendasi);
+          hasLocalData = true;
+          setLoading(false);
+        }
       }
     } catch {}
 
@@ -58,7 +65,7 @@ export default function HasilRekomendasi() {
         const res = await fetch(`/api/analisis?id=${analisisId}`);
         if (res.ok) {
           const data = await res.json();
-          if (data.rekomendasi) {
+          if (data.rekomendasi && Array.isArray(data.rekomendasi) && data.rekomendasi.length > 0) {
             setRekomendasi(data.rekomendasi);
           }
         }

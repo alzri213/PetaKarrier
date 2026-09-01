@@ -15,10 +15,10 @@ export const ProfilUserSchema = z.object({
       ])
     )
     .min(1, "Pilih minimal 1 kategori minat"),
-  skill: z.array(z.string()).min(1, "Pilih minimal 1 keterampilan"),
+  skill: z.array(z.string()).default([]),
   budget: z.number().positive("Budget harus lebih dari 0"),
-  waktu: z.enum(["full", "parttime", "sampling"]),
-  pengalaman: z.enum(["pemula", "pernah", "sudah"]),
+  waktu: z.enum(["full", "parttime", "sampling", "fleksibel"]),
+  pengalaman: z.enum(["pemula", "menengah", "mahir", "pernah", "sudah"]),
 });
 
 export const HitungModalSchema = z.object({

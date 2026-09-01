@@ -68,15 +68,16 @@ const DAFTAR_KOTA = [
   { id: "balikpapan", nama: "Balikpapan" },
 ];
 
-const SKILL_TAGS = [
-  "Memasak & Racik Minuman",
-  "Desain Grafis & Branding",
-  "Social Media Marketing",
-  "Manajemen Logistik & Stok",
-  "Pelayanan & Negosiasi",
-  "Teknologi & Web",
-  "Foto & Video Produk",
-  "Ketelitian Finansial",
+// UI skill labels mapped to actual data tags used in jenisUsaha.json
+const SKILL_TAGS: { label: string; dataTags: string[] }[] = [
+  { label: "Memasak & Racik Minuman", dataTags: ["memasak", "peracik-kopi", "kemasan"] },
+  { label: "Desain Grafis & Branding", dataTags: ["desain", "sablon"] },
+  { label: "Social Media Marketing", dataTags: ["sosial-media"] },
+  { label: "Manajemen Logistik & Stok", dataTags: ["logistik", "manajemen-waktu"] },
+  { label: "Pelayanan & Negosiasi", dataTags: ["pelayanan", "negosiasi"] },
+  { label: "Teknologi & Web", dataTags: ["teknologi"] },
+  { label: "Foto & Video Produk", dataTags: ["fotografi", "editing-video", "foto-produk"] },
+  { label: "Ketelitian Finansial", dataTags: ["ketelitian"] },
 ];
 
 const ANALISIS_STEPS_TEXT = [
@@ -93,18 +94,15 @@ export default function QuestionnaireForm() {
   const [step, setStep] = useState<number>(0);
 
   // Form Fields
-  const [minat, setMinat] = useState<KategoriUsaha[]>(["Kuliner", "Agribisnis"]);
-  const [keahlian, setKeahlian] = useState<string>("pemula");
+  const [minat, setMinat] = useState<KategoriUsaha[]>([]);
+  const [keahlian, setKeahlian] = useState<string>("");
 
   // Smooth continuous modal slider state: 2jt to 80jt
   const [modalValue, setModalValue] = useState<number>(12_000_000);
 
-  const [selectedKota, setSelectedKota] = useState<string>("jakarta");
-  const [waktu, setWaktu] = useState<string>("full");
-  const [selectedSkills, setSelectedSkills] = useState<string[]>([
-    "Memasak & Racik Minuman",
-    "Social Media Marketing",
-  ]);
+  const [selectedKota, setSelectedKota] = useState<string>("");
+  const [waktu, setWaktu] = useState<string>("");
+  const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
 
   // Loading & Results
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -144,10 +142,23 @@ export default function QuestionnaireForm() {
       toast.error("Pilih minimal 1 bidang usaha yang diminati.");
       return;
     }
+    if (!keahlian) {
+      toast.error("Pilih tingkat keahlian teknis Anda.");
+      return;
+    }
     setStep(1);
   };
 
   const handleProcessAnalysis = async () => {
+    if (!selectedKota) {
+      toast.error("Pilih kota domisili / target operasional.");
+      return;
+    }
+    if (!waktu) {
+      toast.error("Pilih komitmen waktu operasional usaha.");
+      return;
+    }
+
     setIsSubmitting(true);
     let stepCount = 0;
     const interval = setInterval(() => {
@@ -159,12 +170,20 @@ export default function QuestionnaireForm() {
       }
     }, 600);
 
+    // Map selected UI skill labels to actual data tags used in jenisUsaha.json
+    const resolvedSkillTags = selectedSkills.flatMap((label) => {
+      const found = SKILL_TAGS.find((st) => st.label === label);
+      return found ? found.dataTags : [];
+    });
+    // Deduplicate
+    const uniqueSkillTags = [...new Set(resolvedSkillTags)];
+
     const profil: ProfilUser = {
       minat,
-      skill: selectedSkills.map((s) => s.toLowerCase().replace(/[^a-z0-9]/g, "-")),
+      skill: uniqueSkillTags,
       budget: modalValue,
-      waktu: waktu as "full" | "parttime" | "sampling",
-      pengalaman: keahlian as "pemula" | "pernah" | "sudah",
+      waktu: waktu as "full" | "parttime" | "sampling" | "fleksibel",
+      pengalaman: keahlian as "pemula" | "menengah" | "mahir",
     };
 
     try {
@@ -172,10 +191,15 @@ export default function QuestionnaireForm() {
       if (!res.success || !res.rekomendasi) {
         throw new Error(res.error ?? "Gagal memproses rekomendasi");
       }
-      // Store profile in localStorage for reference
+      // Store profile and calculated recommendations in localStorage for instant reference
       localStorage.setItem(
         "konekumkm-profil",
-        JSON.stringify({ profil, analisisId: res.id, kota: selectedKota })
+        JSON.stringify({
+          profil,
+          analisisId: res.id,
+          kota: selectedKota,
+          rekomendasi: res.rekomendasi,
+        })
       );
       // Redirect to the dedicated results page
       router.push(`/analisis/${res.id}`);
@@ -357,8 +381,11 @@ export default function QuestionnaireForm() {
                         <select
                           value={keahlian}
                           onChange={(e) => setKeahlian(e.target.value)}
-                          className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs sm:text-sm font-medium text-slate-900 outline-none transition focus:border-[#00df82] dark:border-slate-700 dark:bg-slate-900/90 dark:text-white"
+                          className={`w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs sm:text-sm font-medium outline-none transition focus:border-[#00df82] dark:border-slate-700 dark:bg-slate-900/90 ${keahlian ? 'text-slate-900 dark:text-white' : 'text-slate-400 dark:text-slate-500'}`}
                         >
+                          <option value="" disabled className="bg-white text-slate-400 dark:bg-slate-950 dark:text-slate-500">
+                            — Pilih Tingkat Keahlian —
+                          </option>
                           {KEAHLIAN_OPTIONS.map((opt) => (
                             <option key={opt.value} value={opt.value} className="bg-white text-slate-900 dark:bg-slate-950 dark:text-white">
                               {opt.label}
@@ -460,8 +487,11 @@ export default function QuestionnaireForm() {
                         <select
                           value={selectedKota}
                           onChange={(e) => setSelectedKota(e.target.value)}
-                          className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs sm:text-sm font-medium text-slate-900 outline-none transition focus:border-[#00df82] dark:border-slate-700 dark:bg-slate-900/90 dark:text-white"
+                          className={`w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs sm:text-sm font-medium outline-none transition focus:border-[#00df82] dark:border-slate-700 dark:bg-slate-900/90 ${selectedKota ? 'text-slate-900 dark:text-white' : 'text-slate-400 dark:text-slate-500'}`}
                         >
+                          <option value="" disabled className="bg-white text-slate-400 dark:bg-slate-950 dark:text-slate-500">
+                            — Pilih Kota Domisili —
+                          </option>
                           {DAFTAR_KOTA.map((k) => (
                             <option key={k.id} value={k.id} className="bg-white text-slate-900 dark:bg-slate-950 dark:text-white">
                               {k.nama}
@@ -507,19 +537,19 @@ export default function QuestionnaireForm() {
                       </label>
                       <div className="flex flex-wrap gap-2">
                         {SKILL_TAGS.map((s) => {
-                          const isSkillActive = selectedSkills.includes(s);
+                          const isSkillActive = selectedSkills.includes(s.label);
                           return (
                             <button
-                              key={s}
+                              key={s.label}
                               type="button"
-                              onClick={() => toggleSkill(s)}
+                              onClick={() => toggleSkill(s.label)}
                               className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${
                                 isSkillActive
                                   ? "bg-[#00df82] text-slate-950 font-bold"
                                   : "border border-slate-200 bg-slate-100 text-slate-700 hover:border-emerald-400 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-slate-600"
                               }`}
                             >
-                              {s}
+                              {s.label}
                             </button>
                           );
                         })}

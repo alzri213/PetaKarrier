@@ -15,34 +15,50 @@ const SKILL_KATEGORI: Record<string, string[]> = {
 
 function skorMinat(usaha: JenisUsaha, minat: string[]): number {
   if (minat.length === 0) return 50;
-  return minat.includes(usaha.kategori) ? 100 : 35;
+  // If the business category is directly chosen by user, give top score 100, otherwise 0
+  return minat.includes(usaha.kategori) ? 100 : 0;
 }
 
 function skorSkill(usaha: JenisUsaha, skill: string[]): number {
-  if (skill.length === 0) return 55;
-  const cocok = usaha.tags.filter((t) => skill.includes(t)).length;
-  const bobot = Math.min(1, cocok / Math.min(usaha.tags.length, 2));
-  return Math.round(40 + bobot * 60);
+  if (skill.length === 0) return 70; // Neutral baseline if user has no specific skill selected
+  const matchingTags = usaha.tags.filter((t) => skill.includes(t));
+  if (matchingTags.length === 0) return 30;
+  const ratio = matchingTags.length / Math.max(1, usaha.tags.length);
+  return Math.min(100, Math.round(50 + ratio * 50));
 }
 
 function skorBudget(usaha: JenisUsaha, budget: number): number {
   if (budget >= usaha.modalMin) {
-    if (budget >= usaha.modalMax * 0.7) return 100;
-    return 85;
+    if (budget <= usaha.modalMax * 1.5) return 100;
+    return 90;
   }
   const kekurangan = usaha.modalMin - budget;
   const rasio = kekurangan / usaha.modalMin;
-  if (rasio <= 0.15) return 70;
-  if (rasio <= 0.3) return 55;
-  return 25;
+  if (rasio <= 0.2) return 70;
+  if (rasio <= 0.4) return 50;
+  return 20;
+}
+
+function bonusPengalaman(usaha: JenisUsaha, pengalaman: string): number {
+  if (pengalaman === "pemula") {
+    return usaha.modalMin <= 12_000_000 || usaha.cocokUntuk.toLowerCase().includes("pemula") ? 10 : 0;
+  }
+  if (pengalaman === "mahir" || pengalaman === "sudah") {
+    return usaha.potensi >= 4 ? 10 : 5;
+  }
+  return 5;
 }
 
 function bonusWaktu(usaha: JenisUsaha, waktu: string): number {
-  if (waktu === "parttime") {
-    const ringan = ["jastip", "les-privat", "content-creator", "makanan-rumahan", "jasa-web-digital"];
-    return ringan.includes(usaha.id) ? 5 : 0;
+  if (waktu === "parttime" || waktu === "sampling" || waktu === "fleksibel") {
+    const ringan = ["jastip", "les-privat", "content-creator", "makanan-rumahan", "jasa-web-digital", "desain-grafis", "distro-thrift"];
+    return ringan.includes(usaha.id) ? 10 : 0;
   }
-  return 2;
+  if (waktu === "full") {
+    const fullTimeUsaha = ["kedai-kopi", "katering-rumahan", "barbershop-salon", "laundry-kiloan", "cuci-steam", "frozen-food", "hidroponik"];
+    return fullTimeUsaha.includes(usaha.id) ? 10 : 5;
+  }
+  return 5;
 }
 
 export function rekomendasikanUsaha(
@@ -57,23 +73,28 @@ export function rekomendasikanUsaha(
     const sMinat = skorMinat(usaha, profil.minat);
     const sSkill = skorSkill(usaha, profil.skill);
     const sBudget = skorBudget(usaha, profil.budget);
-    const skor = Math.round(
-      sMinat * 0.4 + sSkill * 0.3 + sBudget * 0.3 + bonusWaktu(usaha, profil.waktu)
+    const bPengalaman = bonusPengalaman(usaha, profil.pengalaman);
+    const bWaktu = bonusWaktu(usaha, profil.waktu);
+
+    // Weighted Score: Minat is king (45%), Skill (25%), Budget (20%), plus Experience & Time bonuses (10%)
+    const skor = Math.min(
+      100,
+      Math.round(sMinat * 0.45 + sSkill * 0.25 + sBudget * 0.20 + bPengalaman + bWaktu)
     );
 
     const alasanParts: string[] = [];
-    if (sMinat >= 90) alasanParts.push("sesuai bidang yang kamu minati");
-    if (sSkill >= 80) alasanParts.push("keterampilanmu sangat mendukung usaha ini");
-    if (sBudget >= 90) alasanParts.push("modal awal terpenuhi dengan budget kamu");
-    else if (sBudget >= 55)
-      alasanParts.push("hanya butuh pengaturan budget ekstra kecil");
-    else if (sBudget < 55)
-      alasanParts.push("kamu bisa mulai skala lebih kecil lalu naik bertahap");
+    if (sMinat >= 90) alasanParts.push(`sesuai minat sektor ${usaha.kategori}`);
+    if (sSkill >= 75) alasanParts.push("keahlian Anda sangat mendukung eksekusi usaha ini");
+    if (sBudget >= 90) alasanParts.push("modal awal Anda mencukupi kebutuhan pembukaan usaha");
+    else if (sBudget >= 60)
+      alasanParts.push("modal awal mendekati estimasi minimum dengan penyesuaian alat");
+    else
+      alasanParts.push("dapat dimulai bertahap dari skala rumahan/pre-order");
 
     const alasan =
       alasanParts.length > 0
         ? alasanParts.join(", ")
-        : "bisa kamu mulai dengan modal & waktu yang kamu punya";
+        : "bisa Anda mulai dengan alokasi modal dan waktu yang tersedia";
 
     const sdgScore = Math.round(
       (usaha.potensi * 20) * 0.4 + (usaha.marginBulanan > 4_000_000 ? 90 : 75) * 0.6
@@ -94,7 +115,9 @@ export function rekomendasikanUsaha(
     };
   });
 
+  // Sort descending by calculated score
   hasil.sort((a, b) => b.skor - a.skor);
+
   return hasil.slice(0, 3).map((h) => ({
     ...h,
     alasan: `${h.usaha.cocokUntuk}. ${h.alasan} Perkiraan modal awal ${formatRupiah(
