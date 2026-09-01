@@ -1,13 +1,13 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   MessageCircle,
   X,
   Send,
   Sparkles,
-  Bot,
   User,
   Loader2,
   RotateCcw,
@@ -156,13 +156,19 @@ export default function ChatAI() {
               {/* Header */}
               <div className="flex items-center justify-between border-b border-white/10 bg-[#0d1226]/90 px-5 py-3.5 backdrop-blur-xl">
                 <div className="flex items-center gap-3">
-                  <div className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-teal-500 to-cyan-400">
-                    <Bot className="h-4.5 w-4.5 text-white" />
+                  <div className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-white p-1 shadow-sm border border-emerald-400/40">
+                    <Image
+                      src="/logo-utama.png"
+                      alt="Logo PetaKarier"
+                      width={28}
+                      height={28}
+                      className="h-full w-full object-contain"
+                    />
                     <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-[#0d1226] bg-emerald-400" />
                   </div>
                   <div>
                     <h3 className="text-sm font-extrabold text-white">Asisten PetaKarier</h3>
-                    <p className="text-[10px] font-semibold text-emerald-400">Online</p>
+                    <p className="text-[10px] font-semibold text-emerald-400">Online • AI Terverifikasi</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-1.5">
@@ -192,8 +198,14 @@ export default function ChatAI() {
                     className={`flex gap-2.5 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                   >
                     {msg.role === "assistant" && (
-                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-teal-500/20 mt-0.5">
-                        <Bot className="h-3.5 w-3.5 text-teal-400" />
+                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white p-0.5 mt-0.5 border border-emerald-400/40 shadow-sm overflow-hidden">
+                        <Image
+                          src="/logo-utama.png"
+                          alt="PetaKarier"
+                          width={20}
+                          height={20}
+                          className="h-full w-full object-contain"
+                        />
                       </div>
                     )}
                     <div
@@ -216,8 +228,14 @@ export default function ChatAI() {
                 {/* Loading indicator */}
                 {isLoading && (
                   <div className="flex gap-2.5">
-                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-teal-500/20">
-                      <Bot className="h-3.5 w-3.5 text-teal-400" />
+                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white p-0.5 border border-emerald-400/40 shadow-sm overflow-hidden">
+                      <Image
+                        src="/logo-utama.png"
+                        alt="PetaKarier"
+                        width={20}
+                        height={20}
+                        className="h-full w-full object-contain"
+                      />
                     </div>
                     <div className="flex items-center gap-1.5 rounded-2xl rounded-bl-md bg-white/[0.06] border border-white/8 px-4 py-3">
                       <Loader2 className="h-3.5 w-3.5 animate-spin text-teal-400" />

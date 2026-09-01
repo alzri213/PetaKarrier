@@ -1,9 +1,11 @@
 import { NextRequest } from "next/server";
 
-// Standard supported Gemini model endpoints
+// Live Google Gemini model endpoints
 const GEMINI_MODELS = [
-  "gemini-2.0-flash",
-  "gemini-1.5-flash",
+  "gemini-3.6-flash",
+  "gemini-3.5-flash",
+  "gemini-3.5-flash-lite",
+  "gemini-flash-latest",
 ];
 
 const SYSTEM_PROMPT = `Kamu adalah asisten AI PetaKarier — platform akselerator digital untuk UMKM & wirausaha Indonesia.
@@ -124,8 +126,8 @@ export async function POST(request: NextRequest) {
 
     const lastUserMessage = filtered[filtered.length - 1]?.content || "";
 
-    // If API Key is present, attempt to query Google Gemini
-    if (apiKey && !apiKey.startsWith("AQ.Ab8RN")) {
+    // If API Key is present, query Google Gemini directly
+    if (apiKey) {
       const contents = filtered.map((m) => ({
         role: m.role === "assistant" ? "model" : "user",
         parts: [{ text: m.content }],
