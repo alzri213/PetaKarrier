@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
@@ -19,6 +21,7 @@ import {
   X,
   RotateCcw,
   Hand,
+  Lock,
 } from "lucide-react";
 import { formatRupiah } from "@/lib/utils/formatCurrency";
 
@@ -256,6 +259,10 @@ const KOTA_PINS: KotaPin[] = [
 ];
 
 export default function InteractiveUMRMap() {
+  const router = useRouter();
+  const { data: session, status } = useSession();
+  const isLoggedIn = status === "authenticated" && !!session?.user;
+
   const [searchQuery, setSearchQuery] = useState("");
   // Null by default: Modal popover only appears when user explicitly clicks a city pin
   const [selectedKota, setSelectedKota] = useState<KotaPin | null>(null);
@@ -297,7 +304,7 @@ export default function InteractiveUMRMap() {
           </h2>
 
           <p className="text-xs sm:text-sm leading-relaxed text-slate-600 dark:text-slate-400 font-normal">
-            Bandingkan standar upah minimum resmi dan potensi sektor unggulan di setiap titik kota nusantara. Klik pin wilayah pada peta untuk menampilkan rincian insight.
+            Bandingkan standar upah minimum resmi dan potensi sektor unggulan di setiap titik kota nusantara. {isLoggedIn ? "Klik pin wilayah pada peta untuk menampilkan rincian insight." : "Masuk ke akun Anda untuk membuka seluruh data pin interaktif."}
           </p>
         </div>
 
@@ -311,8 +318,9 @@ export default function InteractiveUMRMap() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Cari Jakarta, Surabaya, Bali..."
-              className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-4 pr-10 text-xs font-semibold text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#00df82] dark:border-slate-800 dark:bg-slate-900/90 dark:text-white"
+              placeholder={isLoggedIn ? "Cari Jakarta, Surabaya, Bali..." : "🔒 Masuk untuk mencari..."}
+              disabled={!isLoggedIn}
+              className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-4 pr-10 text-xs font-semibold text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#00df82] disabled:opacity-60 disabled:cursor-not-allowed dark:border-slate-800 dark:bg-slate-900/90 dark:text-white"
             />
             <Search className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           </div>
@@ -333,7 +341,12 @@ export default function InteractiveUMRMap() {
 
         {/* Instruction Badge */}
         <div className="absolute top-6 left-8 z-30 hidden sm:flex items-center gap-2 rounded-full border border-emerald-500/30 bg-slate-900/80 px-3.5 py-1.5 text-[11px] font-bold text-emerald-300 backdrop-blur-md">
-          {zoom > 1 ? (
+          {!isLoggedIn ? (
+            <>
+              <Lock className="h-3.5 w-3.5 text-[#00df82]" />
+              <span>Peta Satelit • Masuk untuk membuka data UMR & pin lokasi</span>
+            </>
+          ) : zoom > 1 ? (
             <>
               <Hand className="h-3.5 w-3.5 text-[#00df82]" />
               <span>Geser peta untuk navigasi • Klik pin untuk insight</span>
@@ -384,58 +397,95 @@ export default function InteractiveUMRMap() {
             {/* Subtle Gradient Vignette for Depth */}
             <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-slate-950/30 pointer-events-none" />
 
-            {/* ── INTERACTIVE CITY PIN MARKERS ── */}
-            {filteredPins.map((k) => {
-              const isSelected = selectedKota?.id === k.id;
-              return (
-                <div
-                  key={k.id}
-                  style={{ top: `${k.y}%`, left: `${k.x}%` }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSelectedKota(k);
-                  }}
-                  className="absolute -translate-x-1/2 -translate-y-1/2 z-20 cursor-pointer group select-none"
-                >
-                  {/* Radar Pulse Rings */}
-                  <span
-                    className={`absolute -inset-3 rounded-full animate-ping opacity-75 ${
-                      isSelected ? "bg-[#00df82]" : "bg-emerald-400/40"
-                    }`}
-                  />
-
-                  {/* Pin Dot / Icon Marker */}
-                  <motion.div
-                    animate={{ scale: isSelected ? 1.35 : 1 }}
-                    whileHover={{ scale: 1.25 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 15 }}
-                    className={`relative flex h-8 w-8 items-center justify-center rounded-full border-2 shadow-2xl transition-all ${
-                      isSelected
-                        ? "bg-[#00df82] text-slate-950 border-white ring-4 ring-emerald-400/60 shadow-emerald-500/50"
-                        : "bg-slate-950/90 text-[#00df82] border-emerald-400/80 hover:bg-emerald-500 hover:text-slate-950"
-                    }`}
+            {/* ── INTERACTIVE CITY PIN MARKERS (ONLY WHEN LOGGED IN) ── */}
+            {isLoggedIn &&
+              filteredPins.map((k) => {
+                const isSelected = selectedKota?.id === k.id;
+                return (
+                  <div
+                    key={k.id}
+                    style={{ top: `${k.y}%`, left: `${k.x}%` }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedKota(k);
+                    }}
+                    className="absolute -translate-x-1/2 -translate-y-1/2 z-20 cursor-pointer group select-none"
                   >
-                    <MapPin className="h-4 w-4" />
-                  </motion.div>
+                    {/* Radar Pulse Rings */}
+                    <span
+                      className={`absolute -inset-3 rounded-full animate-ping opacity-75 ${
+                        isSelected ? "bg-[#00df82]" : "bg-emerald-400/40"
+                      }`}
+                    />
 
-                  {/* City Label Badge */}
-                  <span
-                    className={`absolute top-9 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-lg px-2.5 py-0.5 text-[10px] font-extrabold transition-all shadow-xl backdrop-blur-md ${
-                      isSelected
-                        ? "bg-[#00df82] text-slate-950 border border-white"
-                        : "bg-slate-950/90 text-slate-100 border border-slate-700/80 group-hover:bg-emerald-500 group-hover:text-slate-950"
-                    }`}
-                  >
-                    {k.nama}
-                  </span>
-                </div>
-              );
-            })}
+                    {/* Pin Dot / Icon Marker */}
+                    <motion.div
+                      animate={{ scale: isSelected ? 1.35 : 1 }}
+                      whileHover={{ scale: 1.25 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 15 }}
+                      className={`relative flex h-8 w-8 items-center justify-center rounded-full border-2 shadow-2xl transition-all ${
+                        isSelected
+                          ? "bg-[#00df82] text-slate-950 border-white ring-4 ring-emerald-400/60 shadow-emerald-500/50"
+                          : "bg-slate-950/90 text-[#00df82] border-emerald-400/80 hover:bg-emerald-500 hover:text-slate-950"
+                      }`}
+                    >
+                      <MapPin className="h-4 w-4" />
+                    </motion.div>
+
+                    {/* City Label Badge */}
+                    <span
+                      className={`absolute top-9 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-lg px-2.5 py-0.5 text-[10px] font-extrabold transition-all shadow-xl backdrop-blur-md ${
+                        isSelected
+                          ? "bg-[#00df82] text-slate-950 border border-white"
+                          : "bg-slate-950/90 text-slate-100 border border-slate-700/80 group-hover:bg-emerald-500 group-hover:text-slate-950"
+                      }`}
+                    >
+                      {k.nama}
+                    </span>
+                  </div>
+                );
+              })}
           </motion.div>
 
-          {/* ── FLOATING GLASS INSIGHT CARD (ONLY APPEARS AFTER CLICK) ── */}
+          {/* ── LOGGED-OUT MAP LOCK OVERLAY ── */}
+          {!isLoggedIn && (
+            <div className="absolute inset-0 z-30 flex items-center justify-center p-4 pointer-events-none">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.92 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.4 }}
+                className="pointer-events-auto max-w-sm sm:max-w-md rounded-3xl border-2 border-emerald-500/50 bg-slate-950/90 p-6 sm:p-8 text-center text-white shadow-2xl backdrop-blur-xl"
+              >
+                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#00df82]/20 border border-[#00df82]/40 text-[#00df82] mb-4 shadow-lg shadow-emerald-500/20">
+                  <Lock className="h-7 w-7 text-[#00df82] animate-pulse" />
+                </div>
+                <h4 className="text-lg sm:text-xl font-extrabold text-white leading-tight">
+                  Buka Pin Interaktif & Data UMR 2026
+                </h4>
+                <p className="mt-2 text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
+                  Masuk atau buat akun gratis untuk melihat seluruh 18 pin lokasi, standar UMR resmi, dan potensi sektor unggulan per wilayah.
+                </p>
+                <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
+                  <Link
+                    href="/login"
+                    className="w-full sm:w-auto rounded-full bg-[#00df82] px-6 py-3 text-xs sm:text-sm font-extrabold text-slate-950 shadow-lg shadow-emerald-500/25 hover:bg-[#00c975] hover:scale-105 active:scale-95 transition"
+                  >
+                    Masuk Sekarang
+                  </Link>
+                  <Link
+                    href="/signup"
+                    className="w-full sm:w-auto rounded-full border border-slate-700 bg-slate-900/90 px-6 py-3 text-xs sm:text-sm font-extrabold text-white hover:bg-slate-800 hover:scale-105 active:scale-95 transition"
+                  >
+                    Buat Akun Gratis
+                  </Link>
+                </div>
+              </motion.div>
+            </div>
+          )}
+
+          {/* ── FLOATING GLASS INSIGHT CARD (ONLY APPEARS AFTER CLICK AND WHEN LOGGED IN) ── */}
           <AnimatePresence mode="wait">
-            {selectedKota && (
+            {isLoggedIn && selectedKota && (
               <motion.div
                 key={selectedKota.id}
                 initial={{ opacity: 0, y: 20, scale: 0.92 }}
@@ -569,6 +619,10 @@ export default function InteractiveUMRMap() {
           viewport={{ once: true }}
           transition={{ duration: 0.3 }}
           onClick={() => {
+            if (!isLoggedIn) {
+              router.push("/login");
+              return;
+            }
             const jkt = KOTA_PINS.find((k) => k.id === "jakarta");
             if (jkt) setSelectedKota(jkt);
           }}
@@ -601,7 +655,7 @@ export default function InteractiveUMRMap() {
               <CheckCircle2 className="h-3.5 w-3.5" />
               <span>Data resmi Kemenaker 2026</span>
             </div>
-            <span className="text-[10px] font-bold opacity-75 group-hover:opacity-100">Klik lihat peta →</span>
+            <span className="text-[10px] font-bold opacity-75 group-hover:opacity-100">{isLoggedIn ? "Klik lihat peta →" : "🔒 Masuk →"}</span>
           </div>
         </motion.div>
 
@@ -614,6 +668,10 @@ export default function InteractiveUMRMap() {
           viewport={{ once: true }}
           transition={{ duration: 0.3 }}
           onClick={() => {
+            if (!isLoggedIn) {
+              router.push("/login");
+              return;
+            }
             const yogya = KOTA_PINS.find((k) => k.id === "yogyakarta");
             if (yogya) setSelectedKota(yogya);
           }}
@@ -646,7 +704,7 @@ export default function InteractiveUMRMap() {
               <TrendingUp className="h-3.5 w-3.5" />
               <span>Optimal inkubasi bisnis kreatif</span>
             </div>
-            <span className="text-[10px] font-bold opacity-75">Klik lihat peta →</span>
+            <span className="text-[10px] font-bold opacity-75">{isLoggedIn ? "Klik lihat peta →" : "🔒 Masuk →"}</span>
           </div>
         </motion.div>
 
@@ -659,6 +717,10 @@ export default function InteractiveUMRMap() {
           viewport={{ once: true }}
           transition={{ duration: 0.3 }}
           onClick={() => {
+            if (!isLoggedIn) {
+              router.push("/login");
+              return;
+            }
             const mks = KOTA_PINS.find((k) => k.id === "makassar");
             if (mks) setSelectedKota(mks);
           }}
@@ -691,7 +753,7 @@ export default function InteractiveUMRMap() {
               <Building2 className="h-3.5 w-3.5 text-emerald-500" />
               <span>Konektivitas maritim strategis</span>
             </div>
-            <span className="text-[10px] font-bold text-emerald-600 dark:text-[#00df82] opacity-75">Klik lihat peta →</span>
+            <span className="text-[10px] font-bold text-emerald-600 dark:text-[#00df82] opacity-75">{isLoggedIn ? "Klik lihat peta →" : "🔒 Masuk →"}</span>
           </div>
         </motion.div>
       </div>
