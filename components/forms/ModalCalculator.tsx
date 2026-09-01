@@ -245,6 +245,15 @@ export default function ModalCalculator({
     setOperasionalStr(num.toLocaleString("id-ID"));
   };
 
+  const hasChanges = useMemo(() => {
+    return (
+      modalAwal !== activeModalAwal ||
+      operasional !== activeOperasional ||
+      selectedUsahaId !== activeUsahaId ||
+      selectedKotaId !== activeKotaId
+    );
+  }, [modalAwal, activeModalAwal, operasional, activeOperasional, selectedUsahaId, activeUsahaId, selectedKotaId, activeKotaId]);
+
   return (
     <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 items-start">
@@ -345,20 +354,32 @@ export default function ModalCalculator({
             </div>
 
             {/* Submit Action Button */}
-            <button
-              type="submit"
-              disabled={isCalculating}
-              className="mt-6 flex w-full items-center justify-center gap-2 rounded-full bg-[#00df82] py-4 text-sm font-extrabold text-slate-950 shadow-lg shadow-emerald-500/25 transition-all duration-200 hover:bg-[#00c975] hover:scale-[1.02] active:scale-[0.98]"
-            >
-              {isCalculating ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin text-slate-950" />
-                  <span>Menghitung...</span>
-                </>
-              ) : (
-                <span>Hitung Sekarang</span>
+            <div className="space-y-2 pt-2">
+              <button
+                type="submit"
+                disabled={isCalculating}
+                className={`flex w-full items-center justify-center gap-2 rounded-full py-4 text-sm font-extrabold text-slate-950 shadow-lg transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] ${
+                  hasChanges
+                    ? "bg-[#00df82] shadow-emerald-500/30 ring-2 ring-[#00df82]/50 hover:bg-[#00c975]"
+                    : "bg-[#00df82] shadow-emerald-500/20 hover:bg-[#00c975]"
+                }`}
+              >
+                {isCalculating ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin text-slate-950" />
+                    <span>Menghitung Ulang...</span>
+                  </>
+                ) : (
+                  <span>Hitung Sekarang</span>
+                )}
+              </button>
+
+              {hasChanges && (
+                <p className="text-center text-[11px] font-semibold text-emerald-600 dark:text-[#00df82] animate-pulse">
+                  * Parameter input diubah. Klik tombol di atas untuk memperbarui kalkulasi.
+                </p>
               )}
-            </button>
+            </div>
           </form>
         </motion.div>
 
