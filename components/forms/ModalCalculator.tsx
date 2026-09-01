@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   DollarSign,
@@ -25,43 +26,99 @@ export default function ModalCalculator({
   daftarUsaha = [],
   daftarKota = [],
 }: ModalCalculatorProps) {
-  // Pre-filled default values matching design
-  const [selectedUsahaId, setSelectedUsahaId] = useState<string>(
-    daftarUsaha.find((u) => u.nama.toLowerCase().includes("kopi"))?.id || "kopi"
-  );
-  const [selectedKotaId, setSelectedKotaId] = useState<string>(
-    daftarKota.find((k) => k.nama.toLowerCase().includes("surabaya"))?.id || "surabaya"
-  );
-  const [modalAwal, setModalAwal] = useState<number>(45000000);
-  const [modalAwalStr, setModalAwalStr] = useState<string>("45.000.000");
-  const [operasional, setOperasional] = useState<number>(8500000);
-  const [operasionalStr, setOperasionalStr] = useState<string>("8.500.000");
-  const [isCalculating, setIsCalculating] = useState<boolean>(false);
+  const searchParams = useSearchParams();
+  const queryUsahaId = searchParams.get("usahaId") || searchParams.get("id");
+  const queryKotaId = searchParams.get("kota") || searchParams.get("kotaId");
 
   // Fallback defaults if props are empty
   const usahaList = useMemo(() => {
     if (daftarUsaha.length > 0) return daftarUsaha;
     return [
-      { id: "kopi", nama: "Warung Kopi", emoji: "☕", modalMin: 15000000, modalMax: 60000000, revenueBulanan: 14000000 },
-      { id: "laundry", nama: "Laundry Kiloan", emoji: "🧺", modalMin: 20000000, modalMax: 50000000, revenueBulanan: 12000000 },
-      { id: "kuliner", nama: "Kuliner / Food Truck", emoji: "🍔", modalMin: 25000000, modalMax: 75000000, revenueBulanan: 18000000 },
-      { id: "barbershop", nama: "Barbershop Modern", emoji: "💈", modalMin: 18000000, modalMax: 45000000, revenueBulanan: 13500000 },
-      { id: "fotocopy", nama: "Jasa Fotokopi & ATK", emoji: "🖨️", modalMin: 30000000, modalMax: 80000000, revenueBulanan: 15000000 },
+      { id: "jasa-web-digital", nama: "Agensi Web & Software House", emoji: "💻", modalMin: 10000000, modalMax: 35000000, peralatan: 15000000, bahanBakuBulanan: 1000000, gajiKaryawan: 1500000, promosiBulanan: 800000, revenueBulanan: 18000000, marginBulanan: 9500000 },
+      { id: "kedai-kopi", nama: "Kedai Kopi & Minuman Kekinian", emoji: "☕", modalMin: 15000000, modalMax: 40000000, peralatan: 12000000, bahanBakuBulanan: 3000000, gajiKaryawan: 1500000, promosiBulanan: 800000, revenueBulanan: 15000000, marginBulanan: 6000000 },
+      { id: "distro-thrift", nama: "Distro & Thrift Terkurasi", emoji: "👕", modalMin: 10000000, modalMax: 30000000, peralatan: 6000000, bahanBakuBulanan: 5000000, gajiKaryawan: 500000, promosiBulanan: 700000, revenueBulanan: 14000000, marginBulanan: 4500000 },
+      { id: "laundry-kiloan", nama: "Laundry Kiloan & Dry Clean", emoji: "🧺", modalMin: 15000000, modalMax: 35000000, peralatan: 15000000, bahanBakuBulanan: 1500000, gajiKaryawan: 1000000, promosiBulanan: 500000, revenueBulanan: 12000000, marginBulanan: 5500000 },
     ];
   }, [daftarUsaha]);
 
   const kotaList = useMemo(() => {
     if (daftarKota.length > 0) return daftarKota;
     return [
-      { id: "surabaya", nama: "Surabaya", provinsi: "Jawa Timur", umr: 4725479 },
-      { id: "jakarta", nama: "DKI Jakarta", provinsi: "DKI Jakarta", umr: 5729876 },
-      { id: "bandung", nama: "Bandung", provinsi: "Jawa Barat", umr: 4209389 },
-      { id: "yogyakarta", nama: "Yogyakarta", provinsi: "DI Yogyakarta", umr: 2417495 },
-      { id: "medan", nama: "Medan", provinsi: "Sumatera Utara", umr: 3228949 },
-      { id: "makassar", nama: "Makassar", provinsi: "Sulawesi Selatan", umr: 3921088 },
-      { id: "denpasar", nama: "Denpasar (Bali)", provinsi: "Bali", umr: 3207459 },
+      { id: "jakarta", nama: "DKI Jakarta", provinsi: "DKI Jakarta", umr: 5067381, sewaTempat: 1500000, utilitas: 600000, retribusi: 150000 },
+      { id: "surabaya", nama: "Surabaya", provinsi: "Jawa Timur", umr: 4725479, sewaTempat: 1100000, utilitas: 450000, retribusi: 100000 },
+      { id: "bandung", nama: "Bandung", provinsi: "Jawa Barat", umr: 4209389, sewaTempat: 950000, utilitas: 400000, retribusi: 90000 },
+      { id: "yogyakarta", nama: "Yogyakarta", provinsi: "DI Yogyakarta", umr: 2417495, sewaTempat: 750000, utilitas: 300000, retribusi: 60000 },
+      { id: "medan", nama: "Medan", provinsi: "Sumatera Utara", umr: 3228949, sewaTempat: 900000, utilitas: 400000, retribusi: 80000 },
+      { id: "makassar", nama: "Makassar", provinsi: "Sulawesi Selatan", umr: 3921088, sewaTempat: 900000, utilitas: 400000, retribusi: 80000 },
+      { id: "bali", nama: "Denpasar (Bali)", provinsi: "Bali", umr: 3207459, sewaTempat: 1200000, utilitas: 500000, retribusi: 100000 },
     ];
   }, [daftarKota]);
+
+  // Determine initial matched usaha & kota
+  const initialUsaha = useMemo(() => {
+    if (queryUsahaId) {
+      const found = usahaList.find((u) => u.id === queryUsahaId || u.id.toLowerCase() === queryUsahaId.toLowerCase());
+      if (found) return found;
+    }
+    return usahaList[0];
+  }, [queryUsahaId, usahaList]);
+
+  const initialKota = useMemo(() => {
+    if (queryKotaId) {
+      const found = kotaList.find((k) => k.id === queryKotaId || k.id.toLowerCase() === queryKotaId.toLowerCase());
+      if (found) return found;
+    }
+    return kotaList[0];
+  }, [queryKotaId, kotaList]);
+
+  const [selectedUsahaId, setSelectedUsahaId] = useState<string>(initialUsaha?.id || usahaList[0]?.id || "jasa-web-digital");
+  const [selectedKotaId, setSelectedKotaId] = useState<string>(initialKota?.id || kotaList[0]?.id || "jakarta");
+
+  // Calculate default numbers based on selected business & city
+  const initialModalVal = initialUsaha?.modalMin ? Math.round((initialUsaha.modalMin + initialUsaha.modalMax) / 2) : 20000000;
+  const initialOpsVal = initialUsaha?.bahanBakuBulanan ? (initialUsaha.bahanBakuBulanan + initialUsaha.gajiKaryawan + initialUsaha.promosiBulanan + (initialKota?.utilitas || 600000)) : 6500000;
+
+  const [modalAwal, setModalAwal] = useState<number>(initialModalVal);
+  const [modalAwalStr, setModalAwalStr] = useState<string>(initialModalVal.toLocaleString("id-ID"));
+  const [operasional, setOperasional] = useState<number>(initialOpsVal);
+  const [operasionalStr, setOperasionalStr] = useState<string>(initialOpsVal.toLocaleString("id-ID"));
+  const [isCalculating, setIsCalculating] = useState<boolean>(false);
+
+  // Synchronize when query params change or component mounts
+  useEffect(() => {
+    if (queryUsahaId) {
+      const matchedUsaha = usahaList.find((u) => u.id === queryUsahaId || u.id.toLowerCase() === queryUsahaId.toLowerCase());
+      if (matchedUsaha) {
+        setSelectedUsahaId(matchedUsaha.id);
+        const avgModal = Math.round((matchedUsaha.modalMin + matchedUsaha.modalMax) / 2);
+        const ops = (matchedUsaha.bahanBakuBulanan || 1000000) + (matchedUsaha.gajiKaryawan || 0) + (matchedUsaha.promosiBulanan || 500000) + 600000;
+        setModalAwal(avgModal);
+        setModalAwalStr(avgModal.toLocaleString("id-ID"));
+        setOperasional(ops);
+        setOperasionalStr(ops.toLocaleString("id-ID"));
+      }
+    }
+    if (queryKotaId) {
+      const matchedKota = kotaList.find((k) => k.id === queryKotaId || k.id.toLowerCase() === queryKotaId.toLowerCase());
+      if (matchedKota) {
+        setSelectedKotaId(matchedKota.id);
+      }
+    }
+  }, [queryUsahaId, queryKotaId, usahaList, kotaList]);
+
+  // Handler when user selects a different usaha from the select dropdown
+  const handleSelectUsaha = (usahaId: string) => {
+    setSelectedUsahaId(usahaId);
+    const chosenUsaha = usahaList.find((u) => u.id === usahaId);
+    if (chosenUsaha) {
+      const avgModal = Math.round((chosenUsaha.modalMin + chosenUsaha.modalMax) / 2);
+      const ops = (chosenUsaha.bahanBakuBulanan || 1000000) + (chosenUsaha.gajiKaryawan || 0) + (chosenUsaha.promosiBulanan || 500000) + 600000;
+      setModalAwal(avgModal);
+      setModalAwalStr(avgModal.toLocaleString("id-ID"));
+      setOperasional(ops);
+      setOperasionalStr(ops.toLocaleString("id-ID"));
+    }
+  };
 
   // Selected entities
   const selectedKota = useMemo(
@@ -205,12 +262,12 @@ export default function ModalCalculator({
               <div className="relative">
                 <select
                   value={selectedUsahaId}
-                  onChange={(e) => setSelectedUsahaId(e.target.value)}
+                  onChange={(e) => handleSelectUsaha(e.target.value)}
                   className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 py-3.5 pl-4 pr-10 text-sm font-semibold text-slate-900 outline-none transition focus:border-[#00df82] focus:ring-1 focus:ring-[#00df82]/30 dark:border-slate-800 dark:bg-[#0f172a] dark:text-white"
                 >
                   {usahaList.map((u) => (
                     <option key={u.id} value={u.id} className="bg-white dark:bg-slate-900">
-                      {u.nama} {u.id === "kopi" ? "(Pre-filled)" : ""}
+                      {u.nama}
                     </option>
                   ))}
                 </select>
