@@ -18,6 +18,7 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://petakarier.vercel.app"),
   title: {
     default: "PetaKarier — Ekosistem Perencanaan Usaha & Karir Wirausaha",
     template: "%s · PetaKarier",
@@ -39,17 +40,37 @@ export const metadata: Metadata = {
     "ITechnoCup 2026",
   ],
   icons: {
-    icon: "/favicon.png",
-    shortcut: "/favicon.png",
-    apple: "/favicon.png",
+    icon: [
+      { url: "/logo-utama.png", type: "image/png" },
+      { url: "/favicon.png", type: "image/png" },
+      { url: "/icon.png", type: "image/png" },
+    ],
+    shortcut: "/logo-utama.png",
+    apple: "/logo-utama.png",
   },
   openGraph: {
     title: "PetaKarier — Ekosistem Perencanaan Usaha & Karir Wirausaha",
     description:
       "Akselerasi wirausaha muda Indonesia melalui peta karier bisnis terukur, simulasi modal real-time, dan roadmap aksi selaras SDG 8.",
-    type: "website",
-    locale: "id_ID",
+    url: "https://petakarier.vercel.app",
     siteName: "PetaKarier",
+    locale: "id_ID",
+    type: "website",
+    images: [
+      {
+        url: "/logo-utama.png",
+        width: 512,
+        height: 512,
+        alt: "Logo Resmi PetaKarier",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary",
+    title: "PetaKarier — Ekosistem Perencanaan Usaha & Karir Wirausaha",
+    description:
+      "Akselerasi wirausaha muda Indonesia melalui peta karier bisnis terukur, simulasi modal real-time, dan roadmap aksi selaras SDG 8.",
+    images: ["/logo-utama.png"],
   },
 };
 
