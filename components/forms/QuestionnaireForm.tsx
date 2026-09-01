@@ -28,8 +28,8 @@ const KATEGORI_LIST: KategoriItem[] = [
   { key: "Fashion", label: "Fashion (Pakaian)" },
   { key: "Jasa", label: "Services (Jasa)" },
   { key: "Agribisnis", label: "Agriculture (Pertanian)" },
-  { key: "Digital", label: "Technology" },
-  { key: "Kreatif", label: "Crafts (Kerajinan)" },
+  { key: "Digital", label: "Technology (Teknologi)" },
+  { key: "Kreatif", label: "Crafts (Kerajinan & Kreatif)" },
   { key: "Kecantikan", label: "Beauty (Kecantikan)" },
   { key: "Pendidikan", label: "Education (Pendidikan)" },
 ];

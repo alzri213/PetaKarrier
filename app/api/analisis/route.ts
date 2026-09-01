@@ -25,24 +25,7 @@ export async function GET(request: Request) {
       });
     }
 
-    // Fallback: return general curated recommendation if id is local or not in db
-    const daftarUsaha = await getDaftarUsaha();
-    const fallbackProfil: ProfilUser = {
-      minat: ["Kuliner", "Jasa", "Kecantikan"],
-      skill: ["memasak", "pelayanan"],
-      budget: 15_000_000,
-      waktu: "full",
-      pengalaman: "pemula",
-    };
-    const fallbackRekomendasi = rekomendasikanUsaha(fallbackProfil, daftarUsaha);
-
-    return Response.json({
-      id,
-      rekomendasi: fallbackRekomendasi,
-      minat: ["Kuliner", "Jasa", "Kecantikan"],
-      pengalaman: "pemula",
-      budget: 15_000_000,
-    });
+    return Response.json({ error: "Analisis tidak ditemukan di database" }, { status: 404 });
   } catch {
     return Response.json({ error: "Terjadi kesalahan server" }, { status: 500 });
   }

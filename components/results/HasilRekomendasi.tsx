@@ -44,33 +44,48 @@ export default function HasilRekomendasi() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let hasLocalData = false;
+    let localDataFound = false;
     // Read profil and rekomendasi from localStorage
     try {
       const stored = localStorage.getItem("konekumkm-profil");
       if (stored) {
         const parsed = JSON.parse(stored);
-        setProfil(parsed);
-        if (parsed.rekomendasi && Array.isArray(parsed.rekomendasi) && parsed.rekomendasi.length > 0) {
-          setRekomendasi(parsed.rekomendasi);
-          hasLocalData = true;
-          setLoading(false);
+        if (parsed.analisisId === analisisId || !parsed.analisisId || analisisId.startsWith("local-")) {
+          setProfil(parsed);
+          if (parsed.rekomendasi && Array.isArray(parsed.rekomendasi) && parsed.rekomendasi.length > 0) {
+            setRekomendasi(parsed.rekomendasi);
+            localDataFound = true;
+            setLoading(false);
+          }
         }
       }
     } catch {}
 
-    // Fetch analisis data from API
+    // Fetch analisis data from API only if not already resolved locally
     async function fetchData() {
+      if (analisisId.startsWith("local-") && localDataFound) {
+        setLoading(false);
+        return;
+      }
       try {
         const res = await fetch(`/api/analisis?id=${analisisId}`);
         if (res.ok) {
           const data = await res.json();
           if (data.rekomendasi && Array.isArray(data.rekomendasi) && data.rekomendasi.length > 0) {
             setRekomendasi(data.rekomendasi);
+            if (data.minat) {
+              setProfil((prev) => ({
+                profil: {
+                  minat: data.minat || [],
+                  pengalaman: data.pengalaman || "pemula",
+                },
+                kota: prev?.kota || "jakarta",
+              }));
+            }
           }
         }
       } catch {
-        // Fallback handled in component state
+        // Keep local data intact
       } finally {
         setLoading(false);
       }
