@@ -13,6 +13,7 @@ import {
   Coins,
   Loader2,
   CheckCircle2,
+  BarChart3,
 } from "lucide-react";
 import type { JenisUsaha, KotaData } from "@/types";
 import { formatRupiah } from "@/lib/utils/formatCurrency";
@@ -83,35 +84,32 @@ export default function ModalCalculator({
   const [operasional, setOperasional] = useState<number>(initialOpsVal);
   const [operasionalStr, setOperasionalStr] = useState<string>(initialOpsVal.toLocaleString("id-ID"));
   const [isCalculating, setIsCalculating] = useState<boolean>(false);
+  const [hasCalculated, setHasCalculated] = useState<boolean>(false);
 
-  // Active calculated results (only update on 'Hitung Sekarang' click or initial load)
+  // Active calculated results (only update on 'Hitung Sekarang' click)
   const [activeModalAwal, setActiveModalAwal] = useState<number>(initialModalVal);
   const [activeOperasional, setActiveOperasional] = useState<number>(initialOpsVal);
   const [activeUsahaId, setActiveUsahaId] = useState<string>(initialUsaha?.id || "jasa-web-digital");
   const [activeKotaId, setActiveKotaId] = useState<string>(initialKota?.id || "jakarta");
 
-  // Synchronize when query params change or component mounts
+  // Synchronize input fields when query params change, keeping calculation uncomputed until user clicks
   useEffect(() => {
     if (queryUsahaId) {
       const matchedUsaha = usahaList.find((u) => u.id === queryUsahaId || u.id.toLowerCase() === queryUsahaId.toLowerCase());
       if (matchedUsaha) {
         setSelectedUsahaId(matchedUsaha.id);
-        setActiveUsahaId(matchedUsaha.id);
         const avgModal = Math.round((matchedUsaha.modalMin + matchedUsaha.modalMax) / 2);
         const ops = (matchedUsaha.bahanBakuBulanan || 1000000) + (matchedUsaha.gajiKaryawan || 0) + (matchedUsaha.promosiBulanan || 500000) + 600000;
         setModalAwal(avgModal);
         setModalAwalStr(avgModal.toLocaleString("id-ID"));
         setOperasional(ops);
         setOperasionalStr(ops.toLocaleString("id-ID"));
-        setActiveModalAwal(avgModal);
-        setActiveOperasional(ops);
       }
     }
     if (queryKotaId) {
       const matchedKota = kotaList.find((k) => k.id === queryKotaId || k.id.toLowerCase() === queryKotaId.toLowerCase());
       if (matchedKota) {
         setSelectedKotaId(matchedKota.id);
-        setActiveKotaId(matchedKota.id);
       }
     }
   }, [queryUsahaId, queryKotaId, usahaList, kotaList]);
@@ -132,12 +130,26 @@ export default function ModalCalculator({
 
   // Selected entities
   const selectedKota = useMemo(
-    () => kotaList.find((k) => k.id === activeKotaId) || kotaList[0],
-    [kotaList, activeKotaId]
+    () => kotaList.find((k) => k.id === (hasCalculated ? activeKotaId : selectedKotaId)) || kotaList[0],
+    [kotaList, hasCalculated, activeKotaId, selectedKotaId]
   );
 
   // Dynamic calculations for Break-Even Point based STRICTLY on active calculated state
   const calculations = useMemo(() => {
+    if (!hasCalculated) {
+      return {
+        bepMonth: 0,
+        bars: [
+          { monthLabel: "Bln 1", rawVal: 0, valLabel: "—", isBep: false, heightPct: 4 },
+          { monthLabel: "Bln 2", rawVal: 0, valLabel: "—", isBep: false, heightPct: 4 },
+          { monthLabel: "Bln 3", rawVal: 0, valLabel: "—", isBep: false, heightPct: 4 },
+          { monthLabel: "Bln 4", rawVal: 0, valLabel: "—", isBep: false, heightPct: 4 },
+          { monthLabel: "Bln 5", rawVal: 0, valLabel: "—", isBep: false, heightPct: 4 },
+          { monthLabel: "Bln 6", rawVal: 0, valLabel: "—", isBep: false, heightPct: 4 },
+        ],
+      };
+    }
+
     // Net profit estimation per month
     const marginRatio = 0.42; // ~42% gross margin
     const estimatedMonthlyRevenue = Math.max(activeOperasional * 1.65, 14000000);
@@ -216,13 +228,14 @@ export default function ModalCalculator({
       bepMonth,
       bars,
     };
-  }, [activeModalAwal, activeOperasional]);
+  }, [hasCalculated, activeModalAwal, activeOperasional]);
 
   // Form submit handler: recalculates when the button is clicked!
   const handleHitung = (e: React.FormEvent) => {
     e.preventDefault();
     setIsCalculating(true);
     setTimeout(() => {
+      setHasCalculated(true);
       setActiveModalAwal(modalAwal);
       setActiveOperasional(operasional);
       setActiveUsahaId(selectedUsahaId);
@@ -403,8 +416,8 @@ export default function ModalCalculator({
                 <span className="block text-[11px] font-semibold text-slate-500 dark:text-slate-400 truncate">
                   Total Modal Awal
                 </span>
-                <p className="text-base font-extrabold text-slate-900 dark:text-white truncate mt-0.5">
-                  {formatRupiah(activeModalAwal)}
+                <p className={`text-base font-extrabold truncate mt-0.5 ${hasCalculated ? "text-slate-900 dark:text-white" : "text-slate-300 dark:text-slate-600"}`}>
+                  {hasCalculated ? formatRupiah(activeModalAwal) : "—"}
                 </p>
               </div>
             </div>
@@ -418,8 +431,8 @@ export default function ModalCalculator({
                 <span className="block text-[11px] font-semibold text-slate-500 dark:text-slate-400 truncate">
                   Operasional/Bulan
                 </span>
-                <p className="text-base font-extrabold text-slate-900 dark:text-white truncate mt-0.5">
-                  {formatRupiah(activeOperasional)}
+                <p className={`text-base font-extrabold truncate mt-0.5 ${hasCalculated ? "text-slate-900 dark:text-white" : "text-slate-300 dark:text-slate-600"}`}>
+                  {hasCalculated ? formatRupiah(activeOperasional) : "—"}
                 </p>
               </div>
             </div>
@@ -433,8 +446,8 @@ export default function ModalCalculator({
                 <span className="block text-[11px] font-semibold text-slate-500 dark:text-slate-400 truncate">
                   Waktu Balik Modal
                 </span>
-                <p className="text-base font-extrabold text-emerald-600 dark:text-[#00df82] truncate mt-0.5">
-                  {calculations.bepMonth} Bulan
+                <p className={`text-base font-extrabold truncate mt-0.5 ${hasCalculated ? "text-emerald-600 dark:text-[#00df82]" : "text-slate-300 dark:text-slate-600"}`}>
+                  {hasCalculated ? `${calculations.bepMonth} Bulan` : "—"}
                 </p>
               </div>
             </div>
@@ -446,60 +459,79 @@ export default function ModalCalculator({
               Proyeksi Akumulasi Arus Kas Menuju BEP
             </h3>
 
-            {/* Custom Bar Visualization Grid (Responsive with Horizontal Scroll on extra-small screens) */}
-            <div className="relative pt-6 pb-2 overflow-x-auto scrollbar-none">
-              <div className="grid grid-cols-6 gap-2 sm:gap-4 items-end min-h-[220px] min-w-[320px]">
-                {calculations.bars.map((bar, idx) => (
-                  <div key={idx} className="flex flex-col items-center justify-end h-full group">
-                    {/* Top Value Label */}
-                    <span
-                      className={`text-[10px] sm:text-xs font-bold mb-2 transition-all whitespace-nowrap ${
-                        bar.isBep
-                          ? "text-[#00df82] font-extrabold scale-105"
-                          : bar.isPostBep
-                          ? "text-emerald-600 dark:text-slate-300"
-                          : "text-slate-600 dark:text-slate-400"
-                      }`}
-                    >
-                      {bar.valLabel}
-                    </span>
-
-                    {/* Vertical Bar */}
-                    <div className="w-full max-w-[58px] h-40 flex items-end justify-center">
-                      <motion.div
-                        initial={{ height: 0 }}
-                        animate={{ height: `${bar.heightPct}%` }}
-                        transition={{ duration: 0.6, delay: idx * 0.08 }}
-                        className={`w-full rounded-xl transition-all duration-300 ${
-                          bar.isBep
-                            ? "bg-[#00df82] shadow-lg shadow-emerald-500/30 ring-2 ring-[#00df82]/50"
-                            : bar.isPostBep
-                            ? "bg-[#16a34a] hover:bg-[#22c55e]"
-                            : "bg-[#f87171] hover:bg-[#ef4444] dark:bg-[#f87171] dark:hover:bg-[#ef4444]"
-                        }`}
-                      />
-                    </div>
-
-                    {/* Bottom Month Label */}
-                    <span
-                      className={`mt-3 text-[10px] sm:text-xs font-semibold whitespace-nowrap ${
-                        bar.isBep
-                          ? "text-[#00df82] font-bold"
-                          : "text-slate-500 dark:text-slate-400"
-                      }`}
-                    >
-                      {bar.monthLabel}
-                    </span>
-                  </div>
-                ))}
+            {/* Empty state prompt when not yet calculated */}
+            {!hasCalculated && (
+              <div className="flex flex-col items-center justify-center min-h-[220px] text-center px-4">
+                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 border border-slate-200 dark:bg-slate-800/50 dark:border-slate-700 mb-4">
+                  <BarChart3 className="h-8 w-8 text-slate-300 dark:text-slate-600" />
+                </div>
+                <p className="text-sm font-bold text-slate-400 dark:text-slate-500">
+                  Belum ada data kalkulasi
+                </p>
+                <p className="text-xs text-slate-400 dark:text-slate-600 mt-1 max-w-xs">
+                  Isi parameter di sebelah kiri, lalu klik <span className="font-bold text-[#00df82]">"Hitung Sekarang"</span> untuk melihat proyeksi BEP.
+                </p>
               </div>
-            </div>
+            )}
+
+            {/* Actual bar chart (only when calculated) */}
+            {hasCalculated && (
+              <div className="relative pt-6 pb-2 overflow-x-auto scrollbar-none">
+                <div className="grid grid-cols-6 gap-2 sm:gap-4 items-end min-h-[220px] min-w-[320px]">
+                  {calculations.bars.map((bar, idx) => (
+                    <div key={idx} className="flex flex-col items-center justify-end h-full group">
+                      {/* Top Value Label */}
+                      <span
+                        className={`text-[10px] sm:text-xs font-bold mb-2 transition-all whitespace-nowrap ${
+                          bar.isBep
+                            ? "text-[#00df82] font-extrabold scale-105"
+                            : bar.isPostBep
+                            ? "text-emerald-600 dark:text-slate-300"
+                            : "text-slate-600 dark:text-slate-400"
+                        }`}
+                      >
+                        {bar.valLabel}
+                      </span>
+
+                      {/* Vertical Bar */}
+                      <div className="w-full max-w-[58px] h-40 flex items-end justify-center">
+                        <motion.div
+                          initial={{ height: 0 }}
+                          animate={{ height: `${bar.heightPct}%` }}
+                          transition={{ duration: 0.6, delay: idx * 0.08 }}
+                          className={`w-full rounded-xl transition-all duration-300 ${
+                            bar.isBep
+                              ? "bg-[#00df82] shadow-lg shadow-emerald-500/30 ring-2 ring-[#00df82]/50"
+                              : bar.isPostBep
+                              ? "bg-[#16a34a] hover:bg-[#22c55e]"
+                              : "bg-[#f87171] hover:bg-[#ef4444] dark:bg-[#f87171] dark:hover:bg-[#ef4444]"
+                          }`}
+                        />
+                      </div>
+
+                      {/* Bottom Month Label */}
+                      <span
+                        className={`mt-3 text-[10px] sm:text-xs font-semibold whitespace-nowrap ${
+                          bar.isBep
+                            ? "text-[#00df82] font-bold"
+                            : "text-slate-500 dark:text-slate-400"
+                        }`}
+                      >
+                        {bar.monthLabel}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Bottom Info Note with Warning Icon */}
             <div className="mt-8 pt-5 border-t border-slate-100 dark:border-slate-800/80 flex items-center gap-2.5 text-xs text-slate-500 dark:text-slate-400">
               <AlertTriangle className="h-4 w-4 shrink-0 text-amber-500" />
               <span className="leading-relaxed">
-                Analisis berdasarkan UMR regional dan rerata kunjungan 45 konsumen harian.
+                {hasCalculated
+                  ? "Analisis berdasarkan UMR regional dan rerata kunjungan 45 konsumen harian."
+                  : "Klik \"Hitung Sekarang\" untuk menampilkan proyeksi arus kas dan estimasi BEP."}
               </span>
             </div>
           </div>
