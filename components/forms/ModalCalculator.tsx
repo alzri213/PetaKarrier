@@ -84,24 +84,34 @@ export default function ModalCalculator({
   const [operasionalStr, setOperasionalStr] = useState<string>(initialOpsVal.toLocaleString("id-ID"));
   const [isCalculating, setIsCalculating] = useState<boolean>(false);
 
+  // Active calculated results (only update on 'Hitung Sekarang' click or initial load)
+  const [activeModalAwal, setActiveModalAwal] = useState<number>(initialModalVal);
+  const [activeOperasional, setActiveOperasional] = useState<number>(initialOpsVal);
+  const [activeUsahaId, setActiveUsahaId] = useState<string>(initialUsaha?.id || "jasa-web-digital");
+  const [activeKotaId, setActiveKotaId] = useState<string>(initialKota?.id || "jakarta");
+
   // Synchronize when query params change or component mounts
   useEffect(() => {
     if (queryUsahaId) {
       const matchedUsaha = usahaList.find((u) => u.id === queryUsahaId || u.id.toLowerCase() === queryUsahaId.toLowerCase());
       if (matchedUsaha) {
         setSelectedUsahaId(matchedUsaha.id);
+        setActiveUsahaId(matchedUsaha.id);
         const avgModal = Math.round((matchedUsaha.modalMin + matchedUsaha.modalMax) / 2);
         const ops = (matchedUsaha.bahanBakuBulanan || 1000000) + (matchedUsaha.gajiKaryawan || 0) + (matchedUsaha.promosiBulanan || 500000) + 600000;
         setModalAwal(avgModal);
         setModalAwalStr(avgModal.toLocaleString("id-ID"));
         setOperasional(ops);
         setOperasionalStr(ops.toLocaleString("id-ID"));
+        setActiveModalAwal(avgModal);
+        setActiveOperasional(ops);
       }
     }
     if (queryKotaId) {
       const matchedKota = kotaList.find((k) => k.id === queryKotaId || k.id.toLowerCase() === queryKotaId.toLowerCase());
       if (matchedKota) {
         setSelectedKotaId(matchedKota.id);
+        setActiveKotaId(matchedKota.id);
       }
     }
   }, [queryUsahaId, queryKotaId, usahaList, kotaList]);
@@ -122,18 +132,18 @@ export default function ModalCalculator({
 
   // Selected entities
   const selectedKota = useMemo(
-    () => kotaList.find((k) => k.id === selectedKotaId) || kotaList[0],
-    [kotaList, selectedKotaId]
+    () => kotaList.find((k) => k.id === activeKotaId) || kotaList[0],
+    [kotaList, activeKotaId]
   );
 
-  // Dynamic calculations for Break-Even Point
+  // Dynamic calculations for Break-Even Point based STRICTLY on active calculated state
   const calculations = useMemo(() => {
     // Net profit estimation per month
     const marginRatio = 0.42; // ~42% gross margin
-    const estimatedMonthlyRevenue = Math.max(operasional * 1.65, 14000000);
-    const netProfitPerMonth = Math.max(estimatedMonthlyRevenue * marginRatio - operasional * 0.25, 5500000);
+    const estimatedMonthlyRevenue = Math.max(activeOperasional * 1.65, 14000000);
+    const netProfitPerMonth = Math.max(estimatedMonthlyRevenue * marginRatio - activeOperasional * 0.25, 5500000);
 
-    const bepMonth = Math.max(4, Math.min(18, Math.ceil(modalAwal / netProfitPerMonth)));
+    const bepMonth = Math.max(4, Math.min(18, Math.ceil(activeModalAwal / netProfitPerMonth)));
 
     // Generate 6 sample months around the BEP milestone
     const m1 = 1;
@@ -145,7 +155,7 @@ export default function ModalCalculator({
 
     const getAccumulatedCashflow = (m: number) => {
       // In early months, cashflow is negative (unrecovered investment)
-      return Math.round(netProfitPerMonth * m - modalAwal);
+      return Math.round(netProfitPerMonth * m - activeModalAwal);
     };
 
     const formatJt = (val: number) => {
@@ -206,13 +216,17 @@ export default function ModalCalculator({
       bepMonth,
       bars,
     };
-  }, [modalAwal, operasional]);
+  }, [activeModalAwal, activeOperasional]);
 
-  // Form submit handler with smooth feedback
+  // Form submit handler: recalculates when the button is clicked!
   const handleHitung = (e: React.FormEvent) => {
     e.preventDefault();
     setIsCalculating(true);
     setTimeout(() => {
+      setActiveModalAwal(modalAwal);
+      setActiveOperasional(operasional);
+      setActiveUsahaId(selectedUsahaId);
+      setActiveKotaId(selectedKotaId);
       setIsCalculating(false);
     }, 400);
   };
@@ -369,7 +383,7 @@ export default function ModalCalculator({
                   Total Modal Awal
                 </span>
                 <p className="text-base font-extrabold text-slate-900 dark:text-white truncate mt-0.5">
-                  {formatRupiah(modalAwal)}
+                  {formatRupiah(activeModalAwal)}
                 </p>
               </div>
             </div>
@@ -384,7 +398,7 @@ export default function ModalCalculator({
                   Operasional/Bulan
                 </span>
                 <p className="text-base font-extrabold text-slate-900 dark:text-white truncate mt-0.5">
-                  {formatRupiah(operasional)}
+                  {formatRupiah(activeOperasional)}
                 </p>
               </div>
             </div>
