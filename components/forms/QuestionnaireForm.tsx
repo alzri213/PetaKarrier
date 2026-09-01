@@ -1,105 +1,116 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import {
-  ArrowLeft,
+  CheckCircle2,
   ArrowRight,
+  ArrowLeft,
+  ChevronDown,
   Loader2,
   Sparkles,
-  TrendingUp,
-  Globe2,
-  CheckCircle2,
-  AlertCircle,
+  Calculator,
+  FileText,
 } from "lucide-react";
 import { toast } from "sonner";
 import type { KategoriUsaha, ProfilUser, Rekomendasi } from "@/types";
-import { SKILL_KATEGORI } from "@/lib/logic/rekomendasiUsaha";
-import ScoreBar from "@/components/ui/ScoreBar";
-import LoadingDots from "@/components/ui/LoadingDots";
-import Image from "next/image";
-import Link from "next/link";
-import { formatRupiah } from "@/lib/utils/formatCurrency";
 import { submitAnalisisAction } from "@/lib/actions/analisis";
+import { formatRupiah } from "@/lib/utils/formatCurrency";
 
-const KATEGORI_META: { key: KategoriUsaha; label: string; emoji: string; image: string }[] = [
-  { key: "Kuliner", label: "Kuliner", emoji: "🍜", image: "/categories/kuliner.jpg" },
-  { key: "Fashion", label: "Fashion", emoji: "👕", image: "/categories/fashion.jpg" },
-  { key: "Kreatif", label: "Kreatif", emoji: "🎨", image: "/categories/kreatif.jpg" },
-  { key: "Jasa", label: "Jasa", emoji: "🔧", image: "/categories/jasa.jpg" },
-  { key: "Agribisnis", label: "Agribisnis", emoji: "🌱", image: "/categories/agribisnis.jpg" },
-  { key: "Digital", label: "Digital & IT", emoji: "💻", image: "/categories/digital.jpg" },
-  { key: "Kecantikan", label: "Kecantikan", emoji: "💄", image: "/categories/kecantikan.jpg" },
-  { key: "Pendidikan", label: "Pendidikan", emoji: "📚", image: "/categories/pendidikan.jpg" },
+interface KategoriItem {
+  key: KategoriUsaha;
+  label: string;
+}
+
+const KATEGORI_LIST: KategoriItem[] = [
+  { key: "Kuliner", label: "Culinary (Kuliner)" },
+  { key: "Fashion", label: "Fashion (Pakaian)" },
+  { key: "Jasa", label: "Services (Jasa)" },
+  { key: "Agribisnis", label: "Agriculture (Pertanian)" },
+  { key: "Digital", label: "Technology" },
+  { key: "Kreatif", label: "Crafts (Kerajinan)" },
+  { key: "Kecantikan", label: "Beauty (Kecantikan)" },
+  { key: "Pendidikan", label: "Education (Pendidikan)" },
 ];
 
-const SKILL_META: Record<string, string> = {
-  memasak: "🍳",
-  "peracik-kopi": "☕",
-  logistik: "📦",
-  kemasan: "📦",
-  "manajemen-waktu": "⏰",
-  fashion: "🧥",
-  "foto-produk": "📷",
-  sablon: "🖨️",
-  desain: "🎨",
-  "sosial-media": "📱",
-  fotografi: "📷",
-  "editing-video": "🎬",
-  "public-speaking": "🎤",
-  ketelitian: "🔍",
-  pelayanan: "🤝",
-  teknik: "🛠️",
-  negosiasi: "🤝",
-  berkebun: "🌱",
-  teknologi: "💻",
-  riset: "📊",
-};
-
-const SKILLS = Array.from(new Set(Object.values(SKILL_KATEGORI).flat()));
-
-const BUDGET_OPTIONS = [
-  { value: 2_500_000, label: "Di bawah Rp3 jt", desc: "Rintisan modal mikro & terjangkau" },
-  { value: 6_000_000, label: "Rp3 – 8 jt", desc: "Usaha rumahan atau online shop" },
-  { value: 12_000_000, label: "Rp8 – 15 jt", desc: "Usaha menengah dengan booth/alat lengkap" },
-  { value: 22_000_000, label: "Di atas Rp15 jt", desc: "Skala komersial & fasilitas sewa awal" },
+const KEAHLIAN_OPTIONS = [
+  { value: "pemula", label: "Pemula (Siap Belajar dari Nol)" },
+  { value: "menengah", label: "Menengah (Pernah Praktik / Bekerja)" },
+  { value: "mahir", label: "Mahir (Pengalaman Industri & Manajemen)" },
 ];
 
-const WAKTU_OPTIONS = [
-  { value: "full", label: "Full-time", desc: "Fokus penuh mengembangkan usaha" },
-  { value: "parttime", label: "Sambil kuliah/kerja", desc: "Usaha sampingan produktif" },
-  { value: "sampling", label: "Coba-coba dulu", desc: "Validasi pasar skala mikro" },
-] as const;
+const PRESET_TIERS = [
+  { label: "< Rp 5 Juta", value: 3_500_000 },
+  { label: "Rp 5–20 Juta", value: 12_000_000 },
+  { label: "Rp 20–50 Juta", value: 35_000_000 },
+  { label: "> Rp 50 Juta", value: 65_000_000 },
+];
 
-const PENGALAMAN_OPTIONS = [
-  { value: "pemula", label: "Belum pernah berjualan", desc: "Butuh panduan step-by-step" },
-  { value: "pernah", label: "Pernah mencoba jualan", desc: "Paham dasar transaksi" },
-  { value: "sudah", label: "Sudah menjalankan usaha", desc: "Fokus optimasi laba & scale-up" },
-] as const;
+const DAFTAR_KOTA = [
+  { id: "jakarta", nama: "DKI Jakarta" },
+  { id: "bandung", nama: "Bandung" },
+  { id: "surabaya", nama: "Surabaya" },
+  { id: "yogyakarta", nama: "Yogyakarta" },
+  { id: "medan", nama: "Medan" },
+  { id: "makassar", nama: "Makassar" },
+  { id: "bali", nama: "Denpasar / Bali" },
+  { id: "semarang", nama: "Semarang" },
+  { id: "malang", nama: "Malang" },
+  { id: "bekasi", nama: "Bekasi" },
+  { id: "tangerang", nama: "Tangerang" },
+  { id: "depok", nama: "Depok" },
+  { id: "bogor", nama: "Bogor" },
+  { id: "palembang", nama: "Palembang" },
+  { id: "batam", nama: "Batam" },
+  { id: "padang", nama: "Padang" },
+  { id: "pekanbaru", nama: "Pekanbaru" },
+  { id: "balikpapan", nama: "Balikpapan" },
+];
 
-const STEPS = ["Minat", "Skill", "Budget", "Komitmen", "Hasil Rekomendasi"];
+const SKILL_TAGS = [
+  "Memasak & Racik Minuman",
+  "Desain Grafis & Branding",
+  "Social Media Marketing",
+  "Manajemen Logistik & Stok",
+  "Pelayanan & Negosiasi",
+  "Teknologi & Web",
+  "Foto & Video Produk",
+  "Ketelitian Finansial",
+];
 
-const ANALISIS_TEKS = [
-  "Membaca profil preferensi dan kapabilitasmu…",
-  "Menghubungkan kecocokan skill dengan 14 jenis usaha…",
-  "Menghitung skor kelayakan modal awal & potensi pasar…",
-  "Menyusun analisis keselarasan dampak SDG 8 & RAN TPB…",
+const ANALISIS_STEPS_TEXT = [
+  "Membaca profil preferensi dan kompetensi...",
+  "Mencocokkan karakteristik dengan 14 sektor usaha terkurasi...",
+  "Mengalkulasi kelayakan modal awal dan proyeksi risiko...",
+  "Menyusun rekomendasi siap eksekusi...",
 ];
 
 export default function QuestionnaireForm() {
   const router = useRouter();
-  const [step, setStep] = useState(0);
-  const [minat, setMinat] = useState<KategoriUsaha[]>([]);
-  const [skill, setSkill] = useState<string[]>([]);
-  const [budget, setBudget] = useState<number | null>(null);
-  const [waktu, setWaktu] = useState<string>("parttime");
-  const [pengalaman, setPengalaman] = useState<string>("pemula");
-  const [loadingStep, setLoadingStep] = useState(0);
+
+  // Active step: 0 = Minat & Skill, 1 = Modal Awal & Detail, 2 = Rekomendasi
+  const [step, setStep] = useState<number>(0);
+
+  // Form Fields
+  const [minat, setMinat] = useState<KategoriUsaha[]>(["Kuliner", "Agribisnis"]);
+  const [keahlian, setKeahlian] = useState<string>("pemula");
+
+  // Smooth continuous modal slider state: 2jt to 80jt
+  const [modalValue, setModalValue] = useState<number>(12_000_000);
+
+  const [selectedKota, setSelectedKota] = useState<string>("jakarta");
+  const [waktu, setWaktu] = useState<string>("full");
+  const [selectedSkills, setSelectedSkills] = useState<string[]>([
+    "Memasak & Racik Minuman",
+    "Social Media Marketing",
+  ]);
+
+  // Loading & Results
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loadingTextIndex, setLoadingTextIndex] = useState(0);
   const [hasil, setHasil] = useState<Rekomendasi[] | null>(null);
   const [analisisId, setAnalisisId] = useState<string | null>(null);
-  const [pilihan, setPilihan] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const toggleMinat = (k: KategoriUsaha) => {
     setMinat((prev) =>
@@ -108,495 +119,571 @@ export default function QuestionnaireForm() {
   };
 
   const toggleSkill = (s: string) => {
-    setSkill((prev) =>
+    setSelectedSkills((prev) =>
       prev.includes(s) ? prev.filter((item) => item !== s) : [...prev, s]
     );
   };
 
-  const canNext =
-    (step === 0 && minat.length > 0) ||
-    (step === 1 && skill.length > 0) ||
-    (step === 2 && budget !== null) ||
-    step === 3;
+  // Slider progress percentage for custom fill track (2M to 80M)
+  const sliderPercentage = useMemo(() => {
+    const min = 2_000_000;
+    const max = 80_000_000;
+    return Math.max(0, Math.min(100, ((modalValue - min) / (max - min)) * 100));
+  }, [modalValue]);
 
-  const submit = async () => {
-    if (minat.length === 0 || skill.length === 0 || budget === null) return;
+  // Determine active tier label
+  const activeTierLabel = useMemo(() => {
+    if (modalValue < 5_000_000) return "< Rp 5 Juta";
+    if (modalValue <= 20_000_000) return "Rp 5–20 Juta";
+    if (modalValue <= 50_000_000) return "Rp 20–50 Juta";
+    return "> Rp 50 Juta";
+  }, [modalValue]);
+
+  const handleNextToStep2 = () => {
+    if (minat.length === 0) {
+      toast.error("Pilih minimal 1 bidang usaha yang diminati.");
+      return;
+    }
+    setStep(1);
+  };
+
+  const handleProcessAnalysis = async () => {
     setIsSubmitting(true);
-    setStep(4);
-    setHasil(null);
-
-    const profil: ProfilUser = { minat, skill, budget, waktu: waktu as any, pengalaman: pengalaman as any };
-
-    let currentStep = 0;
+    let stepCount = 0;
     const interval = setInterval(() => {
-      currentStep++;
-      if (currentStep < ANALISIS_TEKS.length) {
-        setLoadingStep(currentStep);
+      stepCount++;
+      if (stepCount < ANALISIS_STEPS_TEXT.length) {
+        setLoadingTextIndex(stepCount);
       } else {
         clearInterval(interval);
       }
-    }, 700);
+    }, 600);
+
+    const profil: ProfilUser = {
+      minat,
+      skill: selectedSkills.map((s) => s.toLowerCase().replace(/[^a-z0-9]/g, "-")),
+      budget: modalValue,
+      waktu: waktu as "full" | "parttime" | "sampling",
+      pengalaman: keahlian as "pemula" | "pernah" | "sudah",
+    };
 
     try {
       const res = await submitAnalisisAction(profil);
       if (!res.success || !res.rekomendasi) {
         throw new Error(res.error ?? "Gagal memproses rekomendasi");
       }
-      setHasil(res.rekomendasi);
-      setAnalisisId(res.id ?? null);
-      if (res.rekomendasi.length > 0) {
-        setPilihan(res.rekomendasi[0].usaha.id);
-      }
+      // Store profile in localStorage for reference
       localStorage.setItem(
         "konekumkm-profil",
-        JSON.stringify({ profil, analisisId: res.id })
+        JSON.stringify({ profil, analisisId: res.id, kota: selectedKota })
       );
+      // Redirect to the dedicated results page
+      router.push(`/analisis/${res.id}`);
     } catch (err) {
       clearInterval(interval);
-      toast.error(err instanceof Error ? err.message : "Terjadi kesalahan");
-      setStep(3);
+      toast.error(err instanceof Error ? err.message : "Terjadi kesalahan analisis");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const lanjutKalkulator = () => {
-    if (!pilihan) return;
-    localStorage.setItem(
-      "konekumkm-usaha",
-      JSON.stringify({ usahaId: pilihan, analisisId })
-    );
-    router.push(`/kalkulator?usahaId=${pilihan}${analisisId ? `&analisisId=${analisisId}` : ""}`);
-  };
-
   return (
-    <div className="relative mx-auto w-full max-w-3xl px-4">
-      <AnimatePresence mode="wait">
-        {step < 4 && (
-          <motion.div
-            key={`step-${step}`}
-            initial={{ opacity: 0, x: 30 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -30 }}
-            transition={{ duration: 0.35, ease: "easeOut" }}
-          >
-            <div className="mb-8">
-              <div className="mb-3 flex items-center justify-between text-xs font-bold text-slate-600">
-                <span className="flex items-center gap-1.5">
-                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-600 font-mono text-[10px]">
-                    {step + 1}
-                  </span>
-                  Langkah {step + 1} dari 4 — {STEPS[step]}
-                </span>
-                <span className="rounded-full bg-slate-50 px-3 py-1 ring-1 ring-slate-200 text-emerald-600">
-                  {Math.round((step / 4) * 100)}% Selesai
+    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="grid grid-cols-1 items-start gap-12 lg:grid-cols-12 lg:gap-14">
+        {/* ══════════════════════════════════════════════════════════════════
+            LEFT COLUMN: TITLE, BADGE, AND BULLET CHECKMARKS (Adaptive Light/Dark)
+        ══════════════════════════════════════════════════════════════════ */}
+        <div className="space-y-6 pt-2 lg:col-span-5 lg:sticky lg:top-28">
+          {/* SDG Badge */}
+          <div>
+            <span className="inline-flex items-center gap-2 rounded-full border border-emerald-400/80 bg-emerald-50 px-4 py-1.5 text-xs font-semibold text-emerald-800 shadow-sm backdrop-blur-md dark:border-emerald-500/40 dark:bg-emerald-950/40 dark:text-[#00df82]">
+              SDG 8: Pekerjaan Layak & Pertumbuhan Ekonomi
+            </span>
+          </div>
+
+          {/* Main Title */}
+          <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-4xl lg:text-5xl leading-[1.15]">
+            Temukan Usaha yang Cocok untuk Anda
+          </h1>
+
+          {/* Description */}
+          <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-300 sm:text-base font-normal">
+            Melalui algoritma analisis potensi kami, petakan minat, keahlian, dan modal awal Anda untuk mendapatkan rekomendasi bisnis mikro yang paling berkelanjutan dan menguntungkan di wilayah Anda.
+          </p>
+
+          {/* Checklist Bullets */}
+          <div className="space-y-3.5 pt-2">
+            <div className="flex items-center gap-3 text-sm font-medium text-slate-800 dark:text-slate-200">
+              <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-600 dark:text-[#00df82]" />
+              <span>Rekomendasi Berdasarkan Tren Lokal</span>
+            </div>
+            <div className="flex items-center gap-3 text-sm font-medium text-slate-800 dark:text-slate-200">
+              <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-600 dark:text-[#00df82]" />
+              <span>Kalkulasi Risiko yang Realistis</span>
+            </div>
+            <div className="flex items-center gap-3 text-sm font-medium text-slate-800 dark:text-slate-200">
+              <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-600 dark:text-[#00df82]" />
+              <span>Terhubung Langsung ke Rencana Aksi</span>
+            </div>
+          </div>
+        </div>
+
+        {/* ══════════════════════════════════════════════════════════════════
+            RIGHT COLUMN: 3-STEP CARD QUESTIONNAIRE FORM (Adaptive Light/Dark)
+        ══════════════════════════════════════════════════════════════════ */}
+        <div className="lg:col-span-7">
+          <div className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-6 shadow-xl backdrop-blur-xl transition-colors duration-300 dark:border-slate-800 dark:bg-[#0a0f1d]/95 dark:shadow-2xl sm:p-8">
+            {/* ══════════════════════════════════════════════════════════════════
+                TOP STEPPER NAVIGATION & ANIMATED PROGRESS BAR
+            ══════════════════════════════════════════════════════════════════ */}
+            <div className="mb-6">
+              {/* Stepper Labels */}
+              <div className="flex items-center justify-between pb-2">
+                <button
+                  type="button"
+                  onClick={() => !isSubmitting && setStep(0)}
+                  className={`text-xs sm:text-sm font-bold transition-colors ${
+                    step >= 0
+                      ? "text-emerald-600 dark:text-[#00df82]"
+                      : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
+                  }`}
+                >
+                  1. Minat & Skill
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => !isSubmitting && minat.length > 0 && setStep(1)}
+                  className={`text-xs sm:text-sm font-bold transition-colors ${
+                    step >= 1 || isSubmitting
+                      ? "text-emerald-600 dark:text-[#00df82]"
+                      : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
+                  }`}
+                >
+                  2. Modal Awal
+                </button>
+
+                <span
+                  className={`text-xs sm:text-sm font-bold transition-colors ${
+                    isSubmitting
+                      ? "text-emerald-600 dark:text-[#00df82]"
+                      : "text-slate-400 dark:text-slate-600"
+                  }`}
+                >
+                  3. Rekomendasi
                 </span>
               </div>
-              <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-50 ring-1 ring-slate-200">
+
+              {/* Continuous Animated Progress Track */}
+              <div className="relative h-1.5 sm:h-2 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800/90">
                 <motion.div
-                  animate={{ width: `${(step / 4) * 100}%` }}
-                  transition={{ duration: 0.5, ease: "easeOut" }}
-                  className="h-full rounded-full bg-gradient-to-r from-emerald-500 via-emerald-600 to-green-400"
+                  className="h-full rounded-full bg-gradient-to-r from-emerald-500 via-emerald-400 to-[#00df82] shadow-md shadow-emerald-500/40"
+                  initial={false}
+                  animate={{
+                    width: isSubmitting
+                      ? "100%"
+                      : step === 0
+                      ? "33.33%"
+                      : "66.66%",
+                  }}
+                  transition={{ type: "spring", stiffness: 220, damping: 25 }}
                 />
               </div>
             </div>
 
-            {step === 0 && (
-              <div>
-                <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900">
-                  Bidang usaha apa yang paling kamu <span className="text-gradient">minati</span>?
-                </h2>
-                <p className="mt-2 text-sm text-slate-500">
-                  Pilih satu atau beberapa kategori yang menarik bagimu (bisa lebih dari satu).
+            {/* ══════════════════════════════════════════════════════════════════
+                LOADING OVERLAY (DURING SUBMISSION)
+            ══════════════════════════════════════════════════════════════════ */}
+            {isSubmitting ? (
+              <div className="flex flex-col items-center justify-center py-20 text-center">
+                <Loader2 className="h-10 w-10 animate-spin text-emerald-600 dark:text-[#00df82]" />
+                <h3 className="mt-5 text-base font-bold text-slate-900 dark:text-white">
+                  {ANALISIS_STEPS_TEXT[loadingTextIndex]}
+                </h3>
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                  Mohon tunggu beberapa saat selagi sistem memproses data.
                 </p>
-                <div className="mt-6 grid grid-cols-2 gap-3.5 sm:grid-cols-4">
-                  {KATEGORI_META.map((k, i) => {
-                    const active = minat.includes(k.key);
-                    return (
-                      <motion.button
-                        key={k.key}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: i * 0.04 }}
-                        whileHover={{ scale: 1.04 }}
-                        whileTap={{ scale: 0.96 }}
-                        onClick={() => toggleMinat(k.key)}
-                        className={`relative min-h-[140px] overflow-hidden rounded-2xl border p-4 text-left transition-all duration-500 flex flex-col justify-between ${
-                          active
-                            ? "border-emerald-400 shadow-xl ring-2 ring-emerald-400/50"
-                            : "border-slate-200 bg-white hover:border-slate-300 hover:shadow-md"
-                        }`}
-                      >
-                        {/* Background Photo overlay when active */}
-                        {active && (
-                          <motion.div
-                            initial={{ opacity: 0, scale: 1.1 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ duration: 0.4 }}
-                            className="absolute inset-0 z-0 overflow-hidden"
-                          >
-                            <Image
-                              src={k.image}
-                              alt={k.label}
-                              fill
-                              className="object-cover brightness-[0.70] contrast-105"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/50 to-slate-950/20" />
-                          </motion.div>
-                        )}
-
-                        {/* Top checkmark icon */}
-                        {active && (
-                          <motion.span
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            className="absolute right-2.5 top-2.5 z-20 flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 text-xs font-extrabold text-white shadow-md border border-white"
-                          >
-                            ✓
-                          </motion.span>
-                        )}
-
-                        {/* Category Emoji Icon */}
-                        <div className="relative z-10 flex items-center justify-between">
-                          <span className={`flex h-11 w-11 items-center justify-center rounded-xl text-2xl transition-all ${
-                            active
-                              ? "bg-white/20 backdrop-blur-md text-white border border-white/30 shadow-md"
-                              : "bg-slate-100 text-slate-800"
-                          }`}>
-                            {k.emoji}
-                          </span>
-                        </div>
-
-                        {/* Category Title */}
-                        <div className="relative z-10 mt-3">
-                          <p className={`font-extrabold text-base transition-colors ${
-                            active ? "text-white drop-shadow-md" : "text-slate-900"
-                          }`}>
-                            {k.label}
-                          </p>
-                          <p className={`text-[10px] font-semibold transition-colors mt-0.5 ${
-                            active ? "text-emerald-300" : "text-slate-600"
-                          }`}>
-                            {active ? "✓ Terpilih" : "Klik untuk melihat foto"}
-                          </p>
-                        </div>
-                      </motion.button>
-                    );
-                  })}
-                </div>
               </div>
-            )}
-
-            {step === 1 && (
-              <div>
-                <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900">
-                  Keahlian apa yang kamu <span className="text-gradient">miliki</span>?
-                </h2>
-                <p className="mt-2 text-sm text-slate-500">
-                  Pilih keterampilan yang sudah kamu kuasai atau ingin kamu terapkan.
-                </p>
-                <div className="mt-6 flex flex-wrap gap-2.5">
-                  {SKILLS.map((s, i) => {
-                    const active = skill.includes(s);
-                    return (
-                      <motion.button
-                        key={s}
-                        initial={{ opacity: 0, scale: 0.85 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: i * 0.02 }}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => toggleSkill(s)}
-                        className={`rounded-2xl px-4 py-2.5 text-xs sm:text-sm font-bold transition-all duration-300 ${
-                          active
-                            ? "bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-lg shadow-emerald-500/25"
-                            : "bg-white text-slate-600 ring-1 ring-slate-200 hover:ring-slate-300 hover:bg-slate-50"
-                        }`}
-                      >
-                        {SKILL_META[s] ?? "✨"} {s.replace(/-/g, " ")}
-                      </motion.button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {step === 2 && (
-              <div>
-                <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900">
-                  Berapa alokasi <span className="text-gradient">budget modalmu</span>?
-                </h2>
-                <p className="mt-2 text-sm text-slate-500">
-                  Estimasi dana awal yang dapat kamu siapkan secara mandiri atau kemitraan.
-                </p>
-                <div className="mt-6 grid gap-3.5 sm:grid-cols-2">
-                  {BUDGET_OPTIONS.map((b, i) => {
-                    const active = budget === b.value;
-                    return (
-                      <motion.button
-                        key={b.value}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: i * 0.06 }}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        onClick={() => setBudget(b.value)}
-                        className={`rounded-2xl border p-5 text-left transition-all duration-300 ${
-                          active
-                            ? "border-emerald-400/60 bg-gradient-to-br from-emerald-500/20 to-green-500/10 shadow-lg shadow-emerald-500/15"
-                            : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
-                        }`}
-                      >
-                        <p className="text-lg font-extrabold text-slate-900">{b.label}</p>
-                        <p className="mt-1 text-xs text-slate-500">{b.desc}</p>
-                      </motion.button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {step === 3 && (
-              <div>
-                <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900">
-                  Komitmen & <span className="text-gradient">Pengalaman Berwirausaha</span>
-                </h2>
-                <p className="mt-2 text-sm text-slate-500">
-                  Membantu algoritma kami menyesuaikan rekomendasi dengan ritme dan kesiapan mentalmu.
-                </p>
-
-                <p className="mt-7 text-sm font-extrabold text-slate-700">
-                  Alokasi waktu yang dapat kamu luangkan:
-                </p>
-                <div className="mt-3 grid gap-3 sm:grid-cols-3">
-                  {WAKTU_OPTIONS.map((w, i) => {
-                    const active = waktu === w.value;
-                    return (
-                      <motion.button
-                        key={w.value}
-                        initial={{ opacity: 0, y: 16 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: i * 0.05 }}
-                        whileHover={{ scale: 1.02 }}
-                        onClick={() => setWaktu(w.value)}
-                        className={`rounded-2xl border p-4 text-left transition-all duration-300 ${
-                          active
-                            ? "border-emerald-400/60 bg-emerald-500/15 ring-1 ring-emerald-400/30"
-                            : "border-slate-200 bg-white hover:border-slate-300"
-                        }`}
-                      >
-                        <p className="font-extrabold text-slate-900 text-sm">{w.label}</p>
-                        <p className="mt-0.5 text-[11px] text-slate-500">{w.desc}</p>
-                      </motion.button>
-                    );
-                  })}
-                </div>
-
-                <p className="mt-7 text-sm font-extrabold text-slate-700">
-                  Bagaimana rekam jejak pengalaman berjualanmu?
-                </p>
-                <div className="mt-3 grid gap-2.5">
-                  {PENGALAMAN_OPTIONS.map((p, i) => {
-                    const active = pengalaman === p.value;
-                    return (
-                      <motion.button
-                        key={p.value}
-                        initial={{ opacity: 0, x: 16 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: i * 0.05 }}
-                        whileHover={{ scale: 1.01 }}
-                        onClick={() => setPengalaman(p.value)}
-                        className={`rounded-xl border p-3.5 text-left text-sm font-semibold transition-all duration-300 flex items-center justify-between ${
-                          active
-                            ? "border-emerald-400/60 bg-emerald-500/15 text-emerald-950 ring-1 ring-emerald-400/30"
-                            : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
-                        }`}
-                      >
-                        <div>
-                          <p className="font-bold text-slate-900">{p.label}</p>
-                          <p className="text-xs text-slate-500 font-normal mt-0.5">{p.desc}</p>
-                        </div>
-                        {active && <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />}
-                      </motion.button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            <div className="mt-10 flex items-center justify-between border-t border-slate-200 pt-6">
-              <button
-                onClick={() => setStep((s) => Math.max(0, s - 1))}
-                disabled={step === 0}
-                className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-5 py-2.5 text-xs font-bold text-slate-600 transition hover:bg-slate-50 disabled:opacity-30"
-              >
-                <ArrowLeft className="h-3.5 w-3.5" /> Kembali
-              </button>
-              {step < 3 ? (
-                <button
-                  onClick={() => canNext && setStep((s) => s + 1)}
-                  disabled={!canNext}
-                  className="btn-shine inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-emerald-500 via-emerald-600 to-green-400 px-6 py-2.5 text-xs font-extrabold text-white shadow-lg shadow-emerald-500/25 transition hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:opacity-30"
-                >
-                  Lanjut <ArrowRight className="h-3.5 w-3.5" />
-                </button>
-              ) : (
-                <button
-                  onClick={submit}
-                  disabled={isSubmitting}
-                  className="btn-shine inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-emerald-500 via-green-500 to-emerald-400 px-7 py-3 text-xs sm:text-sm font-extrabold text-white shadow-xl shadow-emerald-500/25 transition hover:scale-105 active:scale-95 disabled:opacity-50"
-                >
-                  <Sparkles className="h-4 w-4" /> Proses Analisis Usaha Sekarang
-                </button>
-              )}
-            </div>
-          </motion.div>
-        )}
-
-        {/* Step 4 Loading Simulation */}
-        {step === 4 && !hasil && (
-          <motion.div
-            key="loading"
-            initial={{ opacity: 0, scale: 0.96 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="flex min-h-[400px] flex-col items-center justify-center text-center p-8 rounded-3xl border border-slate-200 bg-white"
-          >
-            <div className="relative">
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 2.4, repeat: Infinity, ease: "linear" }}
-                className="flex h-24 w-24 items-center justify-center rounded-full border-4 border-slate-200 border-t-emerald-500 border-r-green-400"
-              >
-                <Loader2 className="h-10 w-10 text-emerald-600" />
-              </motion.div>
-              <motion.span
-                animate={{ scale: [1, 1.6], opacity: [0.6, 0] }}
-                transition={{ duration: 1.6, repeat: Infinity }}
-                className="absolute inset-0 rounded-full bg-emerald-500/30"
-              />
-            </div>
-            <AnimatePresence mode="wait">
-              <motion.p
-                key={loadingStep}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="mt-8 text-base font-bold text-slate-900"
-              >
-                {ANALISIS_TEKS[loadingStep]}
-              </motion.p>
-            </AnimatePresence>
-            <p className="text-xs text-slate-500 mt-2">Menyinkronkan pemetaan dengan data UMR 18 kota & indikator SDG 8...</p>
-            <div className="mt-6 flex gap-1.5">
-              <LoadingDots />
-            </div>
-          </motion.div>
-        )}
-
-        {/* Step 4 Results */}
-        {step === 4 && hasil && (
-          <motion.div
-            key="result"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <motion.div
-              initial={{ scale: 0.6, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ type: "spring", stiffness: 200, damping: 14 }}
-              className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-gradient-to-br from-emerald-500 to-green-400 shadow-xl shadow-emerald-500/30 text-white"
-            >
-              <TrendingUp className="h-8 w-8" />
-            </motion.div>
-            <h2 className="mt-5 text-center text-3xl font-extrabold text-slate-900">
-              Rekomendasi <span className="text-gradient">Usaha Terbaik untukmu!</span>
-            </h2>
-            <p className="mt-2 text-center text-sm text-slate-600 max-w-lg mx-auto leading-relaxed">
-              Berdasarkan pemetaan minat, keterampilan, dan budget — pilih jenis usaha di bawah untuk melanjutkan ke simulasi kalkulator modal & break-even.
-            </p>
-
-            <div className="mt-8 space-y-4">
-              {hasil.map((r, i) => {
-                const rank = i === 0 ? "Paling Kompatibel (Top Match)" : i === 1 ? "Alternatif Kuat" : "Potensi Berkembang";
-                const active = pilihan === r.usaha.id;
-                return (
-                  <motion.button
-                    key={r.usaha.id}
-                    initial={{ opacity: 0, y: 24 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.15 + i * 0.12 }}
-                    onClick={() => setPilihan(r.usaha.id)}
-                    className={`relative w-full rounded-3xl border p-6 text-left transition-all duration-300 ${
-                      active
-                        ? "border-emerald-400/70 bg-gradient-to-br from-emerald-500/20 to-green-500/10 shadow-xl shadow-emerald-500/15 ring-1 ring-emerald-400/30"
-                        : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
-                    }`}
+            ) : (
+              <AnimatePresence mode="wait">
+                {/* ── STEP 1: PROFIL MINAT & KOMPETENSI ── */}
+                {step === 0 && (
+                  <motion.div
+                    key="step0"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    transition={{ duration: 0.3 }}
+                    className="mt-6 space-y-7"
                   >
-                    {i === 0 && (
-                      <span className="absolute -top-3 left-6 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 px-3.5 py-1 text-[10px] font-extrabold text-slate-950 shadow-md">
-                        ⭐ {rank}
-                      </span>
-                    )}
-                    <div className="flex items-start gap-4 sm:gap-5">
-                      <span className="flex h-14 w-14 sm:h-16 sm:w-16 shrink-0 items-center justify-center rounded-2xl bg-slate-50 text-3xl sm:text-4xl ring-1 ring-slate-200">
-                        {r.usaha.emoji}
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <h3 className="text-lg sm:text-xl font-extrabold text-slate-900">
-                            {r.usaha.nama}
-                          </h3>
-                          <span className="rounded-full bg-slate-50 px-2.5 py-0.5 text-[11px] font-bold text-slate-600 ring-1 ring-slate-200">
-                            {r.usaha.kategori}
+                    <div>
+                      <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white">
+                        Langkah 1: Profil Minat & Kompetensi
+                      </h2>
+                    </div>
+
+                    {/* Field 1: Pilih Bidang Usaha yang Diminati */}
+                    <div className="space-y-3">
+                      <label className="text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300">
+                        Pilih Bidang Usaha yang Anda Minati
+                      </label>
+                      <div className="flex flex-wrap gap-2.5">
+                        {KATEGORI_LIST.map((k) => {
+                          const isSelected = minat.includes(k.key);
+                          return (
+                            <button
+                              key={k.key}
+                              type="button"
+                              onClick={() => toggleMinat(k.key)}
+                              className={`rounded-full px-4 py-2 text-xs sm:text-sm font-semibold transition-all duration-200 ${
+                                isSelected
+                                  ? "bg-[#00df82] text-slate-950 shadow-md shadow-emerald-500/25 ring-2 ring-emerald-400/50 font-bold"
+                                  : "border border-slate-200 bg-slate-100 text-slate-700 hover:border-emerald-400 hover:text-slate-950 dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-300 dark:hover:border-slate-500 dark:hover:text-white"
+                              }`}
+                            >
+                              {k.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Field 2: Tingkat Keahlian Teknis */}
+                    <div className="space-y-3">
+                      <label className="text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300">
+                        Bagaimana Tingkat Keahlian Teknis Anda?
+                      </label>
+                      <div className="relative">
+                        <select
+                          value={keahlian}
+                          onChange={(e) => setKeahlian(e.target.value)}
+                          className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs sm:text-sm font-medium text-slate-900 outline-none transition focus:border-[#00df82] dark:border-slate-700 dark:bg-slate-900/90 dark:text-white"
+                        >
+                          {KEAHLIAN_OPTIONS.map((opt) => (
+                            <option key={opt.value} value={opt.value} className="bg-white text-slate-900 dark:bg-slate-950 dark:text-white">
+                              {opt.label}
+                            </option>
+                          ))}
+                        </select>
+                        <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 dark:text-slate-400" />
+                      </div>
+                    </div>
+
+                    {/* Field 3: Estimasi Modal Maksimal (Smooth Manual Draggable Slider) */}
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between text-xs sm:text-sm">
+                        <span className="font-semibold text-slate-700 dark:text-slate-300">
+                          Estimasi Modal Maksimal
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className="rounded-md bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 text-xs font-extrabold text-emerald-700 dark:text-[#00df82]">
+                            {formatRupiah(modalValue)}
                           </span>
-                          <span className="rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-[11px] font-bold text-emerald-300 border border-emerald-400/30">
-                            SDG Score: {r.sdgScore ?? 85}%
-                          </span>
-                        </div>
-                        <p className="mt-2 text-xs sm:text-sm leading-relaxed text-slate-600">
-                          {r.alasan}
-                        </p>
-                        <div className="mt-4 space-y-2">
-                          <ScoreBar label="Kecocokan minat" value={r.skorMinat} color="from-emerald-500 to-emerald-600" />
-                          <ScoreBar label="Kecocokan keahlian" value={r.skorSkill} color="from-green-400 to-emerald-500" />
-                          <ScoreBar label="Kecocokan budget modal" value={r.skorBudget} color="from-emerald-400 to-green-500" />
-                        </div>
-                        <div className="mt-4 flex flex-wrap items-center gap-2 text-xs">
-                          <span className="rounded-xl bg-emerald-500/20 px-3 py-1 font-bold text-emerald-600 ring-1 ring-emerald-400/30">
-                            Skor Keseluruhan: {r.skor}/100
-                          </span>
-                          <span className="rounded-xl bg-slate-50 px-3 py-1 font-semibold text-slate-600 ring-1 ring-slate-200">
-                            Estimasi Modal: ± {formatRupiah(r.estimasiModal)}
-                          </span>
-                          <span className="rounded-xl bg-slate-50 px-3 py-1 font-semibold text-slate-600 ring-1 ring-slate-200">
-                            Proyeksi Kerja: ~{r.lapanganKerjaEstimasi ?? 2} orang
+                          <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">
+                            ({activeTierLabel})
                           </span>
                         </div>
                       </div>
-                    </div>
-                  </motion.button>
-                );
-              })}
-            </div>
 
-            <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
-              <button
-                onClick={lanjutKalkulator}
-                className="btn-shine inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-500 via-emerald-600 to-green-400 px-8 py-4 text-sm font-extrabold text-white shadow-xl shadow-emerald-500/30 transition hover:scale-105 active:scale-95"
-              >
-                Hitung Modal Usaha Terpilih <ArrowRight className="h-4 w-4" />
-              </button>
-              <Link
-                href="/kalkulator"
-                className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-6 py-4 text-sm font-bold text-slate-600 transition hover:bg-slate-50"
-              >
-                Eksplor jenis usaha lain
-              </Link>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+                      {/* Smooth Manual Range Slider */}
+                      <div className="relative py-2">
+                        <input
+                          type="range"
+                          min={2_000_000}
+                          max={80_000_000}
+                          step={1_000_000}
+                          value={modalValue}
+                          onChange={(e) => setModalValue(Number(e.target.value))}
+                          aria-label="Estimasi Modal Maksimal Slider"
+                          className="h-2.5 w-full cursor-pointer appearance-none rounded-lg bg-slate-200 dark:bg-slate-800 accent-[#00df82]"
+                          style={{
+                            background: `linear-gradient(to right, #00df82 0%, #00df82 ${sliderPercentage}%, rgba(148, 163, 184, 0.25) ${sliderPercentage}%, rgba(148, 163, 184, 0.25) 100%)`,
+                          }}
+                        />
+                      </div>
+
+                      {/* Quick Tier Markers */}
+                      <div className="flex justify-between text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                        {PRESET_TIERS.map((tier) => (
+                          <button
+                            key={tier.label}
+                            type="button"
+                            onClick={() => setModalValue(tier.value)}
+                            className={`transition hover:text-slate-900 dark:hover:text-white ${
+                              activeTierLabel === tier.label
+                                ? "font-extrabold text-emerald-600 dark:text-[#00df82]"
+                                : ""
+                            }`}
+                          >
+                            {tier.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Submit Button to Step 2 */}
+                    <div className="pt-3">
+                      <button
+                        type="button"
+                        onClick={handleNextToStep2}
+                        className="group flex w-full items-center justify-center gap-2 rounded-full bg-[#00df82] py-3.5 text-sm font-bold text-slate-950 shadow-lg shadow-emerald-500/20 transition hover:bg-[#00c975] active:scale-[0.99]"
+                      >
+                        <span>Lanjut ke Langkah 2</span>
+                        <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* ── STEP 2: MODAL AWAL & DETAIL PREFERENSI ── */}
+                {step === 1 && (
+                  <motion.div
+                    key="step1"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    transition={{ duration: 0.3 }}
+                    className="mt-6 space-y-7"
+                  >
+                    <div>
+                      <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white">
+                        Langkah 2: Parameter Modal & Wilayah
+                      </h2>
+                    </div>
+
+                    {/* Field 1: Kota Domisili Target */}
+                    <div className="space-y-3">
+                      <label className="text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300">
+                        Pilih Kota Domisili / Target Operasional
+                      </label>
+                      <div className="relative">
+                        <select
+                          value={selectedKota}
+                          onChange={(e) => setSelectedKota(e.target.value)}
+                          className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs sm:text-sm font-medium text-slate-900 outline-none transition focus:border-[#00df82] dark:border-slate-700 dark:bg-slate-900/90 dark:text-white"
+                        >
+                          {DAFTAR_KOTA.map((k) => (
+                            <option key={k.id} value={k.id} className="bg-white text-slate-900 dark:bg-slate-950 dark:text-white">
+                              {k.nama}
+                            </option>
+                          ))}
+                        </select>
+                        <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 dark:text-slate-400" />
+                      </div>
+                    </div>
+
+                    {/* Field 2: Komitmen Waktu */}
+                    <div className="space-y-3">
+                      <label className="text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300">
+                        Komitmen Waktu Operasional Usaha
+                      </label>
+                      <div className="grid grid-cols-3 gap-2.5">
+                        {[
+                          { id: "full", label: "Full-Time", sub: "Fokus Penuh" },
+                          { id: "parttime", label: "Part-Time", sub: "Sampingan" },
+                          { id: "sampling", label: "Fleksibel", sub: "Uji Pasar" },
+                        ].map((w) => (
+                          <button
+                            key={w.id}
+                            type="button"
+                            onClick={() => setWaktu(w.id)}
+                            className={`rounded-2xl border p-3 text-center transition ${
+                              waktu === w.id
+                                ? "border-[#00df82] bg-emerald-50 text-emerald-950 ring-1 ring-[#00df82] dark:bg-emerald-950/40 dark:text-white"
+                                : "border-slate-200 bg-slate-100/70 text-slate-700 hover:border-slate-300 dark:border-slate-800 dark:bg-slate-900/80 dark:text-slate-300 dark:hover:border-slate-600"
+                            }`}
+                          >
+                            <p className="text-xs font-bold">{w.label}</p>
+                            <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">{w.sub}</p>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Field 3: Keahlian Spesifik */}
+                    <div className="space-y-3">
+                      <label className="text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300">
+                        Keahlian Spesifik yang Dimiliki
+                      </label>
+                      <div className="flex flex-wrap gap-2">
+                        {SKILL_TAGS.map((s) => {
+                          const isSkillActive = selectedSkills.includes(s);
+                          return (
+                            <button
+                              key={s}
+                              type="button"
+                              onClick={() => toggleSkill(s)}
+                              className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${
+                                isSkillActive
+                                  ? "bg-[#00df82] text-slate-950 font-bold"
+                                  : "border border-slate-200 bg-slate-100 text-slate-700 hover:border-emerald-400 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-slate-600"
+                              }`}
+                            >
+                              {s}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Navigation Buttons */}
+                    <div className="flex items-center gap-3 pt-3">
+                      <button
+                        type="button"
+                        onClick={() => setStep(0)}
+                        className="flex items-center justify-center gap-2 rounded-full border border-slate-200 bg-slate-100 px-6 py-3.5 text-sm font-bold text-slate-700 transition hover:bg-slate-200 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+                      >
+                        <ArrowLeft className="h-4 w-4" />
+                        <span>Kembali</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={handleProcessAnalysis}
+                        className="group flex flex-1 items-center justify-center gap-2 rounded-full bg-[#00df82] py-3.5 text-sm font-bold text-slate-950 shadow-lg shadow-emerald-500/20 transition hover:bg-[#00c975] active:scale-[0.99]"
+                      >
+                        <Sparkles className="h-4 w-4" />
+                        <span>Analisis & Cocokkan Usaha</span>
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* ── STEP 3: HASIL REKOMENDASI USAHA (REDESIGNED) ── */}
+                {step === 2 && hasil && (
+                  <motion.div
+                    key="step2"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    transition={{ duration: 0.3 }}
+                    className="mt-6 space-y-8"
+                  >
+                    {/* Header */}
+                    <div>
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-50 px-3 py-1 text-[11px] font-bold text-emerald-700 dark:bg-emerald-950/50 dark:text-[#00df82] dark:border-emerald-500/30">
+                        SDG 8: Pekerjaan Layak & Pertumbuhan Ekonomi
+                      </span>
+
+                      <h2 className="mt-3 text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+                        Rekomendasi Usaha untuk Anda
+                      </h2>
+
+                      <p className="mt-1.5 text-xs sm:text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+                        Berdasarkan analisis algoritma potensi mandiri yang disesuaikan dengan minat bidang {minat.join(", ").toLowerCase()}, keahlian {keahlian}, dan estimasi modal yang Anda miliki.
+                      </p>
+                    </div>
+
+                    {/* 3 Recommendation Cards Grid */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      {hasil.slice(0, 3).map((item, idx) => {
+                        const badgeLabels = [
+                          { text: "Potensi Tinggi", color: "bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/60 dark:text-[#00df82] dark:border-emerald-500/40" },
+                          { text: "Modal Ringan", color: "bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/60 dark:text-[#00df82] dark:border-emerald-500/40" },
+                          { text: "Risiko Rendah", color: "bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/60 dark:text-[#00df82] dark:border-emerald-500/40" },
+                        ];
+                        const badge = badgeLabels[idx] || badgeLabels[0];
+
+                        const iconPaths = [
+                          // Store/shop icon
+                          <path key="p" d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />,
+                          // Clipboard icon
+                          <><path key="p1" d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" /><rect key="p2" x="8" y="2" width="8" height="4" rx="1" ry="1" /></>,
+                          // Briefcase icon
+                          <><rect key="p1" x="2" y="7" width="20" height="14" rx="2" ry="2" /><path key="p2" d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" /></>,
+                        ];
+
+                        return (
+                          <motion.div
+                            key={item.usaha.id}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.4, delay: idx * 0.1 }}
+                            className="flex flex-col rounded-2xl border border-slate-200 bg-slate-50/80 p-5 shadow-sm transition-all hover:border-emerald-400/60 hover:shadow-lg dark:border-slate-800 dark:bg-[#0c111f] dark:hover:border-emerald-500/50"
+                          >
+                            {/* Top Row: Icon + Badge */}
+                            <div className="flex items-center justify-between mb-5">
+                              <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  width="18"
+                                  height="18"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  className="text-emerald-600 dark:text-[#00df82]"
+                                >
+                                  {iconPaths[idx] || iconPaths[0]}
+                                </svg>
+                              </div>
+
+                              <span className={`rounded-full border px-3 py-0.5 text-[10px] font-extrabold ${badge.color}`}>
+                                {badge.text}
+                              </span>
+                            </div>
+
+                            {/* Business Name */}
+                            <h3 className="text-base font-extrabold text-slate-900 dark:text-white tracking-tight leading-tight">
+                              {item.usaha.nama}
+                            </h3>
+
+                            {/* Description */}
+                            <p className="mt-2 text-xs leading-relaxed text-slate-500 dark:text-slate-400 flex-1">
+                              {item.usaha.deskripsi}
+                            </p>
+
+                            {/* Modal Estimate */}
+                            <div className="mt-5 pt-4 border-t border-slate-200 dark:border-slate-800">
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                                ESTIMASI MODAL AWAL
+                              </span>
+                              <p className="mt-0.5 text-base font-extrabold text-emerald-600 dark:text-[#00df82]">
+                                {formatRupiah(item.usaha.modalMin)}–{formatRupiah(item.usaha.modalMax)}
+                              </p>
+                            </div>
+
+                            {/* CTA Button */}
+                            <button
+                              type="button"
+                              onClick={() => router.push(`/kalkulator?usahaId=${item.usaha.id}&kota=${selectedKota}`)}
+                              className="mt-4 group flex w-full items-center justify-center gap-2 rounded-full bg-[#00df82] py-3 text-xs font-bold text-slate-950 shadow-md shadow-emerald-500/20 transition-all hover:bg-[#00c975] hover:shadow-lg hover:shadow-emerald-500/30 active:scale-[0.98]"
+                            >
+                              <span>Lanjut ke Kalkulator Modal</span>
+                              <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+                            </button>
+                          </motion.div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Bottom Info Banner */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.4, delay: 0.4 }}
+                      className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50/80 p-4 shadow-sm dark:border-slate-800 dark:bg-[#0c111f]"
+                    >
+                      <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-slate-300 bg-white dark:border-slate-700 dark:bg-slate-800">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-500 dark:text-slate-400">
+                          <circle cx="12" cy="12" r="10" />
+                          <line x1="12" y1="16" x2="12" y2="12" />
+                          <line x1="12" y1="8" x2="12.01" y2="8" />
+                        </svg>
+                      </div>
+                      <p className="text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                        Rekomendasi di atas dihitung secara presisi berdasarkan rata-rata pertumbuhan riil wilayah lokal Anda. Klik tombol kelayakan di salah satu opsi untuk menghitung estimasi Break Even Point (BEP) instan.
+                      </p>
+                    </motion.div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

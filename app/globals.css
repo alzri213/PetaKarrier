@@ -63,6 +63,128 @@ html.a11y-panel-open {
   overflow: hidden;
 }
 
+/* ══════════════════════════════════════════════════════════════════
+   ACCESSIBILITY SUITE SYSTEM CLASSES (WCAG 2.1 AAA Compliant)
+   ══════════════════════════════════════════════════════════════════ */
+
+/* 1. High Contrast Mode (WCAG AAA) - No body filters to protect fixed layout */
+html.a11y-high-contrast main {
+  filter: contrast(125%);
+}
+
+html.a11y-high-contrast h1,
+html.a11y-high-contrast h2,
+html.a11y-high-contrast h3,
+html.a11y-high-contrast h4 {
+  font-weight: 800 !important;
+}
+
+html.a11y-high-contrast p,
+html.a11y-high-contrast span,
+html.a11y-high-contrast li {
+  font-weight: 500 !important;
+}
+
+html.dark.a11y-high-contrast {
+  color-scheme: dark;
+}
+
+html.dark.a11y-high-contrast body {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+html:not(.dark).a11y-high-contrast body {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
+
+html.a11y-high-contrast input,
+html.a11y-high-contrast select,
+html.a11y-high-contrast textarea {
+  border-width: 2px !important;
+  border-color: currentColor !important;
+}
+
+/* 2. Color Saturation & Monochrome (Target main only to preserve fixed UI) */
+html.a11y-saturate main {
+  filter: saturate(180%);
+}
+
+html.a11y-monochrome main {
+  filter: grayscale(100%);
+}
+
+/* 3. Hide Images (Preserves Card and Grid Heights cleanly) */
+html.a11y-hide-images img,
+html.a11y-hide-images picture {
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+html.a11y-hide-images [class*="overflow-hidden"]:has(> img) {
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(0, 223, 130, 0.08),
+    rgba(0, 223, 130, 0.08) 12px,
+    transparent 12px,
+    transparent 24px
+  ) !important;
+  border: 2px dashed rgba(0, 223, 130, 0.4) !important;
+  position: relative;
+}
+
+/* 4. Text Justification (Paragraphs inside main only) */
+html.a11y-justified main p,
+html.a11y-justified main article p,
+html.a11y-justified main .prose p {
+  text-align: justify !important;
+  text-justify: inter-word !important;
+  hyphens: auto;
+}
+
+/* 5. Dyslexia-Friendly Typography */
+html.a11y-dyslexia,
+html.a11y-dyslexia body,
+html.a11y-dyslexia * {
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', 'Comic Sans MS', 'Trebuchet MS', system-ui, sans-serif !important;
+  letter-spacing: 0.03em !important;
+  word-spacing: 0.08em !important;
+}
+
+/* 6. Stepped Line Height */
+html.a11y-lh-1 main p,
+html.a11y-lh-1 main span,
+html.a11y-lh-1 main li {
+  line-height: 1.85 !important;
+}
+
+html.a11y-lh-2 main p,
+html.a11y-lh-2 main span,
+html.a11y-lh-2 main li {
+  line-height: 2.25 !important;
+}
+
+/* 7. Voice Mode Active Focus Highlight */
+.a11y-speech-highlight {
+  outline: 3px solid #00df82 !important;
+  outline-offset: 3px !important;
+  border-radius: 8px !important;
+  background-color: rgba(0, 223, 130, 0.15) !important;
+  transition: all 0.2s ease !important;
+}
+
+/* 8. Guaranteed Visibility for Floating Controls */
+#a11y-trigger,
+#chat-ai-trigger {
+  position: fixed !important;
+  z-index: 9999 !important;
+  filter: none !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: flex !important;
+}
+
 html {
   scroll-behavior: smooth;
   color-scheme: light;
@@ -72,7 +194,7 @@ body {
   background-color: #ffffff;
   color: #0f172a;
   overflow-x: hidden;
-  transition: background-color 0.45s ease, color 0.45s ease;
+  transition: background-color 0.3s cubic-bezier(0.16, 1, 0.3, 1), color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .dark body {
@@ -84,37 +206,29 @@ body {
   color-scheme: dark;
 }
 
-body,
-body * {
-  border-color: color-mix(in srgb, currentColor 14%, transparent);
-  transition-property: background-color, border-color, color, box-shadow, fill, stroke;
-  transition-duration: 0.35s;
-  transition-timing-function: ease;
+/* ══════════════════════════════════════════════════════════════════
+   VIEW TRANSITIONS API FOR ULTRA-SMOOTH THEME SWITCHING (60/120 FPS)
+   ══════════════════════════════════════════════════════════════════ */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+  display: block;
 }
 
-/* Keep older light-only utility classes readable when the theme changes. */
-.dark [class~="bg-white"]:not([class*="dark:bg-"]) {
-  background-color: #0f172a;
+::view-transition-old(root) {
+  z-index: 1;
 }
 
-.dark [class~="bg-slate-50"]:not([class*="dark:bg-"]),
-.dark [class~="bg-slate-100"]:not([class*="dark:bg-"]) {
-  background-color: #111c2e;
+::view-transition-new(root) {
+  z-index: 9999;
 }
 
-.dark [class~="text-slate-900"]:not([class*="dark:text-"]),
-.dark [class~="text-slate-800"]:not([class*="dark:text-"]) {
-  color: #f8fafc;
-}
-
-.dark [class~="text-slate-700"]:not([class*="dark:text-"]),
-.dark [class~="text-slate-600"]:not([class*="dark:text-"]) {
-  color: #cbd5e1;
-}
-
-.dark [class~="border-slate-200"]:not([class*="dark:border-"]),
-.dark [class~="border-slate-300"]:not([class*="dark:border-"]) {
-  border-color: #334155;
+/* Optimize interactive elements transitions */
+a, button, input, select, textarea {
+  transition-property: background-color, border-color, color, fill, stroke, box-shadow, transform;
+  transition-duration: 0.2s;
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 ::selection {

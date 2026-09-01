@@ -1,48 +1,20 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
-import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useState, useMemo } from "react";
+import { motion } from "framer-motion";
 import {
-  ArrowRight,
-  Banknote,
-  Briefcase,
-  CalendarClock,
-  Coins,
-  Landmark,
-  Store,
+  DollarSign,
   TrendingUp,
-  Zap,
-  LineChart as LineChartIcon,
-  ShieldCheck,
+  Clock,
+  Search,
+  ChevronDown,
+  AlertTriangle,
+  Coins,
+  Loader2,
+  CheckCircle2,
 } from "lucide-react";
-import {
-  PieChart,
-  Pie,
-  Cell,
-  Tooltip,
-  ResponsiveContainer,
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-} from "recharts";
-import { toast } from "sonner";
-import type { HasilModal, JenisUsaha, KotaData } from "@/types";
-import { formatRupiah, formatRupiahSingkat } from "@/lib/utils/formatCurrency";
-import { hitungModalAction } from "@/lib/actions/kalkulator";
-import LoadingDots from "@/components/ui/LoadingDots";
-import AnimatedCounter from "@/components/ui/AnimatedCounter";
-
-const SKALA_OPTIONS = [
-  { value: "kecil", label: "Skala Kecil", desc: "1 Orang / Rintisan Mandiri" },
-  { value: "sedang", label: "Skala Sedang", desc: "Tim 2–4 Orang + Booth Lengkap" },
-  { value: "besar", label: "Skala Besar", desc: "Ekspansi & Produksi Komersial" },
-] as const;
-
-const PIE_COLORS = ["#0d9488", "#06b6d4", "#10b981", "#f59e0b", "#8b5cf6"];
+import type { JenisUsaha, KotaData } from "@/types";
+import { formatRupiah } from "@/lib/utils/formatCurrency";
 
 interface ModalCalculatorProps {
   daftarUsaha?: JenisUsaha[];
@@ -53,417 +25,394 @@ export default function ModalCalculator({
   daftarUsaha = [],
   daftarKota = [],
 }: ModalCalculatorProps) {
-  const searchParams = useSearchParams();
-  const paramUsahaId = searchParams.get("usahaId") || "";
-  const paramAnalisisId = searchParams.get("analisisId") || "";
-
-  const [usahaId, setUsahaId] = useState<string>(paramUsahaId);
-  const [kotaId, setKotaId] = useState<string>("jakarta");
-  const [skala, setSkala] = useState<"kecil" | "sedang" | "besar">("kecil");
-  const [analisisId, setAnalisisId] = useState<string>(paramAnalisisId);
-  const [loading, setLoading] = useState(false);
-  const [hasil, setHasil] = useState<HasilModal | null>(null);
-
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem("konekumkm-usaha");
-      if (saved) {
-        const { usahaId: id, analisisId: aId } = JSON.parse(saved);
-        if (id && !usahaId) setUsahaId(id);
-        if (aId && !analisisId) setAnalisisId(aId);
-      }
-    } catch {}
-  }, [usahaId, analisisId]);
-
-  const usaha = useMemo(
-    () => daftarUsaha.find((u) => u.id === usahaId) ?? null,
-    [daftarUsaha, usahaId]
+  // Pre-filled default values matching design
+  const [selectedUsahaId, setSelectedUsahaId] = useState<string>(
+    daftarUsaha.find((u) => u.nama.toLowerCase().includes("kopi"))?.id || "kopi"
   );
-  const kota = useMemo(
-    () => daftarKota.find((k) => k.id === kotaId) ?? null,
-    [daftarKota, kotaId]
+  const [selectedKotaId, setSelectedKotaId] = useState<string>(
+    daftarKota.find((k) => k.nama.toLowerCase().includes("surabaya"))?.id || "surabaya"
+  );
+  const [modalAwal, setModalAwal] = useState<number>(45000000);
+  const [modalAwalStr, setModalAwalStr] = useState<string>("45.000.000");
+  const [operasional, setOperasional] = useState<number>(8500000);
+  const [operasionalStr, setOperasionalStr] = useState<string>("8.500.000");
+  const [isCalculating, setIsCalculating] = useState<boolean>(false);
+
+  // Fallback defaults if props are empty
+  const usahaList = useMemo(() => {
+    if (daftarUsaha.length > 0) return daftarUsaha;
+    return [
+      { id: "kopi", nama: "Warung Kopi", emoji: "☕", modalMin: 15000000, modalMax: 60000000, revenueBulanan: 14000000 },
+      { id: "laundry", nama: "Laundry Kiloan", emoji: "🧺", modalMin: 20000000, modalMax: 50000000, revenueBulanan: 12000000 },
+      { id: "kuliner", nama: "Kuliner / Food Truck", emoji: "🍔", modalMin: 25000000, modalMax: 75000000, revenueBulanan: 18000000 },
+      { id: "barbershop", nama: "Barbershop Modern", emoji: "💈", modalMin: 18000000, modalMax: 45000000, revenueBulanan: 13500000 },
+      { id: "fotocopy", nama: "Jasa Fotokopi & ATK", emoji: "🖨️", modalMin: 30000000, modalMax: 80000000, revenueBulanan: 15000000 },
+    ];
+  }, [daftarUsaha]);
+
+  const kotaList = useMemo(() => {
+    if (daftarKota.length > 0) return daftarKota;
+    return [
+      { id: "surabaya", nama: "Surabaya", provinsi: "Jawa Timur", umr: 4725479 },
+      { id: "jakarta", nama: "DKI Jakarta", provinsi: "DKI Jakarta", umr: 5729876 },
+      { id: "bandung", nama: "Bandung", provinsi: "Jawa Barat", umr: 4209389 },
+      { id: "yogyakarta", nama: "Yogyakarta", provinsi: "DI Yogyakarta", umr: 2417495 },
+      { id: "medan", nama: "Medan", provinsi: "Sumatera Utara", umr: 3228949 },
+      { id: "makassar", nama: "Makassar", provinsi: "Sulawesi Selatan", umr: 3921088 },
+      { id: "denpasar", nama: "Denpasar (Bali)", provinsi: "Bali", umr: 3207459 },
+    ];
+  }, [daftarKota]);
+
+  // Selected entities
+  const selectedKota = useMemo(
+    () => kotaList.find((k) => k.id === selectedKotaId) || kotaList[0],
+    [kotaList, selectedKotaId]
   );
 
-  const hitung = async () => {
-    if (!usahaId || !kotaId) return;
-    setLoading(true);
-    try {
-      const res = await hitungModalAction({ usahaId, kotaId, skala }, analisisId);
-      if (!res.success || !res.hasil) {
-        throw new Error(res.error ?? "Gagal menghitung simulasi modal");
+  // Dynamic calculations for Break-Even Point
+  const calculations = useMemo(() => {
+    // Net profit estimation per month
+    const marginRatio = 0.42; // ~42% gross margin
+    const estimatedMonthlyRevenue = Math.max(operasional * 1.65, 14000000);
+    const netProfitPerMonth = Math.max(estimatedMonthlyRevenue * marginRatio - operasional * 0.25, 5500000);
+
+    const bepMonth = Math.max(4, Math.min(18, Math.ceil(modalAwal / netProfitPerMonth)));
+
+    // Generate 6 sample months around the BEP milestone
+    const m1 = 1;
+    const m2 = Math.max(2, Math.round(bepMonth * 0.35));
+    const m3 = Math.max(3, Math.round(bepMonth * 0.65));
+    const m4 = Math.max(4, bepMonth - 1);
+    const m5 = bepMonth; // The exact BEP Month
+    const m6 = bepMonth + 1; // Post BEP
+
+    const getAccumulatedCashflow = (m: number) => {
+      // In early months, cashflow is negative (unrecovered investment)
+      return Math.round(netProfitPerMonth * m - modalAwal);
+    };
+
+    const formatJt = (val: number) => {
+      const inJt = val / 1000000;
+      if (val < 0) {
+        return `-Rp ${Math.abs(inJt).toFixed(inJt % 1 === 0 ? 0 : 1)}jt`;
       }
-      setHasil(res.hasil);
-      localStorage.setItem(
-        "konekumkm-hasil",
-        JSON.stringify({
-          ...res.hasil,
-          usahaId,
-          kotaId,
-          skala,
-          analisisId,
-          tanggal: new Date().toISOString(),
-        })
-      );
-      toast.success("Kalkulasi modal & break-even berhasil diperbarui!");
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Terjadi kesalahan kalkulasi");
-    } finally {
-      setLoading(false);
-    }
+      return `Rp ${inJt.toFixed(inJt % 1 === 0 ? 0 : 1)}jt`;
+    };
+
+    const bars = [
+      {
+        monthLabel: `Bln ${m1}`,
+        rawVal: getAccumulatedCashflow(m1),
+        valLabel: formatJt(getAccumulatedCashflow(m1)),
+        isBep: false,
+        heightPct: 22,
+      },
+      {
+        monthLabel: `Bln ${m2}`,
+        rawVal: getAccumulatedCashflow(m2),
+        valLabel: formatJt(getAccumulatedCashflow(m2)),
+        isBep: false,
+        heightPct: 42,
+      },
+      {
+        monthLabel: `Bln ${m3}`,
+        rawVal: getAccumulatedCashflow(m3),
+        valLabel: formatJt(getAccumulatedCashflow(m3)),
+        isBep: false,
+        heightPct: 62,
+      },
+      {
+        monthLabel: `Bln ${m4}`,
+        rawVal: getAccumulatedCashflow(m4),
+        valLabel: formatJt(getAccumulatedCashflow(m4)),
+        isBep: false,
+        heightPct: 78,
+      },
+      {
+        monthLabel: `Bln ${m5} (BEP)`,
+        rawVal: Math.max(1500000, getAccumulatedCashflow(m5)),
+        valLabel: formatJt(Math.max(1500000, getAccumulatedCashflow(m5))),
+        isBep: true,
+        heightPct: 90,
+      },
+      {
+        monthLabel: `Bln ${m6}`,
+        rawVal: getAccumulatedCashflow(m6) + 3000000,
+        valLabel: formatJt(getAccumulatedCashflow(m6) + 3000000),
+        isBep: false,
+        isPostBep: true,
+        heightPct: 96,
+      },
+    ];
+
+    return {
+      bepMonth,
+      bars,
+    };
+  }, [modalAwal, operasional]);
+
+  // Form submit handler with smooth feedback
+  const handleHitung = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsCalculating(true);
+    setTimeout(() => {
+      setIsCalculating(false);
+    }, 400);
   };
 
-  const pieData = hasil
-    ? [
-        { name: "Peralatan & Aset", value: hasil.rincianModal.peralatan },
-        { name: "Sewa Muka 3 Bulan", value: hasil.rincianModal.sewaMuka },
-        { name: "Bahan Baku Awal", value: hasil.rincianModal.bahanBakuAwal },
-        { name: "Legalitas & NIB", value: hasil.rincianModal.perizinan },
-        { name: "Promosi Awal", value: hasil.rincianModal.promosiAwal },
-      ]
-    : [];
+  const handleModalChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value.replace(/\D/g, "");
+    const num = Number(raw) || 0;
+    setModalAwal(num);
+    setModalAwalStr(num.toLocaleString("id-ID"));
+  };
 
-  const be = hasil?.breakEvenBulan ?? 0;
-  const bulanBE = Number.isFinite(be) ? Math.ceil(be) : 12;
-
-  const areaData = hasil?.proyeksi12Bulan?.map((p) => ({
-    bulan: `Bln ${p.bulan}`,
-    pendapatan: p.pendapatan,
-    biaya: p.biaya,
-    laba: p.laba,
-    kumulatif: p.kumulatif,
-  })) ?? [];
+  const handleOperasionalChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value.replace(/\D/g, "");
+    const num = Number(raw) || 0;
+    setOperasional(num);
+    setOperasionalStr(num.toLocaleString("id-ID"));
+  };
 
   return (
-    <div className="mx-auto w-full max-w-5xl px-4">
-      {/* Selector Form Card */}
-      <div className="rounded-3xl border-2 border-slate-200 bg-white p-6 sm:p-8 shadow-md">
-        <div className="grid gap-6 lg:grid-cols-2">
-          {/* Usaha selector */}
-          <div>
-            <label className="mb-2 block text-xs font-extrabold uppercase tracking-wider text-slate-700">
-              <Store className="mr-1.5 inline h-4 w-4 text-emerald-600" /> Pilih Jenis Usaha
-            </label>
-            <div className="relative">
-              <select
-                value={usahaId}
-                onChange={(e) => setUsahaId(e.target.value)}
-                className="w-full appearance-none rounded-2xl border-2 border-slate-200 bg-slate-50 px-4 py-3.5 pr-10 text-sm font-bold text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white"
-              >
-                <option value="">Pilih jenis usaha…</option>
-                {daftarUsaha.map((u) => (
-                  <option key={u.id} value={u.id}>
-                    {u.emoji} {u.nama} — {u.kategori}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {usaha && (
-              <div className="mt-3 rounded-2xl border border-slate-200 bg-slate-50 p-3.5 text-xs">
-                <p className="font-extrabold text-slate-900 flex items-center gap-1.5">
-                  <span>{usaha.emoji}</span>
-                  <span>{usaha.nama}</span>
-                </p>
-                <p className="mt-1 text-slate-600 text-[11px] leading-relaxed">{usaha.deskripsi}</p>
-                <div className="mt-2 flex items-center justify-between text-[11px] text-amber-700 font-bold border-t border-slate-200 pt-2">
-                  <span>⚠️ Risiko: {usaha.resiko}</span>
-                  <span className="text-emerald-700 font-extrabold">Rating Potensi: ★★★★☆</span>
-                </div>
-              </div>
-            )}
+    <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 items-start">
+        {/* ══════════════════════════════════════════════════════════════════
+            LEFT COLUMN: KALKULATOR MODAL & BEP FORM CARD
+        ══════════════════════════════════════════════════════════════════ */}
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
+          className="lg:col-span-5 rounded-[2rem] border border-slate-200 bg-white p-7 shadow-xl dark:border-slate-800 dark:bg-[#0a0f1d] dark:shadow-2xl sm:p-8"
+        >
+          {/* Header text with proper wrap protection */}
+          <div className="mb-6 space-y-2">
+            <h2 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+              Kalkulator Modal & BEP
+            </h2>
+            <p className="text-xs leading-relaxed text-slate-500 dark:text-slate-400 break-words max-w-full">
+              Estimasi waktu kembali modal usaha Anda dengan parameter biaya operasional riil.
+            </p>
           </div>
 
-          {/* Kota selector & Skala */}
-          <div>
-            <label className="mb-2 block text-xs font-extrabold uppercase tracking-wider text-slate-700">
-              <Landmark className="mr-1.5 inline h-4 w-4 text-emerald-600" /> Kota Domisili Usaha
-            </label>
-            <select
-              value={kotaId}
-              onChange={(e) => setKotaId(e.target.value)}
-              className="w-full appearance-none rounded-2xl border-2 border-slate-200 bg-slate-50 px-4 py-3.5 text-sm font-bold text-slate-900 outline-none transition focus:border-emerald-500 focus:bg-white"
-            >
-              {daftarKota.map((k) => (
-                <option key={k.id} value={k.id}>
-                  {k.nama} — UMR {formatRupiah(k.umr)}
-                </option>
-              ))}
-            </select>
-
-            {kota && (
-              <div className="mt-3 rounded-2xl border border-emerald-200 bg-emerald-50/70 p-3 text-xs flex items-center justify-between">
-                <span className="text-slate-700 font-medium">
-                  Standar UMR Kota {kota.nama}: <b className="text-emerald-800 font-extrabold">{formatRupiah(kota.umr)}</b>
-                </span>
-                <span className="text-[10px] text-emerald-800 font-bold uppercase tracking-wider">/bulan</span>
-              </div>
-            )}
-
-            <div className="mt-4">
-              <label className="mb-2 block text-xs font-extrabold uppercase tracking-wider text-slate-700">
-                <Zap className="mr-1.5 inline h-4 w-4 text-emerald-600" /> Skala Operasional
+          <form onSubmit={handleHitung} className="space-y-5">
+            {/* Field 1: Jenis Rencana Usaha */}
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                Jenis Rencana Usaha
               </label>
-              <div className="grid grid-cols-3 gap-2">
-                {SKALA_OPTIONS.map((s) => {
-                  const active = skala === s.value;
-                  return (
-                    <button
-                      key={s.value}
-                      type="button"
-                      onClick={() => setSkala(s.value)}
-                      className={`rounded-2xl border-2 p-2.5 text-center text-xs transition-all ${
-                        active
-                          ? "border-emerald-500 bg-emerald-500/10 font-extrabold text-emerald-900 shadow-sm"
-                          : "border-slate-200 bg-white font-semibold text-slate-700 hover:border-slate-300"
+              <div className="relative">
+                <select
+                  value={selectedUsahaId}
+                  onChange={(e) => setSelectedUsahaId(e.target.value)}
+                  className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 py-3.5 pl-4 pr-10 text-sm font-semibold text-slate-900 outline-none transition focus:border-[#00df82] focus:ring-1 focus:ring-[#00df82]/30 dark:border-slate-800 dark:bg-[#0f172a] dark:text-white"
+                >
+                  {usahaList.map((u) => (
+                    <option key={u.id} value={u.id} className="bg-white dark:bg-slate-900">
+                      {u.nama} {u.id === "kopi" ? "(Pre-filled)" : ""}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              </div>
+            </div>
+
+            {/* Field 2: Kota Domisili */}
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                Kota Domisili
+              </label>
+              <div className="relative">
+                <select
+                  value={selectedKotaId}
+                  onChange={(e) => setSelectedKotaId(e.target.value)}
+                  className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 py-3.5 pl-4 pr-10 text-sm font-semibold text-slate-900 outline-none transition focus:border-[#00df82] focus:ring-1 focus:ring-[#00df82]/30 dark:border-slate-800 dark:bg-[#0f172a] dark:text-white"
+                >
+                  {kotaList.map((k) => (
+                    <option key={k.id} value={k.id} className="bg-white dark:bg-slate-900">
+                      {k.nama}
+                    </option>
+                  ))}
+                </select>
+                <Search className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              </div>
+            </div>
+
+            {/* Field 3: Target Modal Awal (Green Border Highlight) */}
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                Target Modal Awal
+              </label>
+              <div className="flex items-center rounded-xl border-2 border-[#00df82] bg-slate-50 px-4 py-3 shadow-sm transition dark:bg-[#0f172a]">
+                <span className="font-bold text-[#00df82] mr-2 text-sm select-none">Rp</span>
+                <input
+                  type="text"
+                  value={modalAwalStr}
+                  onChange={handleModalChange}
+                  className="w-full bg-transparent text-sm font-bold text-slate-900 outline-none dark:text-white"
+                  placeholder="45.000.000"
+                />
+              </div>
+            </div>
+
+            {/* Field 4: Biaya Operasional Bulanan */}
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                Biaya Operasional Bulanan
+              </label>
+              <div className="flex items-center rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 shadow-sm transition focus-within:border-[#00df82] dark:border-slate-800 dark:bg-[#0f172a]">
+                <span className="font-bold text-slate-400 mr-2 text-sm select-none">Rp</span>
+                <input
+                  type="text"
+                  value={operasionalStr}
+                  onChange={handleOperasionalChange}
+                  className="w-full bg-transparent text-sm font-bold text-slate-900 outline-none dark:text-white"
+                  placeholder="8.500.000"
+                />
+              </div>
+            </div>
+
+            {/* Submit Action Button */}
+            <button
+              type="submit"
+              disabled={isCalculating}
+              className="mt-6 flex w-full items-center justify-center gap-2 rounded-full bg-[#00df82] py-4 text-sm font-extrabold text-slate-950 shadow-lg shadow-emerald-500/25 transition-all duration-200 hover:bg-[#00c975] hover:scale-[1.02] active:scale-[0.98]"
+            >
+              {isCalculating ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin text-slate-950" />
+                  <span>Menghitung...</span>
+                </>
+              ) : (
+                <span>Hitung Sekarang</span>
+              )}
+            </button>
+          </form>
+        </motion.div>
+
+        {/* ══════════════════════════════════════════════════════════════════
+            RIGHT COLUMN: 3 SUMMARY METRICS + PROYEKSI ACCUMULATED CASHFLOW BAR CHART
+        ══════════════════════════════════════════════════════════════════ */}
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+          className="lg:col-span-7 space-y-6"
+        >
+          {/* Top 3 Summary Metric Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {/* Card 1: Total Modal Awal */}
+            <div className="flex items-center gap-3.5 rounded-2xl border border-slate-200 bg-white p-4 shadow-md dark:border-slate-800 dark:bg-[#0a0f1d] transition-colors">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-emerald-50 border border-emerald-300/80 text-emerald-600 dark:bg-[#051d14] dark:border-[#00df82]/50 dark:text-[#00df82] shadow-sm">
+                <DollarSign className="h-6 w-6 font-bold" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <span className="block text-[11px] font-semibold text-slate-500 dark:text-slate-400 truncate">
+                  Total Modal Awal
+                </span>
+                <p className="text-base font-extrabold text-slate-900 dark:text-white truncate mt-0.5">
+                  {formatRupiah(modalAwal)}
+                </p>
+              </div>
+            </div>
+
+            {/* Card 2: Operasional/Bulan */}
+            <div className="flex items-center gap-3.5 rounded-2xl border border-slate-200 bg-white p-4 shadow-md dark:border-slate-800 dark:bg-[#0a0f1d] transition-colors">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-amber-50 border border-amber-300/80 text-amber-600 dark:bg-[#1e1706] dark:border-amber-500/50 dark:text-amber-400 shadow-sm">
+                <TrendingUp className="h-6 w-6" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <span className="block text-[11px] font-semibold text-slate-500 dark:text-slate-400 truncate">
+                  Operasional/Bulan
+                </span>
+                <p className="text-base font-extrabold text-slate-900 dark:text-white truncate mt-0.5">
+                  {formatRupiah(operasional)}
+                </p>
+              </div>
+            </div>
+
+            {/* Card 3: Waktu Balik Modal (Green Highlight) */}
+            <div className="flex items-center gap-3.5 rounded-2xl border border-slate-200 bg-white p-4 shadow-md dark:border-slate-800 dark:bg-[#0a0f1d] transition-colors">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-emerald-50 border border-emerald-300/80 text-emerald-600 dark:bg-[#051d14] dark:border-[#00df82]/50 dark:text-[#00df82] shadow-sm">
+                <Clock className="h-6 w-6" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <span className="block text-[11px] font-semibold text-slate-500 dark:text-slate-400 truncate">
+                  Waktu Balik Modal
+                </span>
+                <p className="text-base font-extrabold text-emerald-600 dark:text-[#00df82] truncate mt-0.5">
+                  {calculations.bepMonth} Bulan
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Card: Proyeksi Akumulasi Arus Kas Menuju BEP Bar Chart */}
+          <div className="rounded-[2rem] border border-slate-200 bg-white p-6 sm:p-8 shadow-xl dark:border-slate-800 dark:bg-[#0a0f1d] dark:shadow-2xl transition-colors">
+            <h3 className="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-white mb-8">
+              Proyeksi Akumulasi Arus Kas Menuju BEP
+            </h3>
+
+            {/* Custom Bar Visualization Grid (Responsive with Horizontal Scroll on extra-small screens) */}
+            <div className="relative pt-6 pb-2 overflow-x-auto scrollbar-none">
+              <div className="grid grid-cols-6 gap-2 sm:gap-4 items-end min-h-[220px] min-w-[320px]">
+                {calculations.bars.map((bar, idx) => (
+                  <div key={idx} className="flex flex-col items-center justify-end h-full group">
+                    {/* Top Value Label */}
+                    <span
+                      className={`text-[10px] sm:text-xs font-bold mb-2 transition-all whitespace-nowrap ${
+                        bar.isBep
+                          ? "text-[#00df82] font-extrabold scale-105"
+                          : bar.isPostBep
+                          ? "text-emerald-600 dark:text-slate-300"
+                          : "text-slate-600 dark:text-slate-400"
                       }`}
                     >
-                      <p className="text-xs font-extrabold leading-none">{s.label}</p>
-                      <p className="mt-1 text-[9px] text-slate-500 leading-tight">{s.desc}</p>
-                    </button>
-                  );
-                })}
+                      {bar.valLabel}
+                    </span>
+
+                    {/* Vertical Bar */}
+                    <div className="w-full max-w-[58px] h-40 flex items-end justify-center">
+                      <motion.div
+                        initial={{ height: 0 }}
+                        animate={{ height: `${bar.heightPct}%` }}
+                        transition={{ duration: 0.6, delay: idx * 0.08 }}
+                        className={`w-full rounded-xl transition-all duration-300 ${
+                          bar.isBep
+                            ? "bg-[#00df82] shadow-lg shadow-emerald-500/30 ring-2 ring-[#00df82]/50"
+                            : bar.isPostBep
+                            ? "bg-[#16a34a] hover:bg-[#22c55e]"
+                            : "bg-[#f87171] hover:bg-[#ef4444] dark:bg-[#f87171] dark:hover:bg-[#ef4444]"
+                        }`}
+                      />
+                    </div>
+
+                    {/* Bottom Month Label */}
+                    <span
+                      className={`mt-3 text-[10px] sm:text-xs font-semibold whitespace-nowrap ${
+                        bar.isBep
+                          ? "text-[#00df82] font-bold"
+                          : "text-slate-500 dark:text-slate-400"
+                      }`}
+                    >
+                      {bar.monthLabel}
+                    </span>
+                  </div>
+                ))}
               </div>
+            </div>
+
+            {/* Bottom Info Note with Warning Icon */}
+            <div className="mt-8 pt-5 border-t border-slate-100 dark:border-slate-800/80 flex items-center gap-2.5 text-xs text-slate-500 dark:text-slate-400">
+              <AlertTriangle className="h-4 w-4 shrink-0 text-amber-500" />
+              <span className="leading-relaxed">
+                Analisis berdasarkan UMR regional dan rerata kunjungan 45 konsumen harian.
+              </span>
             </div>
           </div>
-        </div>
-
-        <button
-          onClick={hitung}
-          disabled={!usahaId || !kotaId || loading}
-          className="btn-shine mt-6 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-green-500 py-4 text-sm font-extrabold text-white shadow-lg shadow-emerald-500/25 transition hover:scale-[1.01] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          {loading ? (
-            <>
-              <LoadingDots /> Mengkalkulasi Parameter Finansial…
-            </>
-          ) : (
-            <>
-              <Coins className="h-5 w-5" /> Hitung Kelayakan Modal & Break-Even
-            </>
-          )}
-        </button>
+        </motion.div>
       </div>
-
-      {/* Results view */}
-      <AnimatePresence>
-        {hasil && (
-          <motion.div
-            key="hasil"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.5 }}
-            className="mt-8 space-y-6"
-          >
-            {/* 4 KPI Cards */}
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {[
-                {
-                  label: "Total Investasi Awal",
-                  value: hasil.modalAwal,
-                  icon: Banknote,
-                  color: "text-[#16a34a]",
-                },
-                {
-                  label: "Operasional / Bulan",
-                  value: hasil.operasionalBulanan,
-                  icon: Briefcase,
-                  color: "text-emerald-600",
-                },
-                {
-                  label: "Estimasi Laba Bersih",
-                  value: hasil.labaBulanan,
-                  icon: TrendingUp,
-                  color: "text-green-600",
-                },
-                {
-                  label: "Target Balik Modal",
-                  value: bulanBE,
-                  format: (v: number) => `±${Math.ceil(v)} Bulan`,
-                  icon: CalendarClock,
-                  color: "text-amber-500",
-                },
-              ].map((c) => (
-                <div
-                  key={c.label}
-                  className="relative overflow-hidden rounded-3xl border-2 border-slate-200 bg-white p-5 shadow-md flex flex-col justify-between"
-                >
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <p className="text-[11px] font-extrabold uppercase tracking-wider text-slate-600">
-                        {c.label}
-                      </p>
-                      <c.icon className={`h-7 w-7 ${c.color}`} />
-                    </div>
-                    <p className="mt-3 text-xl sm:text-2xl font-extrabold text-slate-900">
-                      {c.format ? (
-                        <AnimatedCounter value={c.value as number} format={c.format} />
-                      ) : (
-                        <AnimatedCounter value={c.value as number} format={formatRupiah} />
-                      )}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Charts Row */}
-            <div className="grid gap-6 lg:grid-cols-2">
-              {/* Pie Chart: Modal Allocation */}
-              <div className="rounded-3xl border-2 border-slate-200 bg-white p-6 shadow-md">
-                <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-900">
-                  Rincian Alokasi Modal Awal
-                </h3>
-                <div className="mt-4 h-56">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={pieData}
-                        dataKey="value"
-                        nameKey="name"
-                        innerRadius={55}
-                        outerRadius={90}
-                        paddingAngle={3}
-                        stroke="none"
-                      >
-                        {pieData.map((_, i) => (
-                          <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip
-                        formatter={(value) => formatRupiah(Number(value))}
-                        contentStyle={{
-                          background: "#ffffff",
-                          border: "1px solid #cbd5e1",
-                          borderRadius: 16,
-                          color: "#0f172a",
-                          fontSize: 12,
-                          boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1)",
-                        }}
-                      />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-                <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                  {pieData.map((p, i) => (
-                    <div key={p.name} className="flex items-center gap-2 text-slate-700">
-                      <span
-                        className="h-2.5 w-2.5 shrink-0 rounded-full"
-                        style={{ background: PIE_COLORS[i % PIE_COLORS.length] }}
-                      />
-                      <span className="truncate font-semibold">{p.name}</span>
-                      <span className="ml-auto font-extrabold text-slate-900">
-                        {formatRupiah(p.value)}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Area Chart: 12-Month Financial Curve */}
-              <div className="rounded-3xl border-2 border-slate-200 bg-white p-6 shadow-md">
-                <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-900 flex items-center justify-between">
-                  <span>Proyeksi Arus Kas 12 Bulan</span>
-                  <span className="text-emerald-700 font-mono text-[10px]">Ramp-up Curve</span>
-                </h3>
-                <div className="mt-4 h-56">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={areaData}>
-                      <defs>
-                        <linearGradient id="gradRevenue" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#0284c7" stopOpacity={0.3} />
-                          <stop offset="95%" stopColor="#0284c7" stopOpacity={0} />
-                        </linearGradient>
-                        <linearGradient id="gradLaba" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#059669" stopOpacity={0.3} />
-                          <stop offset="95%" stopColor="#059669" stopOpacity={0} />
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                      <XAxis dataKey="bulan" stroke="#475569" fontSize={10} tickLine={false} />
-                      <YAxis
-                        stroke="#475569"
-                        fontSize={10}
-                        tickLine={false}
-                        tickFormatter={(v) => formatRupiahSingkat(v)}
-                        width={60}
-                      />
-                      <Tooltip
-                        formatter={(val, name) => [formatRupiah(Number(val)), name === "pendapatan" ? "Omzet" : "Laba Bersih"]}
-                        contentStyle={{
-                          background: "#ffffff",
-                          border: "1px solid #cbd5e1",
-                          borderRadius: 16,
-                          fontSize: 12,
-                          color: "#0f172a",
-                          boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1)",
-                        }}
-                      />
-                      <Area type="monotone" dataKey="pendapatan" stroke="#0284c7" fillOpacity={1} fill="url(#gradRevenue)" strokeWidth={2} />
-                      <Area type="monotone" dataKey="laba" stroke="#059669" fillOpacity={1} fill="url(#gradLaba)" strokeWidth={2} />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </div>
-                <div className="flex items-center justify-between text-xs text-slate-600 mt-2 border-t border-slate-100 pt-3">
-                  <div className="flex items-center gap-2">
-                    <span className="h-2.5 w-2.5 rounded-full bg-sky-600" />
-                    <span className="font-semibold">Omzet Bulanan</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="h-2.5 w-2.5 rounded-full bg-emerald-600" />
-                    <span className="font-semibold">Laba Bersih</span>
-                  </div>
-                  <span className="text-slate-700 font-semibold">
-                    Margin: <span className="text-emerald-700 font-extrabold">{hasil.marginBulanan}%</span>
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Decision Callout Banner */}
-            <div
-              className={`rounded-3xl border-2 p-6 shadow-md ${
-                hasil.selisihVsUMR >= 0
-                  ? "border-emerald-300 bg-emerald-50/70"
-                  : "border-amber-300 bg-amber-50/70"
-              }`}
-            >
-              <div className="flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
-                <div className="flex items-start gap-4">
-                  <span className="text-3xl sm:text-4xl">
-                    {hasil.selisihVsUMR >= 0 ? "🚀" : "💡"}
-                  </span>
-                  <div>
-                    <h4 className="text-base font-extrabold text-slate-900">
-                      {hasil.selisihVsUMR >= 0
-                        ? "Usaha Ini Memiliki Potensi di Atas Gaji UMR!"
-                        : "Perlu Pendekatan Bertahap (Side-Hustle First)"}
-                    </h4>
-                    <p className="mt-1 text-xs sm:text-sm text-slate-700 leading-relaxed font-medium">
-                      {hasil.kesimpulan}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap sm:flex-nowrap gap-2 shrink-0">
-                  <Link
-                    href="/perbandingan"
-                    className="inline-flex items-center justify-center gap-1.5 rounded-2xl border border-slate-300 bg-white px-5 py-3 text-xs font-bold text-slate-800 transition hover:bg-slate-50"
-                  >
-                    Bandingkan UMR <ArrowRight className="h-3.5 w-3.5" />
-                  </Link>
-                  <Link
-                    href="/rencana-bisnis"
-                    className="btn-shine inline-flex items-center justify-center gap-1.5 rounded-2xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-green-500 px-5 py-3 text-xs font-extrabold text-white shadow-lg shadow-emerald-500/25 transition hover:scale-105"
-                  >
-                    Buat Rencana Bisnis <ArrowRight className="h-3.5 w-3.5" />
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }

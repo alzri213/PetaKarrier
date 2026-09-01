@@ -106,11 +106,13 @@ export default function FlowSection({
     <section
       id="cara-kerja"
       ref={containerRef}
-      className="relative overflow-hidden bg-slate-50/60 px-4 py-24 transition-colors duration-500 dark:bg-slate-950 sm:px-6 lg:px-8"
+      className="relative overflow-hidden bg-slate-50/60 px-4 py-24 dark:bg-slate-950 sm:px-6 lg:px-8"
     >
-      {/* Ambient background glow */}
-      <div className="pointer-events-none absolute right-1/4 top-1/3 h-96 w-96 rounded-full bg-[#16a34a]/10 blur-[130px]" />
-      <div className="pointer-events-none absolute left-1/4 bottom-1/4 h-96 w-96 rounded-full bg-emerald-500/10 blur-[130px]" />
+      {/* Ambient background glow (Dark Mode Only) */}
+      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden hidden dark:block">
+        <div className="absolute right-1/4 top-1/3 h-96 w-96 rounded-full bg-[#16a34a]/10 blur-[130px]" />
+        <div className="absolute left-1/4 bottom-1/4 h-96 w-96 rounded-full bg-emerald-500/10 blur-[130px]" />
+      </div>
 
       <div className="mx-auto max-w-5xl">
         {/* Section Header */}

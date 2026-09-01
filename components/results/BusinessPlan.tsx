@@ -1,348 +1,396 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
 import {
-  ArrowRight,
-  BookOpen,
+  Sparkles,
+  Edit2,
   Download,
-  FileText,
-  Printer,
-  RotateCcw,
-  Share2,
-  Globe2,
-  Building2,
-  CheckCircle2,
+  Check,
 } from "lucide-react";
 import { toast } from "sonner";
-import type { HasilModal, ProfilUser, SdgImpactData } from "@/types";
-import { formatRupiah, formatTanggal } from "@/lib/utils/formatCurrency";
-import { generateRencanaAction } from "@/lib/actions/rencana-bisnis";
-import { hitungSdgImpact } from "@/lib/logic/sdgCalculator";
 
-const LABEL_SKALA: Record<string, string> = {
-  kecil: "Skala Kecil (1 Orang / Rintisan Mandiri)",
-  sedang: "Skala Sedang (Tim 2–4 Orang)",
-  besar: "Skala Besar (Ekspansi Penuh)",
-};
+type EditingSection = null | "ringkasan" | "masalah" | "proyeksi";
 
 export default function BusinessPlan() {
-  const router = useRouter();
-  const [loading, setLoading] = useState(true);
-  const [data, setData] = useState<{
-    profil: ProfilUser;
-    hasil: HasilModal;
-    analisisId?: string;
-    rencanaId?: string;
-    markdown: string;
-    tanggal: string;
-    sdgImpact?: SdgImpactData;
-  } | null>(null);
+  const [editingSection, setEditingSection] = useState<EditingSection>(null);
 
-  useEffect(() => {
-    async function loadData() {
-      try {
-        const profilRaw = localStorage.getItem("konekumkm-profil");
-        const hasilRaw = localStorage.getItem("konekumkm-hasil");
+  // Editable state fields with default values matching reference design
+  const [namaUsaha, setNamaUsaha] = useState("Kopi Kebersamaan");
+  const [ringkasan, setRingkasan] = useState(
+    'Rencana bisnis ini disusun untuk mendirikan "Kopi Kebersamaan", sebuah usaha warung kopi berkonsep modern namun terjangkau di kawasan padat domisili Surabaya. Target pasar utama adalah mahasiswa dan pekerja kreatif yang membutuhkan ruang kerja nyaman dengan harga bersahabat.'
+  );
+  const [masalah1, setMasalah1] = useState(
+    "Kurangnya ruang komunal bersahabat yang dilengkapi koneksi internet andal di Surabaya Timur."
+  );
+  const [masalah2, setMasalah2] = useState(
+    "Harga kopi cafe modern waralaba yang kurang terjangkau untuk kebutuhan konsumsi rutin harian."
+  );
 
-        if (!profilRaw || !hasilRaw) {
-          setLoading(false);
-          return;
-        }
+  // Financial Projection Data (3 Months) — now editable
+  const [proyeksi, setProyeksi] = useState([
+    {
+      bulan: "Bulan 1",
+      modal: "Rp 45jt",
+      operasional: "Rp 8.5jt",
+      revenue: "Rp 12.2jt",
+      profit: "Rp 3.7jt",
+    },
+    {
+      bulan: "Bulan 2",
+      modal: "Rp 0",
+      operasional: "Rp 8.5jt",
+      revenue: "Rp 13.8jt",
+      profit: "Rp 5.3jt",
+    },
+    {
+      bulan: "Bulan 3",
+      modal: "Rp 0",
+      operasional: "Rp 8.5jt",
+      revenue: "Rp 15.0jt",
+      profit: "Rp 6.5jt",
+    },
+  ]);
 
-        const { profil, analisisId: aId1 } = JSON.parse(profilRaw);
-        const hasil = JSON.parse(hasilRaw);
-        const analisisId = hasil.analisisId || aId1;
-
-        if (!hasil?.usaha || !hasil?.kota) {
-          setLoading(false);
-          return;
-        }
-
-        const sdg = hitungSdgImpact(hasil.usaha, hasil.kota, hasil.skala, hasil);
-
-        const res = await generateRencanaAction({
-          profil,
-          hasilModal: hasil,
-          analisisId,
-        });
-
-        setData({
-          profil,
-          hasil,
-          analisisId,
-          rencanaId: res.rencanaId,
-          markdown: res.markdown ?? "",
-          tanggal: hasil.tanggal ?? new Date().toISOString(),
-          sdgImpact: sdg,
-        });
-      } catch (err) {
-        console.error("Error loading business plan:", err);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadData();
-  }, []);
-
-  const unduh = () => {
-    if (!data?.markdown) return;
-    const blob = new Blob([data.markdown], { type: "text/markdown;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `rencana-bisnis-${data.hasil.usaha.id}-petakarir.md`;
-    a.click();
-    URL.revokeObjectURL(url);
-    toast.success("Dokumen Rencana Bisnis berhasil diunduh!");
+  const handleExportPDF = () => {
+    toast.success("Mempersiapkan dokumen PDF rencana bisnis...");
+    setTimeout(() => {
+      window.print();
+    }, 300);
   };
 
-  const salinTautan = () => {
-    if (typeof window !== "undefined") {
-      navigator.clipboard.writeText(window.location.href);
-      toast.success("Tautan dokumen berhasil disalin ke clipboard!");
+  const toggleEdit = (section: EditingSection) => {
+    if (editingSection === section) {
+      // Save & close current section
+      setEditingSection(null);
+      toast.success("Perubahan berhasil disimpan!");
+    } else {
+      // Close any open section, open the new one
+      setEditingSection(section);
     }
   };
 
-  if (loading) {
-    return (
-      <div className="mx-auto flex min-h-[420px] max-w-lg flex-col items-center justify-center p-8 text-center rounded-3xl border-2 border-slate-200 bg-white shadow-md">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-          className="flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-500 text-white shadow-lg shadow-emerald-500/30"
-        >
-          <BookOpen className="h-8 w-8" />
-        </motion.div>
-        <p className="mt-6 font-extrabold text-slate-900 text-lg">Menyusun Dokumen Rencana Bisnis…</p>
-        <p className="mt-2 text-xs text-slate-500">
-          Sistem PetaKarier sedang menyinkronkan proyeksi keuangan dengan parameter kota & target SDG 8.
-        </p>
-      </div>
+  const updateProyeksiField = (
+    index: number,
+    field: "modal" | "operasional" | "revenue" | "profit",
+    value: string
+  ) => {
+    setProyeksi((prev) =>
+      prev.map((row, i) => (i === index ? { ...row, [field]: value } : row))
     );
-  }
-
-  if (!data) {
-    return (
-      <div className="mx-auto max-w-lg p-8 text-center rounded-3xl border-2 border-slate-200 bg-white shadow-md">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-200">
-          <FileText className="h-8 w-8" />
-        </div>
-        <h2 className="mt-4 text-xl font-extrabold text-slate-900">
-          Data Rencana Bisnis Belum Tersedia
-        </h2>
-        <p className="mt-2 text-xs text-slate-600">
-          Silakan jalankan simulasi kalkulator modal terlebih dahulu untuk menerbitkan dokumen rencana bisnis otomatis.
-        </p>
-        <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
-          <Link
-            href="/kalkulator"
-            className="btn-shine flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-green-500 px-6 py-3.5 text-xs font-extrabold text-white shadow-lg"
-          >
-            Buka Kalkulator Modal
-          </Link>
-          <Link
-            href="/analisis"
-            className="flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-6 py-3.5 text-xs font-bold text-slate-700 hover:bg-slate-50"
-          >
-            Mulai Analisis Minat
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
-  const { hasil, profil, sdgImpact } = data;
-  const { usaha, kota } = hasil;
-  const be = hasil.breakEvenBulan;
-  const bulanBE = Number.isFinite(be) ? Math.ceil(be) : 12;
+  };
 
   return (
-    <div className="mx-auto w-full max-w-4xl px-4">
-      {/* Action Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-slate-200 pb-6">
-        <div>
-          <div className="flex items-center gap-2 text-xs font-extrabold text-emerald-700 mb-1">
-            <Globe2 className="h-4 w-4" />
-            <span>Dokumen Terverifikasi SDG 8 & RAN TPB Matriks 4</span>
-          </div>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900">
-            Rencana Bisnis: <span className="text-gradient">{usaha.nama}</span>
-          </h2>
-          <p className="text-xs text-slate-500 mt-1">
-            Dibuat pada {formatTanggal(data.tanggal)} · Siap untuk pengajuan KUR & eksekusi
+    <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
+      {/* ══════════════════════════════════════════════════════════════════
+          TOP HEADER: TITLE, SUBTITLE & AUTO-GENERATED BY AI PILL BADGE
+      ══════════════════════════════════════════════════════════════════ */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+        <div className="space-y-1.5">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+            Rencana Bisnis Anda
+          </h1>
+          <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 font-normal">
+            Draf rencana bisnis terstruktur otomatis yang siap direalisasikan dan diajukan ke calon investor.
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <button
-            onClick={unduh}
-            className="btn-shine inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-green-500 px-5 py-3 text-xs font-extrabold text-white shadow-lg transition hover:scale-105"
-          >
-            <Download className="h-3.5 w-3.5" /> Unduh .MD
-          </button>
-          <button
-            onClick={() => window.print()}
-            className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-white px-5 py-3 text-xs font-bold text-slate-700 transition hover:bg-slate-50"
-          >
-            <Printer className="h-3.5 w-3.5" /> Cetak / PDF
-          </button>
-          <button
-            onClick={salinTautan}
-            className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-white px-3.5 py-3 text-xs font-bold text-slate-700 transition hover:bg-slate-50"
-            title="Salin Tautan"
-          >
-            <Share2 className="h-3.5 w-3.5" />
-          </button>
+
+        {/* Right Badge: AUTO-GENERATED BY AI */}
+        <div className="shrink-0">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/50 bg-emerald-500/10 px-4 py-1.5 text-xs font-extrabold uppercase tracking-wider text-emerald-700 dark:bg-slate-900/80 dark:text-[#00df82] dark:border-emerald-500/40 shadow-sm">
+            AUTO-GENERATED BY AI
+          </span>
         </div>
       </div>
 
-      {/* Document Content View */}
-      <div id="plan-dokumen" className="mt-8 space-y-6 print:space-y-4">
-        {/* Cover Overview Card */}
-        <div className="rounded-3xl border-2 border-emerald-200 bg-emerald-50/50 p-7 sm:p-8 shadow-md">
-          <div className="flex items-start gap-5">
-            <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-white text-4xl shadow-md border border-slate-200">
-              {usaha.emoji}
-            </span>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <span className="rounded-full bg-emerald-100 px-3 py-0.5 text-[10px] font-extrabold text-emerald-800 border border-emerald-300">
-                  {usaha.kategori}
-                </span>
-                <span className="rounded-full bg-green-100 px-3 py-0.5 text-[10px] font-extrabold text-green-800 border border-green-300">
-                  SDG 8 Aligned
-                </span>
-              </div>
-              <h3 className="mt-2 text-2xl sm:text-3xl font-extrabold text-slate-900">{usaha.nama}</h3>
-              <p className="mt-1 text-xs sm:text-sm text-slate-600">
-                Domisili: <b className="text-slate-900">{kota.nama} ({kota.provinsi})</b> · Klasifikasi:{" "}
-                <b className="text-emerald-800">{LABEL_SKALA[hasil.skala]}</b>
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {[
-              { label: "Modal Awal", value: formatRupiah(hasil.modalAwal) },
-              { label: "Laba Bersih/Bln", value: formatRupiah(hasil.labaBulanan) },
-              { label: "Balik Modal (BEP)", value: `±${bulanBE} Bulan` },
-              { label: "Serapan Kerja", value: `~${sdgImpact?.estimasiLapanganKerja ?? 2} Orang` },
-            ].map((s) => (
-              <div key={s.label} className="rounded-2xl bg-white p-3.5 text-center border border-slate-200 shadow-sm">
-                <p className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">
-                  {s.label}
-                </p>
-                <p className="mt-1 text-sm sm:text-base font-extrabold text-slate-900">
-                  {s.value}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Section 1: Executive Summary */}
-        <section className="rounded-3xl border-2 border-slate-200 bg-white p-7 shadow-sm space-y-3">
-          <div className="flex items-center gap-3">
-            <span className="text-xl font-extrabold text-emerald-600 font-mono">01</span>
-            <div className="h-5 w-px bg-slate-200" />
-            <h3 className="text-lg font-extrabold text-slate-900">Ringkasan Eksekutif (Executive Summary)</h3>
-          </div>
-          <p className="text-sm leading-relaxed text-slate-600">
-            Usaha <b className="text-slate-900">{usaha.nama}</b> merupakan model bisnis sektor <b className="text-emerald-700">{usaha.kategori}</b> yang dirancang untuk merespons potensi pasar konsumen di wilayah <b className="text-slate-900">{kota.nama}</b>. Model ini menyeimbangkan efisiensi modal awal dengan proyeksi laba berkelanjutan di atas rata-rata standar upah minimum kota setempat.
-          </p>
-        </section>
-
-        {/* Section 2: SWOT Analysis */}
-        <section className="rounded-3xl border-2 border-slate-200 bg-white p-7 shadow-sm space-y-4">
-          <div className="flex items-center gap-3">
-            <span className="text-xl font-extrabold text-emerald-600 font-mono">02</span>
-            <div className="h-5 w-px bg-slate-200" />
-            <h3 className="text-lg font-extrabold text-slate-900">Analisis Strategis SWOT</h3>
-          </div>
-          <div className="grid gap-3.5 sm:grid-cols-2 text-xs">
-            <div className="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-4 space-y-1">
-              <p className="font-extrabold text-emerald-800 uppercase tracking-wider">Strengths (Kekuatan)</p>
-              <p className="text-slate-700 leading-relaxed">
-                Biaya awal efisien ({formatRupiah(hasil.modalAwal)}), fleksibilitas diferensiasi produk, pemanfaatan direct-to-consumer online via social media.
-              </p>
-            </div>
-            <div className="rounded-2xl border border-rose-200 bg-rose-50/50 p-4 space-y-1">
-              <p className="font-extrabold text-rose-800 uppercase tracking-wider">Weaknesses (Kelemahan)</p>
-              <p className="text-slate-700 leading-relaxed">
-                Kapasitas produksi awal berfokus pada skala rintisan mandiri, butuh waktu membangun reputasi merek lokal di {kota.nama}.
-              </p>
-            </div>
-            <div className="rounded-2xl border border-teal-200 bg-teal-50/50 p-4 space-y-1">
-              <p className="font-extrabold text-teal-800 uppercase tracking-wider">Opportunities (Peluang)</p>
-              <p className="text-slate-700 leading-relaxed">
-                Tingginya penetrasi transaksi QRIS, potensi kemitraan reseller komunitas, serta daya beli masyarakat {kota.nama} (UMR {formatRupiah(kota.umr)}).
-              </p>
-            </div>
-            <div className="rounded-2xl border border-amber-200 bg-amber-50/50 p-4 space-y-1">
-              <p className="font-extrabold text-amber-800 uppercase tracking-wider">Threats (Tantangan & Risiko)</p>
-              <p className="text-slate-700 leading-relaxed">
-                {usaha.resiko}. Fluktuasi harga bahan baku musiman.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* Section 3: Financial Projections & Allocation */}
-        <section className="rounded-3xl border-2 border-slate-200 bg-white p-7 shadow-sm space-y-4">
-          <div className="flex items-center gap-3">
-            <span className="text-xl font-extrabold text-emerald-600 font-mono">03</span>
-            <div className="h-5 w-px bg-slate-200" />
-            <h3 className="text-lg font-extrabold text-slate-900">Struktur Investasi Modal & Keuangan Bulanan</h3>
-          </div>
-
-          <div className="space-y-2.5 text-xs">
-            <div className="flex justify-between py-1.5 border-b border-slate-100">
-              <span className="text-slate-600 font-medium">Pengadaan Peralatan & Workstation</span>
-              <span className="font-extrabold text-slate-900">{formatRupiah(hasil.rincianModal.peralatan)}</span>
-            </div>
-            <div className="flex justify-between py-1.5 border-b border-slate-100">
-              <span className="text-slate-600 font-medium">Sewa Muka Tempat (Alokasi 3 Bulan di {kota.nama})</span>
-              <span className="font-extrabold text-slate-900">{formatRupiah(hasil.rincianModal.sewaMuka)}</span>
-            </div>
-            <div className="flex justify-between py-1.5 border-b border-slate-100">
-              <span className="text-slate-600 font-medium">Bahan Baku & Persediaan Awal</span>
-              <span className="font-extrabold text-slate-900">{formatRupiah(hasil.rincianModal.bahanBakuAwal)}</span>
-            </div>
-            <div className="flex justify-between py-1.5 border-b border-slate-100">
-              <span className="text-slate-600 font-medium">Legalitas Usaha (NIB OSS RBA & Standarisasi)</span>
-              <span className="font-extrabold text-slate-900">{formatRupiah(hasil.rincianModal.perizinan)}</span>
-            </div>
-            <div className="flex justify-between py-1.5 border-b border-slate-100">
-              <span className="text-slate-600 font-medium">Biaya Pemasaran Digital & Promo Peluncuran</span>
-              <span className="font-extrabold text-slate-900">{formatRupiah(hasil.rincianModal.promosiAwal)}</span>
-            </div>
-            <div className="flex justify-between pt-2 border-t-2 border-slate-200 text-sm">
-              <span className="font-extrabold text-slate-900">Total Kebutuhan Modal Awal</span>
-              <span className="font-extrabold text-emerald-700">{formatRupiah(hasil.modalAwal)}</span>
-            </div>
-          </div>
-        </section>
-
-        {/* Action Footer */}
-        <div className="pt-4 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-slate-200">
-          <Link
-            href="/kalkulator"
-            className="inline-flex items-center gap-2 text-xs font-bold text-slate-600 hover:text-emerald-700 transition"
+      {/* ══════════════════════════════════════════════════════════════════
+          MAIN 2-COLUMN LAYOUT: CONTENT CARD (LEFT) & FINANCIAL SIDEBAR (RIGHT)
+      ══════════════════════════════════════════════════════════════════ */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* ── LEFT COLUMN: MAIN BUSINESS PLAN SECTIONS & ACTIONS ── */}
+        <div className="lg:col-span-8 space-y-6">
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="rounded-[2.2rem] border border-slate-200 bg-white p-7 sm:p-9 shadow-xl dark:border-slate-800/90 dark:bg-[#0a0f1d] dark:shadow-2xl transition-colors space-y-8 print:border-none print:shadow-none"
           >
-            <RotateCcw className="h-3.5 w-3.5" /> Hitung Ulang Kalkulator
-          </Link>
-          <div className="flex items-center gap-2">
+            {/* Section 1: Ringkasan Eksekutif */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h2 className="text-base sm:text-lg font-bold text-emerald-600 dark:text-[#00df82] tracking-tight">
+                  1. Ringkasan Eksekutif
+                </h2>
+                <button
+                  type="button"
+                  onClick={() => toggleEdit("ringkasan")}
+                  className={`p-1.5 rounded-lg transition ${
+                    editingSection === "ringkasan"
+                      ? "text-[#00df82] bg-emerald-500/10"
+                      : "text-slate-400 hover:text-[#00df82] hover:bg-emerald-500/10"
+                  }`}
+                  title={editingSection === "ringkasan" ? "Simpan" : "Edit Ringkasan"}
+                >
+                  {editingSection === "ringkasan" ? (
+                    <Check className="h-4 w-4" />
+                  ) : (
+                    <Edit2 className="h-4 w-4" />
+                  )}
+                </button>
+              </div>
+
+              {editingSection === "ringkasan" ? (
+                <textarea
+                  value={ringkasan}
+                  onChange={(e) => setRingkasan(e.target.value)}
+                  rows={4}
+                  className="w-full rounded-xl border border-emerald-400/50 bg-slate-50 p-3 text-sm text-slate-900 outline-none focus:border-[#00df82] focus:ring-1 focus:ring-[#00df82]/30 dark:border-slate-700 dark:bg-slate-900 dark:text-white transition"
+                  autoFocus
+                />
+              ) : (
+                <p className="text-xs sm:text-sm leading-relaxed text-slate-700 dark:text-slate-300 font-normal">
+                  {ringkasan}
+                </p>
+              )}
+            </div>
+
+            {/* Section 2: Analisis Masalah */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h2 className="text-base sm:text-lg font-bold text-emerald-600 dark:text-[#00df82] tracking-tight">
+                  2. Analisis Masalah
+                </h2>
+                <button
+                  type="button"
+                  onClick={() => toggleEdit("masalah")}
+                  className={`p-1.5 rounded-lg transition ${
+                    editingSection === "masalah"
+                      ? "text-[#00df82] bg-emerald-500/10"
+                      : "text-slate-400 hover:text-[#00df82] hover:bg-emerald-500/10"
+                  }`}
+                  title={editingSection === "masalah" ? "Simpan" : "Edit Analisis Masalah"}
+                >
+                  {editingSection === "masalah" ? (
+                    <Check className="h-4 w-4" />
+                  ) : (
+                    <Edit2 className="h-4 w-4" />
+                  )}
+                </button>
+              </div>
+
+              {editingSection === "masalah" ? (
+                <div className="space-y-2">
+                  <input
+                    type="text"
+                    value={masalah1}
+                    onChange={(e) => setMasalah1(e.target.value)}
+                    className="w-full rounded-xl border border-emerald-400/50 bg-slate-50 p-2.5 text-xs sm:text-sm text-slate-900 outline-none focus:border-[#00df82] focus:ring-1 focus:ring-[#00df82]/30 dark:border-slate-700 dark:bg-slate-900 dark:text-white transition"
+                    autoFocus
+                  />
+                  <input
+                    type="text"
+                    value={masalah2}
+                    onChange={(e) => setMasalah2(e.target.value)}
+                    className="w-full rounded-xl border border-emerald-400/50 bg-slate-50 p-2.5 text-xs sm:text-sm text-slate-900 outline-none focus:border-[#00df82] focus:ring-1 focus:ring-[#00df82]/30 dark:border-slate-700 dark:bg-slate-900 dark:text-white transition"
+                  />
+                </div>
+              ) : (
+                <ul className="space-y-2 text-xs sm:text-sm leading-relaxed text-slate-700 dark:text-slate-300 font-normal">
+                  <li className="flex items-start gap-2">
+                    <span className="text-slate-400 select-none">•</span>
+                    <span>{masalah1}</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-slate-400 select-none">•</span>
+                    <span>{masalah2}</span>
+                  </li>
+                </ul>
+              )}
+            </div>
+
+            {/* Section 3: Proyeksi Keuangan (3 Bulan Pertama) */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h2 className="text-base sm:text-lg font-bold text-emerald-600 dark:text-[#00df82] tracking-tight">
+                  3. Proyeksi Keuangan (3 Bulan Pertama)
+                </h2>
+                <button
+                  type="button"
+                  onClick={() => toggleEdit("proyeksi")}
+                  className={`p-1.5 rounded-lg transition ${
+                    editingSection === "proyeksi"
+                      ? "text-[#00df82] bg-emerald-500/10"
+                      : "text-slate-400 hover:text-[#00df82] hover:bg-emerald-500/10"
+                  }`}
+                  title={editingSection === "proyeksi" ? "Simpan" : "Edit Proyeksi"}
+                >
+                  {editingSection === "proyeksi" ? (
+                    <Check className="h-4 w-4" />
+                  ) : (
+                    <Edit2 className="h-4 w-4" />
+                  )}
+                </button>
+              </div>
+
+              {/* Financial Table */}
+              <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800">
+                <div className="overflow-x-auto scrollbar-none">
+                  <table className="w-full text-left text-xs sm:text-sm min-w-[440px]">
+                    <thead>
+                      <tr className="border-b border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-[#0f172a]/80 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                        <th className="py-3 px-4">Bulan</th>
+                        <th className="py-3 px-4">Modal</th>
+                        <th className="py-3 px-4">Operasional</th>
+                        <th className="py-3 px-4">Revenue</th>
+                        <th className="py-3 px-4 text-emerald-600 dark:text-[#00df82]">
+                          Est. Profit
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80 font-medium">
+                      {proyeksi.map((row, idx) => (
+                        <tr
+                          key={idx}
+                          className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors"
+                        >
+                          <td className="py-3 px-4 text-slate-900 dark:text-white font-semibold">
+                            {row.bulan}
+                          </td>
+                          <td className="py-3 px-4 text-slate-600 dark:text-slate-300">
+                            {editingSection === "proyeksi" ? (
+                              <input
+                                type="text"
+                                value={row.modal}
+                                onChange={(e) =>
+                                  updateProyeksiField(idx, "modal", e.target.value)
+                                }
+                                className="w-full min-w-[70px] rounded-lg border border-emerald-400/50 bg-slate-50 px-2 py-1 text-xs outline-none focus:border-[#00df82] dark:border-slate-700 dark:bg-slate-900 dark:text-white transition"
+                              />
+                            ) : (
+                              row.modal
+                            )}
+                          </td>
+                          <td className="py-3 px-4 text-slate-600 dark:text-slate-300">
+                            {editingSection === "proyeksi" ? (
+                              <input
+                                type="text"
+                                value={row.operasional}
+                                onChange={(e) =>
+                                  updateProyeksiField(idx, "operasional", e.target.value)
+                                }
+                                className="w-full min-w-[70px] rounded-lg border border-emerald-400/50 bg-slate-50 px-2 py-1 text-xs outline-none focus:border-[#00df82] dark:border-slate-700 dark:bg-slate-900 dark:text-white transition"
+                              />
+                            ) : (
+                              row.operasional
+                            )}
+                          </td>
+                          <td className="py-3 px-4 text-slate-600 dark:text-slate-300">
+                            {editingSection === "proyeksi" ? (
+                              <input
+                                type="text"
+                                value={row.revenue}
+                                onChange={(e) =>
+                                  updateProyeksiField(idx, "revenue", e.target.value)
+                                }
+                                className="w-full min-w-[70px] rounded-lg border border-emerald-400/50 bg-slate-50 px-2 py-1 text-xs outline-none focus:border-[#00df82] dark:border-slate-700 dark:bg-slate-900 dark:text-white transition"
+                              />
+                            ) : (
+                              row.revenue
+                            )}
+                          </td>
+                          <td className="py-3 px-4 font-bold text-emerald-600 dark:text-[#00df82]">
+                            {editingSection === "proyeksi" ? (
+                              <input
+                                type="text"
+                                value={row.profit}
+                                onChange={(e) =>
+                                  updateProyeksiField(idx, "profit", e.target.value)
+                                }
+                                className="w-full min-w-[70px] rounded-lg border border-emerald-400/50 bg-slate-50 px-2 py-1 text-xs font-bold outline-none focus:border-[#00df82] dark:border-slate-700 dark:bg-slate-900 dark:text-[#00df82] transition"
+                              />
+                            ) : (
+                              row.profit
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Bottom Action Buttons */}
+          <div className="flex flex-col sm:flex-row items-center gap-4 pt-2 print:hidden">
             <button
-              onClick={unduh}
-              className="btn-shine inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-green-500 px-6 py-3 text-xs font-extrabold text-white shadow-lg"
+              type="button"
+              onClick={handleExportPDF}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full bg-[#00df82] px-8 py-3.5 text-sm font-extrabold text-slate-950 shadow-lg shadow-emerald-500/25 transition hover:bg-[#00c975] hover:scale-105 active:scale-95 cursor-pointer"
             >
-              <Download className="h-3.5 w-3.5" /> Unduh Dokumen (.MD)
+              <Download className="h-4 w-4 text-slate-950" />
+              <span>Ekspor PDF</span>
             </button>
           </div>
         </div>
+
+        {/* ── RIGHT COLUMN: DATA FINANSIAL TERPILIH & MENTOR VIRTUAL ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+          className="lg:col-span-4 space-y-6 print:hidden"
+        >
+          {/* Card 1: Data Finansial Terpilih */}
+          <div className="rounded-[2.2rem] border border-slate-200 bg-white p-6 sm:p-7 shadow-xl dark:border-slate-800/90 dark:bg-[#0a0f1d] dark:shadow-2xl transition-colors space-y-5">
+            <h3 className="text-base font-bold tracking-tight text-slate-900 dark:text-white">
+              Data Finansial Terpilih
+            </h3>
+
+            <div className="space-y-4 text-xs sm:text-sm">
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500 dark:text-slate-400">
+                  Estimasi Modal
+                </span>
+                <span className="font-extrabold text-slate-900 dark:text-white">
+                  Rp 45.000.000
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500 dark:text-slate-400">
+                  Rasio UMR Kota
+                </span>
+                <span className="font-extrabold text-emerald-600 dark:text-[#00df82]">
+                  1.52× Lebih Tinggi
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500 dark:text-slate-400">
+                  Target Margin Laba
+                </span>
+                <span className="font-extrabold text-slate-900 dark:text-white">
+                  42.6%
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Card 2: Petunjuk Mentor Virtual (Highlighted with Green Border) */}
+          <div className="rounded-[2.2rem] border-2 border-emerald-500/50 bg-white p-6 sm:p-7 shadow-xl shadow-emerald-500/10 dark:border-emerald-500/50 dark:bg-[#0a0f1d] dark:shadow-2xl transition-colors space-y-3">
+            <div className="flex items-center gap-2 text-emerald-600 dark:text-[#00df82]">
+              <Sparkles className="h-4 w-4" />
+              <h3 className="text-xs sm:text-sm font-bold">
+                Petunjuk Mentor Virtual
+              </h3>
+            </div>
+
+            <p className="text-xs sm:text-sm leading-relaxed text-slate-600 dark:text-slate-400 font-normal">
+              Proyeksi Bulan ke-3 menunjukkan kenaikan tren profit stabil. Hubungi mentor finansial kami jika ingin mempersiapkan berkas pengajuan modal tambahan mikro.
+            </p>
+          </div>
+        </motion.div>
       </div>
     </div>
   );

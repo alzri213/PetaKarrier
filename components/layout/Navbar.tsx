@@ -1,27 +1,47 @@
 "use client";
 
+import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, ArrowUpRight, ShieldCheck, Sparkles } from "lucide-react";
+import { Menu, X, LogOut, Camera, Trash2, Upload, User as UserIcon } from "lucide-react";
+import { useSession, signOut } from "next-auth/react";
+import { toast } from "sonner";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 
-const LEFT_LINKS = [
-  { href: "/", label: "Beranda" },
-  { href: "/analisis", label: "Analisis" },
-  { href: "/kalkulator", label: "Kalkulator" },
-];
-
-const RIGHT_LINKS = [
-  { href: "/sdg-impact", label: "SDG 8" },
+const NAV_LINKS = [
+  { href: "/analisis", label: "Analisis Potensi" },
+  { href: "/kalkulator", label: "Kalkulator BEP" },
+  { href: "/perbandingan", label: "Banding UMR" },
+  { href: "/rencana-bisnis", label: "Business Plan" },
 ];
 
 export default function Navbar() {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [userAvatar, setUserAvatar] = useState<string | null>(null);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const { data: session, status } = useSession();
+  const isLoggedIn = status === "authenticated" && !!session?.user;
+
+  // Load avatar from localStorage or session
+  useEffect(() => {
+    if (session?.user?.email) {
+      try {
+        const saved = localStorage.getItem(`petakarier_avatar_${session.user.email}`);
+        if (saved) {
+          setUserAvatar(saved);
+        } else if (session.user.image) {
+          setUserAvatar(session.user.image);
+        }
+      } catch {}
+    }
+  }, [session?.user?.email, session?.user?.image]);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -45,44 +65,117 @@ export default function Navbar() {
   // Close sidebar on route change
   useEffect(() => {
     setOpen(false);
+    setUserMenuOpen(false);
   }, [pathname]);
 
-  const isHome = pathname === "/";
+  // Close user menu on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        userMenuRef.current &&
+        !userMenuRef.current.contains(e.target as Node)
+      ) {
+        setUserMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Handle Photo Upload with Automatic Canvas Compression
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Harap pilih file gambar (JPG, PNG, WebP).");
+      return;
+    }
+
+    // Max 10MB raw limit before compression
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("Ukuran file maksimal 10MB.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new window.Image();
+      img.onload = () => {
+        // Resize to 256x256 square for optimal performance
+        const canvas = document.createElement("canvas");
+        const size = 256;
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext("2d");
+
+        if (!ctx) {
+          toast.error("Gagal memproses gambar.");
+          return;
+        }
+
+        // Draw centered square crop
+        const minDim = Math.min(img.width, img.height);
+        const startX = (img.width - minDim) / 2;
+        const startY = (img.height - minDim) / 2;
+
+        ctx.drawImage(img, startX, startY, minDim, minDim, 0, 0, size, size);
+
+        const dataUrl = canvas.toDataURL("image/jpeg", 0.88);
+        setUserAvatar(dataUrl);
+
+        if (session?.user?.email) {
+          try {
+            localStorage.setItem(`petakarier_avatar_${session.user.email}`, dataUrl);
+          } catch {}
+        }
+
+        toast.success("Foto profil berhasil diperbarui!");
+      };
+      img.src = event.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+
+    // Reset input value so same file can be selected again if needed
+    e.target.value = "";
+  };
+
+  const handleRemovePhoto = () => {
+    setUserAvatar(null);
+    if (session?.user?.email) {
+      try {
+        localStorage.removeItem(`petakarier_avatar_${session.user.email}`);
+      } catch {}
+    }
+    toast.success("Foto profil dihapus.");
+  };
+
+  const userInitial = session?.user?.name
+    ? session.user.name.charAt(0).toUpperCase()
+    : "U";
 
   return (
     <>
+      {/* Hidden File Input for Avatar Upload */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handlePhotoUpload}
+        accept="image/png,image/jpeg,image/webp,image/jpg"
+        className="hidden"
+      />
+
       <header
-        className={`fixed inset-x-0 top-0 z-40 transition-all duration-300 ${
-          scrolled || !isHome
-            ? "bg-white/90 dark:bg-slate-950/90 backdrop-blur-xl shadow-md border-b border-slate-200 dark:border-slate-800"
-            : "bg-white/80 dark:bg-slate-950/80 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800/80"
+        className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
+          scrolled
+            ? "bg-white/95 dark:bg-[#030712]/95 backdrop-blur-xl border-b border-slate-200/90 dark:border-slate-800/80 shadow-md dark:shadow-black/20"
+            : "bg-white dark:bg-[#030712] border-b border-slate-200/60 dark:border-slate-800/50"
         }`}
       >
-        <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:h-20 sm:px-8 lg:px-12">
-          {/* Left Navigation Links */}
-          <div className="hidden lg:flex items-center gap-8 flex-1">
-            {LEFT_LINKS.map((link) => {
-              const active =
-                link.href === "/" ? pathname === "/" : pathname.startsWith(link.href);
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`text-sm font-semibold transition-colors duration-200 ${
-                    active
-                      ? "text-slate-900 dark:text-white font-extrabold"
-                      : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
-                  }`}
-                >
-                  {link.label}
-                </Link>
-              );
-            })}
-          </div>
-
-          {/* Centered Brand Logo & Text (Reference Design Exact Matching) */}
-          <Link href="/" className="group flex items-center gap-2.5 mx-auto lg:mx-0">
-            <div className="relative flex h-9 w-9 items-center justify-center rounded-xl overflow-hidden shadow-sm border border-emerald-200 bg-white">
+        <nav className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-8 lg:px-12">
+          {/* Brand Logo & Text: Peta Karier */}
+          <Link href="/" className="group flex items-center gap-2.5">
+            <div className="relative flex h-9 w-9 items-center justify-center rounded-xl overflow-hidden shadow-sm border border-emerald-500/30 bg-white">
               <Image
                 src="/logo-utama.png"
                 alt="PetaKarier Logo"
@@ -92,49 +185,175 @@ export default function Navbar() {
                 priority
               />
             </div>
-            <span className="text-xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-              Peta<span className="text-emerald-600 dark:text-emerald-400">Karier</span>
+            <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
+              Peta <span className="text-[#00df82] font-extrabold">Karier</span>
             </span>
           </Link>
 
-          {/* Right Navigation Links & Pill Action Button */}
-          <div className="hidden lg:flex items-center justify-end gap-6 flex-1">
-            {RIGHT_LINKS.map((link) => {
+          {/* Centered Navigation Links */}
+          <div className="hidden lg:flex items-center gap-8">
+            {NAV_LINKS.map((link) => {
               const active = pathname.startsWith(link.href);
               return (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`text-sm font-semibold transition-colors duration-200 ${
+                  className={`text-sm font-medium transition-all duration-200 ${
                     active
-                      ? "text-slate-900 dark:text-white font-extrabold"
-                      : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
+                      ? "text-[#00df82] font-bold"
+                      : "text-slate-600 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white"
                   }`}
                 >
                   {link.label}
                 </Link>
               );
             })}
-
-            {/* Dark Mode Toggle Button */}
-            <ThemeToggle />
-
-            {/* Pill Outline Button with Upward Diagonal Arrow */}
-            <Link
-              href="/analisis"
-              className="inline-flex items-center gap-1.5 rounded-full border-2 border-emerald-600 dark:border-emerald-500 px-5 py-2 text-xs font-extrabold text-emerald-700 dark:text-emerald-400 hover:bg-emerald-600 hover:text-white dark:hover:bg-emerald-500 dark:hover:text-white transition-all duration-300 shadow-sm"
-            >
-              <span>Mulai Analisis</span>
-              <ArrowUpRight className="h-4 w-4" />
-            </Link>
           </div>
 
-          {/* Mobile Right Controls: ThemeToggle + Hamburger Trigger */}
-          <div className="flex lg:hidden items-center gap-2">
+          {/* Right Action Area */}
+          <div className="hidden lg:flex items-center gap-4">
+            <ThemeToggle />
+
+            {isLoggedIn ? (
+              /* ═══ LOGGED IN: User Avatar & Dropdown ═══ */
+              <div className="relative" ref={userMenuRef}>
+                <button
+                  onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  className="group flex items-center gap-2.5 rounded-full border border-slate-200 bg-slate-50 py-1.5 pl-1.5 pr-4 transition hover:bg-slate-100 hover:border-emerald-400 dark:border-slate-700 dark:bg-slate-900 dark:hover:bg-slate-800 dark:hover:border-emerald-500/50 shadow-sm"
+                >
+                  {userAvatar ? (
+                    <div className="relative h-8 w-8 overflow-hidden rounded-full border border-emerald-400/80 shadow-sm">
+                      <Image
+                        src={userAvatar}
+                        alt={session?.user?.name || "Foto Profil"}
+                        width={32}
+                        height={32}
+                        className="h-full w-full object-cover"
+                        unoptimized
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#00df82] text-sm font-bold text-slate-950 shadow-sm">
+                      {userInitial}
+                    </div>
+                  )}
+
+                  <span className="text-sm font-semibold text-slate-700 dark:text-slate-200 max-w-[130px] truncate">
+                    {session?.user?.name || "User"}
+                  </span>
+                </button>
+
+                {/* Dropdown Menu with Profile Photo Upload Options */}
+                <AnimatePresence>
+                  {userMenuOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute right-0 top-full mt-2 w-80 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-[#0a0f1d]"
+                    >
+                      {/* User Header with Avatar & Quick Camera Trigger */}
+                      <div className="border-b border-slate-100 dark:border-slate-800/80 px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="relative group/avatar cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+                            {userAvatar ? (
+                              <div className="relative h-12 w-12 overflow-hidden rounded-full border-2 border-emerald-400 shadow-md">
+                                <Image
+                                  src={userAvatar}
+                                  alt="Foto Profil"
+                                  width={48}
+                                  height={48}
+                                  className="h-full w-full object-cover"
+                                  unoptimized
+                                />
+                              </div>
+                            ) : (
+                              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#00df82] text-base font-extrabold text-slate-950 shadow-md">
+                                {userInitial}
+                              </div>
+                            )}
+
+                            {/* Camera overlay icon */}
+                            <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/50 opacity-0 group-hover/avatar:opacity-100 transition-opacity">
+                              <Camera className="h-4 w-4 text-white" />
+                            </div>
+                          </div>
+
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-bold text-slate-900 dark:text-white break-words">
+                              {session?.user?.name}
+                            </p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 break-all">
+                              {session?.user?.email}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Profile Photo Actions */}
+                      <div className="p-1.5 border-b border-slate-100 dark:border-slate-800/80 space-y-0.5">
+                        <button
+                          type="button"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 transition hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-emerald-600 dark:hover:text-[#00df82]"
+                        >
+                          <Camera className="h-4 w-4 text-emerald-500" />
+                          <span>{userAvatar ? "Ganti Foto Profil" : "Upload Foto Profil"}</span>
+                        </button>
+
+                        {userAvatar && (
+                          <button
+                            type="button"
+                            onClick={handleRemovePhoto}
+                            className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-slate-500 dark:text-slate-400 transition hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-600 dark:hover:text-red-400"
+                          >
+                            <Trash2 className="h-4 w-4 text-red-500" />
+                            <span>Hapus Foto Profil</span>
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Sign Out Action */}
+                      <div className="p-1.5">
+                        <button
+                          type="button"
+                          onClick={() => signOut({ callbackUrl: "/" })}
+                          className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30"
+                        >
+                          <LogOut className="h-4 w-4" />
+                          <span>Keluar</span>
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            ) : (
+              /* ═══ LOGGED OUT: Login & Daftar Buttons ═══ */
+              <>
+                <Link
+                  href="/login"
+                  className="text-sm font-semibold text-slate-700 transition hover:text-slate-950 dark:text-slate-300 dark:hover:text-white"
+                >
+                  Masuk
+                </Link>
+                <Link
+                  href="/signup"
+                  className="inline-flex items-center justify-center rounded-full bg-[#00df82] px-6 py-2.5 text-sm font-bold text-slate-950 shadow-md transition-all duration-200 hover:bg-[#00c975] hover:scale-105 active:scale-95"
+                >
+                  Daftar
+                </Link>
+              </>
+            )}
+          </div>
+
+          {/* Mobile Right Controls: ThemeToggle + Hamburger Menu Trigger */}
+          <div className="flex lg:hidden items-center gap-3">
             <ThemeToggle />
             <button
               onClick={() => setOpen(true)}
-              className="flex h-10 w-10 items-center justify-center rounded-xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 transition hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-emerald-300"
+              className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 transition hover:bg-slate-100 dark:hover:bg-slate-800"
               aria-label="Buka menu navigasi"
             >
               <Menu className="h-5 w-5" />
@@ -152,7 +371,7 @@ export default function Navbar() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setOpen(false)}
-              className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             />
 
             <motion.div
@@ -160,22 +379,24 @@ export default function Navbar() {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              className="absolute inset-y-0 right-0 flex w-full max-w-[300px] flex-col bg-white p-6 text-slate-900 shadow-2xl transition-colors dark:bg-slate-950 dark:text-slate-100 justify-between"
+              className="absolute inset-y-0 right-0 flex w-full max-w-[300px] flex-col bg-white dark:bg-[#030712] p-6 text-slate-900 dark:text-white shadow-2xl justify-between border-l border-slate-200 dark:border-slate-800"
             >
               <div>
-                <div className="flex items-center justify-between border-b border-slate-100 pb-4 dark:border-slate-800">
-                  <div className="flex items-center gap-2">
-                    <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 border border-emerald-200">
+                <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
+                  <Link href="/" onClick={() => setOpen(false)} className="flex items-center gap-2">
+                    <div className="relative flex h-8 w-8 items-center justify-center rounded-lg overflow-hidden border border-emerald-500/30 bg-white">
                       <Image
                         src="/logo-utama.png"
                         alt="PetaKarier Logo"
-                        width={28}
-                        height={28}
-                        className="object-contain p-0.5"
+                        width={32}
+                        height={32}
+                        className="h-full w-full object-contain p-0.5"
                       />
+                    </div>
+                    <span className="text-lg font-bold text-slate-900 dark:text-white">
+                      Peta <span className="text-[#00df82]">Karier</span>
                     </span>
-                    <span className="font-extrabold text-slate-900 dark:text-white">PetaKarier</span>
-                  </div>
+                  </Link>
                   <button
                     onClick={() => setOpen(false)}
                     className="p-1 text-slate-400 transition-colors hover:text-slate-700 dark:hover:text-white"
@@ -184,29 +405,99 @@ export default function Navbar() {
                   </button>
                 </div>
 
-                <div className="mt-6 flex flex-col gap-3">
-                  {[...LEFT_LINKS, ...RIGHT_LINKS].map((link) => (
-                    <Link
-                      key={link.href}
-                      href={link.href}
-                      onClick={() => setOpen(false)}
-                      className="rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-50 hover:text-emerald-700 dark:text-slate-300 dark:hover:bg-slate-900 dark:hover:text-emerald-400"
+                {/* Show user info with photo upload in mobile drawer */}
+                {isLoggedIn && (
+                  <div className="mt-4 flex items-center justify-between rounded-xl bg-slate-50 dark:bg-slate-900/80 p-3 border border-slate-200 dark:border-slate-800">
+                    <div className="flex items-center gap-3 min-w-0">
+                      {userAvatar ? (
+                        <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full border border-emerald-400 shadow-sm">
+                          <Image
+                            src={userAvatar}
+                            alt="Foto Profil"
+                            width={40}
+                            height={40}
+                            className="h-full w-full object-cover"
+                            unoptimized
+                          />
+                        </div>
+                      ) : (
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#00df82] text-sm font-bold text-slate-950">
+                          {userInitial}
+                        </div>
+                      )}
+
+                      <div className="min-w-0">
+                        <p className="text-sm font-bold text-slate-900 dark:text-white truncate">
+                          {session?.user?.name}
+                        </p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                          {session?.user?.email}
+                        </p>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-[#00df82] hover:bg-emerald-100 transition"
+                      title="Upload Foto"
                     >
-                      {link.label}
-                    </Link>
-                  ))}
+                      <Camera className="h-4 w-4" />
+                    </button>
+                  </div>
+                )}
+
+                <div className="mt-6 flex flex-col gap-2">
+                  {NAV_LINKS.map((link) => {
+                    const active = pathname.startsWith(link.href);
+                    return (
+                      <Link
+                        key={link.href}
+                        href={link.href}
+                        onClick={() => setOpen(false)}
+                        className={`rounded-xl px-4 py-3 text-sm font-medium transition ${
+                          active
+                            ? "bg-emerald-50 text-[#00df82] dark:bg-emerald-950/60 dark:text-[#00df82] font-bold"
+                            : "text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-900 dark:hover:text-white"
+                        }`}
+                      >
+                        {link.label}
+                      </Link>
+                    );
+                  })}
                 </div>
               </div>
 
-              <div className="border-t border-slate-100 pt-6 dark:border-slate-800">
-                <Link
-                  href="/analisis"
-                  onClick={() => setOpen(false)}
-                  className="flex w-full items-center justify-center gap-2 rounded-full border-2 border-emerald-600 py-3 text-xs font-extrabold text-emerald-700 transition hover:bg-emerald-600 hover:text-white dark:border-emerald-500 dark:text-emerald-400"
-                >
-                  <span>Mulai Analisis</span>
-                  <ArrowUpRight className="h-4 w-4" />
-                </Link>
+              <div className="border-t border-slate-200 dark:border-slate-800 pt-6 space-y-3">
+                {isLoggedIn ? (
+                  <button
+                    onClick={() => {
+                      setOpen(false);
+                      signOut({ callbackUrl: "/" });
+                    }}
+                    className="flex w-full items-center justify-center gap-2 rounded-full border border-red-200 bg-red-50 py-3 text-sm font-bold text-red-600 transition hover:bg-red-100 dark:border-red-500/30 dark:bg-red-950/20 dark:text-red-400 dark:hover:bg-red-950/40"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Keluar
+                  </button>
+                ) : (
+                  <>
+                    <Link
+                      href="/login"
+                      onClick={() => setOpen(false)}
+                      className="flex w-full items-center justify-center rounded-full border border-slate-200 bg-white py-3 text-sm font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+                    >
+                      Masuk
+                    </Link>
+                    <Link
+                      href="/signup"
+                      onClick={() => setOpen(false)}
+                      className="flex w-full items-center justify-center rounded-full bg-[#00df82] py-3 text-sm font-bold text-slate-950 transition hover:bg-[#00c975]"
+                    >
+                      Daftar
+                    </Link>
+                  </>
+                )}
               </div>
             </motion.div>
           </div>

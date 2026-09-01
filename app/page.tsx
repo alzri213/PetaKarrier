@@ -1,24 +1,19 @@
 import Hero from "@/components/landing/Hero";
+import UMRMapSection from "@/components/landing/UMRMapSection";
 import EvidenceSection from "@/components/landing/EvidenceSection";
 import FeaturesSection from "@/components/landing/FeaturesSection";
 import SdgSection from "@/components/landing/SdgSection";
-import WhySection from "@/components/landing/WhySection";
-import FlowSection from "@/components/landing/FlowSection";
-import TestimoniSection from "@/components/landing/TestimoniSection";
-import TechSection from "@/components/landing/TechSection";
+import LandingGate from "@/components/landing/LandingGate";
 
 export default function Home() {
   return (
     <div className="landing-surface">
       <Hero />
+      <UMRMapSection />
       <EvidenceSection />
       <FeaturesSection />
       <SdgSection />
-      <WhySection />
-      <FlowSection />
-      <TestimoniSection />
-      <TechSection />
+      <LandingGate />
     </div>
   );
 }
-

@@ -1,27 +1,29 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
+import { prisma, isDatabaseConfigured } from "@/lib/prisma";
 import type { PlatformStatsData } from "@/types";
 
 export async function getPlatformStats(): Promise<PlatformStatsData> {
-  try {
-    const stats = await prisma.platformStats.findUnique({
-      where: { id: "global" },
-    });
+  if (isDatabaseConfigured()) {
+    try {
+      const stats = await prisma.platformStats.findUnique({
+        where: { id: "global" },
+      });
 
-    const kotaCount = await prisma.kota.count().catch(() => 18);
+      const kotaCount = await prisma.kota.count().catch(() => 18);
 
-    if (stats) {
-      return {
-        totalAnalisis: stats.totalAnalisis,
-        totalRencanaBisnis: stats.totalRencanaBisnis,
-        totalEstimasiUMKM: stats.totalEstimasiUMKM,
-        totalEstimasiKerja: stats.totalEstimasiKerja,
-        totalKotaAktif: kotaCount > 0 ? kotaCount : 18,
-      };
+      if (stats) {
+        return {
+          totalAnalisis: stats.totalAnalisis,
+          totalRencanaBisnis: stats.totalRencanaBisnis,
+          totalEstimasiUMKM: stats.totalEstimasiUMKM,
+          totalEstimasiKerja: stats.totalEstimasiKerja,
+          totalKotaAktif: kotaCount > 0 ? kotaCount : 18,
+        };
+      }
+    } catch {
+      // Gracefully fall back to verified default data
     }
-  } catch (err) {
-    console.warn("⚠️ Database query failed for PlatformStats, using default:", err);
   }
 
   return {
@@ -32,3 +34,4 @@ export async function getPlatformStats(): Promise<PlatformStatsData> {
     totalKotaAktif: 18,
   };
 }
+

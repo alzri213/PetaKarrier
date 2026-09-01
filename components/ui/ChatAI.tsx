@@ -114,23 +114,19 @@ export default function ChatAI() {
     <>
       {/* ═══ Floating trigger button ═══ */}
       <button
+        id="chat-ai-trigger"
         onClick={() => setIsOpen((v) => !v)}
-        className="fixed bottom-20 right-4 z-[55] flex h-14 w-14 items-center justify-center
-                   rounded-full bg-gradient-to-br from-teal-500 via-teal-600 to-cyan-400
-                   text-white shadow-lg shadow-teal-500/30
-                   transition-all duration-300 hover:scale-110 hover:shadow-xl hover:shadow-teal-500/40
-                   active:scale-95"
+        className="fixed bottom-5 right-4 sm:right-6 z-[45] flex h-11 w-11 sm:h-13 sm:w-13 items-center justify-center
+                   rounded-full bg-[#00df82] text-slate-950 shadow-xl shadow-emerald-500/30
+                   transition-all duration-300 hover:scale-110 hover:bg-[#00c975]
+                   active:scale-95 border-2 border-emerald-300/60 cursor-pointer touch-manipulation"
         aria-label="Chat dengan AI"
         title="Tanya AI PetaKarier"
       >
         {isOpen ? (
-          <X className="h-5 w-5" />
+          <X className="h-4 w-4 sm:h-5 sm:w-5 text-slate-950" />
         ) : (
-          <Sparkles className="h-5 w-5" />
-        )}
-        {/* Pulse ring when closed */}
-        {!isOpen && (
-          <span className="absolute inline-flex h-full w-full animate-pulse-ring rounded-full bg-teal-400/30" />
+          <MessageCircle className="h-5 w-5 sm:h-6 sm:w-6 text-slate-950 fill-slate-950/20" />
         )}
       </button>
 
@@ -152,10 +148,10 @@ export default function ChatAI() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 20, scale: 0.95 }}
               transition={{ type: "spring", damping: 28, stiffness: 340, mass: 0.8 }}
-              className="fixed bottom-36 right-4 z-[57] flex w-[calc(100vw-2rem)] max-w-[400px]
+              className="fixed bottom-20 right-4 left-4 sm:left-auto sm:right-6 z-[57] flex max-w-[390px]
                          flex-col overflow-hidden rounded-3xl border border-white/10
-                         bg-[#0a0e1c] shadow-2xl shadow-black/60 sm:right-4"
-              style={{ height: "min(520px, calc(100vh - 180px))", willChange: "transform" }}
+                         bg-[#0a0e1c] shadow-2xl shadow-black/60"
+              style={{ height: "min(520px, calc(100vh - 120px))", willChange: "transform" }}
             >
               {/* Header */}
               <div className="flex items-center justify-between border-b border-white/10 bg-[#0d1226]/90 px-5 py-3.5 backdrop-blur-xl">

@@ -60,7 +60,8 @@ export default function EvidenceSection() {
                   src="/umkm-indonesia-hero.jpg"
                   alt="Wirausaha Muda UMKM Indonesia"
                   fill
-                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 58vw, 700px"
+                  className="object-cover scale-[1.16] sm:scale-[1.18] object-center transition-transform duration-700 hover:scale-[1.20]"
                   priority
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent lg:bg-gradient-to-r lg:from-transparent lg:to-white/90 dark:lg:to-slate-900/90" />

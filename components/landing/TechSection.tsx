@@ -16,8 +16,8 @@ const TEKNOLOGI = [
 
 export default function TechSection() {
   return (
-    <section className="relative overflow-hidden px-4 pb-28 pt-12 sm:px-6 lg:px-8 bg-slate-50/50 dark:bg-slate-950 transition-colors duration-300">
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-96">
+    <section className="relative overflow-hidden px-4 pb-28 pt-12 sm:px-6 lg:px-8 bg-slate-50/50 dark:bg-slate-950">
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-96 hidden dark:block">
         <div className="absolute bottom-0 left-1/2 h-[26rem] w-[50rem] -translate-x-1/2 animate-blob rounded-full bg-emerald-500/10 blur-[130px]" />
         <div className="absolute bottom-0 right-1/4 h-72 w-72 animate-blob rounded-full bg-green-400/10 blur-[110px] [animation-delay:-6s]" />
       </div>

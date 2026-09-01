@@ -6,6 +6,9 @@ import Footer from "@/components/layout/Footer";
 import { Toaster } from "@/components/ui/sonner";
 import AccessibilityPanel from "@/components/ui/AccessibilityPanel";
 import ChatAI from "@/components/ui/ChatAI";
+import InitialPageLoader from "@/components/ui/InitialPageLoader";
+import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import { SessionProvider } from "@/components/providers/SessionProvider";
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -50,8 +53,6 @@ export const metadata: Metadata = {
   },
 };
 
-import { ThemeProvider } from "@/components/providers/ThemeProvider";
-
 export default function RootLayout({
   children,
 }: {
@@ -63,18 +64,22 @@ export default function RootLayout({
         suppressHydrationWarning
         className="min-h-screen flex flex-col font-sans antialiased bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300"
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-        >
-          <Navbar />
-          <main className="flex-1">{children}</main>
-          <Footer />
-          <Toaster position="top-right" richColors />
-          <AccessibilityPanel />
-          <ChatAI />
-        </ThemeProvider>
+        <SessionProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange={false}
+          >
+            <Navbar />
+            <InitialPageLoader />
+            <main className="flex-1">{children}</main>
+            <Footer />
+            <Toaster position="top-right" richColors />
+            <AccessibilityPanel />
+            <ChatAI />
+          </ThemeProvider>
+        </SessionProvider>
       </body>
     </html>
   );

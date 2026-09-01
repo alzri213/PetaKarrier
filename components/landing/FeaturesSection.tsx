@@ -53,7 +53,7 @@ export default function FeaturesSection() {
   };
 
   return (
-    <section className="relative overflow-visible bg-white px-4 py-24 transition-colors duration-500 dark:bg-gradient-to-b dark:from-slate-950 dark:to-slate-900 sm:px-6 lg:px-8">
+    <section className="relative overflow-visible bg-white px-4 py-24 dark:bg-gradient-to-b dark:from-slate-950 dark:to-slate-900 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl overflow-visible">
         {/* Header */}
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">

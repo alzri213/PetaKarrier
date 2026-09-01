@@ -77,9 +77,9 @@ const MATRIKS_PILLARS = [
 
 export default function SdgSection() {
   return (
-    <section className="relative bg-gradient-to-b from-white to-emerald-50 px-4 py-28 transition-colors duration-500 dark:from-slate-900 dark:via-slate-900 dark:to-slate-950 sm:px-6 lg:px-8">
-      <div className="pointer-events-none absolute right-1/4 top-10 h-96 w-96 rounded-full bg-emerald-200/30 dark:bg-emerald-500/10 blur-[130px]" />
-      <div className="pointer-events-none absolute left-10 bottom-10 h-80 w-80 rounded-full bg-orange-200/30 dark:bg-orange-500/10 blur-[120px]" />
+    <section className="relative bg-gradient-to-b from-white to-emerald-50 px-4 py-28 dark:from-slate-900 dark:via-slate-900 dark:to-slate-950 sm:px-6 lg:px-8">
+      <div className="pointer-events-none absolute right-1/4 top-10 h-96 w-96 rounded-full bg-emerald-500/10 blur-[130px] hidden dark:block" />
+      <div className="pointer-events-none absolute left-10 bottom-10 h-80 w-80 rounded-full bg-orange-500/10 blur-[120px] hidden dark:block" />
 
       <div className="mx-auto max-w-7xl">
         {/* Section Header */}
