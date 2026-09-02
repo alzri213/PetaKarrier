@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-# 🌐 PetaKarrier — Ekosistem Pemberdayaan & Perencanaan Usaha Inklusif
-=======
 # 🌐 PetaKarier — Ekosistem Pemberdayaan & Perencanaan Usaha Inklusif
 >>>>>>> 5791fa0c2a954590dd52fcf8763cafa3c2b5efb6
 
