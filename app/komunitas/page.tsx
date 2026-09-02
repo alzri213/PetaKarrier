@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function KomunitasPage() {
   return (
-    <div className="min-h-screen pb-24">
+    <div className="min-h-screen pb-24 overflow-x-hidden">
       <PageHero
         title={
           <>

@@ -200,7 +200,8 @@ export default function ResourceHub() {
     <div className="mx-auto w-full max-w-6xl px-4 space-y-10">
 
       {/* ── FAN CAROUSEL ── */}
-      <div className="relative select-none overflow-hidden">
+      <div className="relative select-none"
+           style={{ isolation: "isolate" }}>
 
         {/* Stage */}
         <div
