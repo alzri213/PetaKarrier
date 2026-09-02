@@ -148,9 +148,10 @@ export default function SdgSection() {
 
                 <div className="pt-2">
                   <a
-                    href="https://sdgs.bappenas.go.id/website/wp-content/uploads/2023/11/Lampiran-III-RAN-Matriks-3-dan-4.pdf"
+                    href="/Buku-Capaian-SDGs-Indonesia-2025.pdf"
                     target="_blank"
                     rel="noopener noreferrer"
+                    download
                     className="btn-shine group inline-flex items-center gap-2.5 rounded-2xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-green-500 px-6 py-3.5 text-xs font-extrabold text-white shadow-md shadow-emerald-600/20 transition-all duration-300 hover:scale-105 hover:shadow-lg"
                   >
                     <FileText className="h-4 w-4 shrink-0 text-white transition-transform duration-300 group-hover:scale-110" />

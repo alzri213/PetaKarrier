@@ -14,12 +14,14 @@ import {
   ArrowRight,
   Loader2,
   AlertCircle,
+  CheckCircle2,
 } from "lucide-react";
 
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/";
+  const justRegistered = searchParams.get("registered") === "true";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -80,6 +82,18 @@ function LoginForm() {
           Selamat datang kembali! Masukkan email dan password Anda.
         </p>
       </div>
+
+      {/* Registration success banner */}
+      {justRegistered && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6 flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 dark:border-emerald-500/30 dark:bg-emerald-950/30 dark:text-emerald-300"
+        >
+          <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" />
+          <span>Akun berhasil dibuat! Silakan masuk dengan email dan password kamu.</span>
+        </motion.div>
+      )}
 
       {/* Error Alert */}
       {error && (

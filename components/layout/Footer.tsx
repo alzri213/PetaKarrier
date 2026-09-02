@@ -12,7 +12,7 @@ export default function Footer() {
           {/* Brand Col */}
           <div className="lg:col-span-2 space-y-4">
             <Link href="/" className="inline-flex items-center gap-2.5">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl overflow-hidden shadow-lg shadow-emerald-500/25 border border-slate-700 bg-white">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl overflow-hidden shadow-lg shadow-emerald-500/25 border border-slate-200 bg-white dark:border-slate-700">
                 <Image
                   src="/logo-utama.png"
                   alt="PetaKarier Logo"
@@ -122,7 +122,7 @@ export default function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-slate-800 pt-8 sm:flex-row text-xs text-slate-500">
+        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-slate-200 pt-8 sm:flex-row text-xs text-slate-500 dark:border-slate-800">
           <p>© {new Date().getFullYear()} PetaKarier · Selaras RAN TPB / SDG 8 Indonesia.</p>
           <p className="flex items-center gap-1">
             Dibangun dengan <Heart className="h-3.5 w-3.5 text-rose-500 fill-rose-500" /> untuk UMKM Indonesia

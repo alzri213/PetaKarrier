@@ -12,7 +12,6 @@ export default function KomunitasPage() {
   return (
     <div className="min-h-screen pb-24">
       <PageHero
-        badge="Fitur 6 · Ekosistem Terpadu & Layanan Resmi"
         title={
           <>
             Resource Hub & <span className="text-gradient">Akselerasi UMKM</span>

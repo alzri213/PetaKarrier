@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useAnimationControls } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -11,7 +11,6 @@ import {
   Plus,
   Minus,
   MapPin,
-  Sparkles,
   ChevronRight,
   TrendingUp,
   Building2,
@@ -264,10 +263,45 @@ export default function InteractiveUMRMap() {
   const isLoggedIn = status === "authenticated" && !!session?.user;
 
   const [searchQuery, setSearchQuery] = useState("");
-  // Null by default: Modal popover only appears when user explicitly clicks a city pin
   const [selectedKota, setSelectedKota] = useState<KotaPin | null>(null);
   const [zoom, setZoom] = useState<number>(1);
-  const [panPos, setPanPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const mapControls = useAnimationControls();
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Compute drag constraints dynamically from container size
+  const getDragConstraints = (z: number) => {
+    const el = containerRef.current;
+    if (!el || z <= 1) return { left: 0, right: 0, top: 0, bottom: 0 };
+    const w = el.offsetWidth;
+    const h = el.offsetHeight;
+    const extra = z - 1;
+    return {
+      left:   -(w * extra * 0.5),
+      right:   (w * extra * 0.5),
+      top:    -(h * extra * 0.5),
+      bottom:  (h * extra * 0.5),
+    };
+  };
+
+  const handleResetView = () => {
+    setZoom(1);
+    mapControls.start({ x: 0, y: 0, scale: 1, transition: { type: "spring", stiffness: 300, damping: 28 } });
+  };
+
+  const handleZoomIn = () => {
+    setZoom((prev) => Math.min(prev + 0.25, 2.0));
+    mapControls.start({ scale: Math.min(zoom + 0.25, 2.0), transition: { type: "spring", stiffness: 300, damping: 25 } });
+  };
+
+  const handleZoomOut = () => {
+    const next = Math.max(zoom - 0.25, 1.0);
+    setZoom(next);
+    if (next <= 1) {
+      mapControls.start({ x: 0, y: 0, scale: 1, transition: { type: "spring", stiffness: 300, damping: 28 } });
+    } else {
+      mapControls.start({ scale: next, transition: { type: "spring", stiffness: 300, damping: 25 } });
+    }
+  };
 
   const filteredPins = useMemo(() => {
     if (!searchQuery.trim()) return KOTA_PINS;
@@ -280,11 +314,6 @@ export default function InteractiveUMRMap() {
     );
   }, [searchQuery]);
 
-  const handleResetView = () => {
-    setZoom(1);
-    setPanPos({ x: 0, y: 0 });
-  };
-
   return (
     <div className="mx-auto w-full max-w-6xl">
       {/* ══════════════════════════════════════════════════════════════════
@@ -292,13 +321,6 @@ export default function InteractiveUMRMap() {
       ══════════════════════════════════════════════════════════════════ */}
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-8">
         <div className="space-y-2 max-w-3xl">
-          <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/50 bg-emerald-500/10 px-3.5 py-1 text-xs font-bold text-emerald-600 dark:text-[#00df82] backdrop-blur-sm">
-              <Sparkles className="h-3.5 w-3.5" />
-              Peta Satelit Interaktif UMR Indonesia 2026
-            </span>
-          </div>
-
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
             Eksplorasi Parameter Wilayah & Potensi Usaha
           </h2>
@@ -360,24 +382,14 @@ export default function InteractiveUMRMap() {
         </div>
 
         {/* Interactive Map Visual Area (Strictly Bounded Frame) */}
-        <div className="relative w-full h-[480px] sm:h-[540px] rounded-3xl overflow-hidden border border-slate-800/80 bg-slate-950">
+        <div ref={containerRef} className="relative w-full h-[480px] sm:h-[540px] rounded-3xl overflow-hidden border border-slate-800/80 bg-slate-950">
           {/* Framer Motion Draggable & Zoomable Canvas */}
           <motion.div
             drag={zoom > 1}
-            dragConstraints={{
-              left: -((zoom - 1) * 350),
-              right: (zoom - 1) * 350,
-              top: -((zoom - 1) * 180),
-              bottom: (zoom - 1) * 180,
-            }}
-            dragElastic={0.08}
-            onDragEnd={(_, info) => {
-              setPanPos((prev) => ({
-                x: prev.x + info.offset.x,
-                y: prev.y + info.offset.y,
-              }));
-            }}
-            animate={{ scale: zoom }}
+            dragConstraints={getDragConstraints(zoom)}
+            dragElastic={0.05}
+            animate={mapControls}
+            initial={{ x: 0, y: 0, scale: 1 }}
             transition={{ type: "spring", stiffness: 300, damping: 25 }}
             className={`absolute inset-0 origin-center select-none ${
               zoom > 1 ? "cursor-grab active:cursor-grabbing" : "cursor-default"
@@ -447,41 +459,6 @@ export default function InteractiveUMRMap() {
               })}
           </motion.div>
 
-          {/* ── LOGGED-OUT MAP LOCK OVERLAY ── */}
-          {!isLoggedIn && (
-            <div className="absolute inset-0 z-30 flex items-center justify-center p-4 pointer-events-none">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.92 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.4 }}
-                className="pointer-events-auto max-w-sm sm:max-w-md rounded-3xl border-2 border-emerald-500/50 bg-slate-950/90 p-6 sm:p-8 text-center text-white shadow-2xl backdrop-blur-xl"
-              >
-                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#00df82]/20 border border-[#00df82]/40 text-[#00df82] mb-4 shadow-lg shadow-emerald-500/20">
-                  <Lock className="h-7 w-7 text-[#00df82] animate-pulse" />
-                </div>
-                <h4 className="text-lg sm:text-xl font-extrabold text-white leading-tight">
-                  Buka Pin Interaktif & Data UMR 2026
-                </h4>
-                <p className="mt-2 text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
-                  Masuk atau buat akun gratis untuk melihat seluruh 18 pin lokasi, standar UMR resmi, dan potensi sektor unggulan per wilayah.
-                </p>
-                <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
-                  <Link
-                    href="/login"
-                    className="w-full sm:w-auto rounded-full bg-[#00df82] px-6 py-3 text-xs sm:text-sm font-extrabold text-slate-950 shadow-lg shadow-emerald-500/25 hover:bg-[#00c975] hover:scale-105 active:scale-95 transition"
-                  >
-                    Masuk Sekarang
-                  </Link>
-                  <Link
-                    href="/signup"
-                    className="w-full sm:w-auto rounded-full border border-slate-700 bg-slate-900/90 px-6 py-3 text-xs sm:text-sm font-extrabold text-white hover:bg-slate-800 hover:scale-105 active:scale-95 transition"
-                  >
-                    Buat Akun Gratis
-                  </Link>
-                </div>
-              </motion.div>
-            </div>
-          )}
 
           {/* ── FLOATING GLASS INSIGHT CARD (ONLY APPEARS AFTER CLICK AND WHEN LOGGED IN) ── */}
           <AnimatePresence mode="wait">
@@ -572,7 +549,7 @@ export default function InteractiveUMRMap() {
           <div className="absolute bottom-4 right-4 z-30 flex flex-col rounded-xl border border-slate-800 bg-slate-900/90 shadow-xl backdrop-blur-md overflow-hidden">
             <button
               type="button"
-              onClick={() => setZoom((prev) => Math.min(prev + 0.25, 2.0))}
+              onClick={handleZoomIn}
               className="p-2.5 text-slate-300 hover:bg-slate-800 hover:text-white transition"
               title="Perbesar Peta (Zoom In)"
             >
@@ -596,7 +573,7 @@ export default function InteractiveUMRMap() {
             <div className="h-px bg-slate-800" />
             <button
               type="button"
-              onClick={() => setZoom((prev) => Math.max(prev - 0.25, 1.0))}
+              onClick={handleZoomOut}
               className="p-2.5 text-slate-300 hover:bg-slate-800 hover:text-white transition"
               title="Perkecil Peta (Zoom Out)"
             >

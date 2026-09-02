@@ -137,4 +137,5 @@ export interface ResourceItem {
   link: string;
   badge: string;
   icon: string;
+  color?: string;
 }

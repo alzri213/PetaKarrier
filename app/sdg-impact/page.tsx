@@ -13,9 +13,8 @@ export default async function SdgImpactPage() {
   const stats = await getPlatformStats();
 
   return (
-    <div className="min-h-screen pb-24">
+    <div className="min-h-screen pb-24 bg-slate-50 dark:bg-slate-950">
       <PageHero
-        badge="Dampak Berkelanjutan · RAN TPB / SDG 8"
         title={
           <>
             Dashboard Kontribusi <span className="text-gradient">SDG 8 Indonesia</span>

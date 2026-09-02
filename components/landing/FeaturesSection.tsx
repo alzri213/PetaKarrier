@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Icon } from "@iconify/react";
 import Reveal from "@/components/ui/Reveal";
@@ -39,10 +39,102 @@ const SERVICES: ServiceCardData[] = [
   },
 ];
 
+// Sizes (px) for the arrow button
+const BTN_INACTIVE = 48;
+const BTN_ACTIVE = 80;
+
+// Resting position (top-right corner offset)
+const REST_TOP = 24;
+const REST_RIGHT = 24;
+
+// Active overhang outside the card (how far it sticks out bottom-left)
+const OVERHANG = 32; // 2rem
+
+interface ArrowButtonProps {
+  isActive: boolean;
+  href: string;
+  label: string;
+  cardRef: React.RefObject<HTMLDivElement | null>;
+  onActivate: () => void;
+}
+
+function ArrowButton({ isActive, href, label, cardRef, onActivate }: ArrowButtonProps) {
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    if (!cardRef.current) return;
+
+    const compute = () => {
+      const { width, height } = cardRef.current!.getBoundingClientRect();
+      // From top-right origin, travel to bottom-left outside the card
+      // x: move left past the left edge (negative = leftward)
+      // y: move down past the bottom edge (positive = downward)
+      const targetX = -(width - REST_RIGHT - BTN_ACTIVE + OVERHANG);
+      const targetY = height - REST_TOP - BTN_ACTIVE + OVERHANG;
+      setOffset({ x: targetX, y: targetY });
+    };
+
+    compute();
+    const ro = new ResizeObserver(compute);
+    ro.observe(cardRef.current);
+    return () => ro.disconnect();
+  }, [cardRef]);
+
+  return (
+    <motion.div
+      /* Always anchored at top-right */
+      style={{ position: "absolute", top: REST_TOP, right: REST_RIGHT, zIndex: 30 }}
+      animate={
+        isActive
+          ? { x: offset.x, y: offset.y, width: BTN_ACTIVE, height: BTN_ACTIVE }
+          : { x: 0, y: 0, width: BTN_INACTIVE, height: BTN_INACTIVE }
+      }
+      initial={false}
+      transition={{
+        duration: 0.7,
+        ease: [0.22, 1, 0.36, 1],
+      }}
+      className={`flex items-center justify-center rounded-full ${
+        isActive
+          ? "bg-white border-4 border-[#16a34a] shadow-2xl shadow-[#16a34a]/30"
+          : "bg-[#16a34a] border-0 shadow-lg"
+      }`}
+    >
+      <Link
+        href={href}
+        onClick={(e) => {
+          if (!isActive) {
+            e.preventDefault();
+            onActivate();
+          }
+        }}
+        aria-label={label}
+        className="flex h-full w-full items-center justify-center rounded-full"
+      >
+        <motion.span
+          animate={isActive ? { scale: 1 } : { scale: 1 }}
+          className="flex items-center justify-center"
+        >
+          <Icon
+            icon="solar:arrow-right-up-linear"
+            className={`transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+              isActive ? "h-9 w-9 text-[#16a34a]" : "h-6 w-6 text-white"
+            }`}
+          />
+        </motion.span>
+      </Link>
+    </motion.div>
+  );
+}
+
 export default function FeaturesSection() {
-  // Kartu tengah (index 1) aktif secara default
   const [activeIndex, setActiveIndex] = useState<number>(1);
   const [foldedIndex, setFoldedIndex] = useState<number | null>(null);
+
+  // One ref per card
+  const cardRefs = useRef<Array<React.RefObject<HTMLDivElement | null>>>(
+    SERVICES.map(() => ({ current: null }))
+  );
 
   const handlePrev = () => {
     setActiveIndex((prev) => (prev > 0 ? prev - 1 : SERVICES.length - 1));
@@ -69,74 +161,46 @@ export default function FeaturesSection() {
           </Reveal>
         </div>
 
-        {/* Grid 3 Kartu (Container Utama OVERFLOW-VISIBLE agar tombol menonjol tidak terpotong) */}
+        {/* Card Grid */}
         <div
           className="relative mt-16 grid grid-cols-1 items-stretch gap-8 overflow-visible pb-10 md:grid-cols-3"
           style={{ perspective: 1200 }}
         >
           {SERVICES.map((service, index) => {
             const isActive = index === activeIndex;
+            const cardRef = cardRefs.current[index];
 
             return (
-              /* CONTAINER KARTU UTAMA - OVERFLOW-VISIBLE */
               <motion.div
                 key={service.id}
+                ref={cardRef as React.RefObject<HTMLDivElement>}
                 onClick={() => {
                   setActiveIndex(index);
                   setFoldedIndex(index);
                 }}
                 animate={
                   foldedIndex === index
-                    ? {
-                        rotateX: [0, 4, -3, 0],
-                        rotateY: [0, -10, 6, 0],
-                        y: [0, -5, 2, 0],
-                      }
+                    ? { rotateX: [0, 4, -3, 0], rotateY: [0, -10, 6, 0], y: [0, -5, 2, 0] }
                     : { rotateX: 0, rotateY: 0, y: 0 }
                 }
-                transition={{
-                  duration: 0.8,
-                  ease: [0.22, 1, 0.36, 1],
-                }}
-                style={{
-                  perspective: 1200,
-                  transformStyle: "preserve-3d",
-                }}
+                transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                style={{ perspective: 1200, transformStyle: "preserve-3d" }}
                 className={`group relative flex cursor-pointer select-none flex-col justify-between overflow-visible rounded-[2.5rem] px-7 pt-8 pb-0 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${
                   isActive
                     ? "bg-[#16a34a] text-white border-4 border-[#16a34a] shadow-2xl shadow-[#16a34a]/35 scale-[1.03] z-20"
                     : "bg-white dark:bg-slate-900 text-slate-900 dark:text-white border border-emerald-200 dark:border-slate-800 hover:border-[#16a34a]/60 shadow-md hover:shadow-xl hover:scale-[1.01] z-10"
                 }`}
               >
-                {/* ── SATU ELEMEN TOMBOL PANAH (JANGAN ADA DUA TOMBOL) YANG MENYERET DARI TOP-6 RIGHT-6 KE BOTTOM-[-2rem] LEFT-[-2rem] ── */}
-                <motion.div
-                  className={`absolute z-30 flex items-center justify-center rounded-full transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] ${
-                    isActive
-                      ? "bottom-[-1rem] left-0 h-16 w-16 bg-white text-[#16a34a] border-4 border-[#16a34a] shadow-2xl sm:bottom-[-2rem] sm:left-[-2rem] sm:h-20 sm:w-20"
-                      : "top-6 right-6 h-12 w-12 bg-[#16a34a] text-white border-0 shadow-md"
-                  }`}
-                >
-                  <Link
-                    href={service.href}
-                    onClick={(e) => {
-                      if (!isActive) {
-                        e.preventDefault();
-                        setActiveIndex(index);
-                      }
-                    }}
-                    aria-label={`Buka ${service.title}`}
-                    className="flex h-full w-full items-center justify-center rounded-full"
-                  >
-                    <Icon
-                      icon="solar:arrow-right-up-linear"
-                      className={`transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] ${
-                        isActive ? "h-9 w-9 text-[#16a34a]" : "h-6 w-6 text-white"
-                      }`}
-                    />
-                  </Link>
-                </motion.div>
+                {/* Arrow button with smooth drag animation */}
+                <ArrowButton
+                  isActive={isActive}
+                  href={service.href}
+                  label={`Buka ${service.title}`}
+                  cardRef={cardRef}
+                  onActivate={() => setActiveIndex(index)}
+                />
 
-                {/* Bagian Atas Teks */}
+                {/* Title */}
                 <div className="pr-12">
                   <h3
                     className={`text-2xl font-extrabold tracking-tight leading-snug transition-colors duration-500 ${
@@ -146,14 +210,14 @@ export default function FeaturesSection() {
                     {service.title}
                   </h3>
 
-                  {/* Garis Pemisah */}
+                  {/* Divider */}
                   <div
                     className={`my-4 h-px w-full transition-colors duration-500 ${
                       isActive ? "bg-white/25" : "bg-slate-100 dark:bg-slate-800"
                     }`}
                   />
 
-                  {/* Deskripsi */}
+                  {/* Description */}
                   <p
                     className={`text-sm leading-relaxed font-medium transition-colors duration-500 ${
                       isActive ? "text-emerald-50" : "text-slate-500 dark:text-slate-400"
@@ -163,9 +227,8 @@ export default function FeaturesSection() {
                   </p>
                 </div>
 
-                {/* Container Gambar Menempel di Bawah (bottom-0 h-[200px]) */}
+                {/* Card image */}
                 <div className="relative mt-6 w-full overflow-visible">
-                  {/* OVERFLOW-HIDDEN HANYA PADA CONTAINER GAMBAR AGAR SUDUT BAWAH MEMBULAT */}
                   <div className="relative h-[200px] w-full overflow-hidden rounded-b-[2.2rem] rounded-t-[1.2rem] shadow-md border-t border-black/5 bg-slate-900">
                     <Image
                       src={service.imageSrc}
@@ -181,7 +244,7 @@ export default function FeaturesSection() {
           })}
         </div>
 
-        {/* Kontrol Navigasi Bawah */}
+        {/* Navigation */}
         <div className="mt-12 flex items-center justify-between px-2">
           <div className="flex items-center gap-3">
             <button
@@ -216,7 +279,7 @@ export default function FeaturesSection() {
           </div>
         </div>
 
-        {/* Section Tentang PetaKarier */}
+        {/* About section */}
         <Reveal className="mt-28">
           <div className="mx-auto max-w-4xl text-center">
             <h3 className="text-3xl font-bold leading-snug text-slate-900 dark:text-white sm:text-5xl md:text-[2.75rem]">

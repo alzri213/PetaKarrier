@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Sparkles } from "lucide-react";
 
 interface PageHeroProps {
-  badge: string;
+  badge?: string;
   title: React.ReactNode;
   description: string;
 }
@@ -17,21 +17,23 @@ export default function PageHero({ badge, title, description }: PageHeroProps) {
       <div className="pointer-events-none absolute left-0 top-40 h-64 w-64 rounded-full bg-emerald-500/10 blur-[100px]" />
 
       <div className="relative mx-auto max-w-3xl text-center">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="inline-flex items-center gap-2 rounded-full border border-emerald-200/80 bg-emerald-50 px-4 py-1.5 text-xs font-bold text-emerald-700 shadow-sm"
-        >
-          <Sparkles className="h-3.5 w-3.5 text-emerald-600" />
-          {badge}
-        </motion.div>
+        {badge && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="inline-flex items-center gap-2 rounded-full border border-emerald-300/80 bg-emerald-50 px-4 py-1.5 text-xs font-bold text-emerald-700 shadow-sm dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-300"
+          >
+            <Sparkles className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+            {badge}
+          </motion.div>
+        )}
 
         <motion.h1
           initial={{ opacity: 0, y: 28 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.1 }}
-          className="mt-6 text-4xl font-extrabold leading-tight tracking-tight text-slate-900 sm:text-5xl"
+          transition={{ duration: 0.7, delay: badge ? 0.1 : 0 }}
+          className="mt-6 text-4xl font-extrabold leading-tight tracking-tight text-slate-900 sm:text-5xl dark:text-white"
         >
           {title}
         </motion.h1>
@@ -39,8 +41,8 @@ export default function PageHero({ badge, title, description }: PageHeroProps) {
         <motion.p
           initial={{ opacity: 0, y: 28 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.2 }}
-          className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-slate-600 font-medium sm:text-lg"
+          transition={{ duration: 0.7, delay: badge ? 0.2 : 0.1 }}
+          className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-slate-600 font-medium sm:text-lg dark:text-slate-300"
         >
           {description}
         </motion.p>

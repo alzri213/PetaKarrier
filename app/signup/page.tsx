@@ -73,20 +73,8 @@ export default function SignupPage() {
         return;
       }
 
-      // Auto-login after successful signup
-      const loginResult = await signIn("credentials", {
-        email,
-        password,
-        redirect: false,
-      });
-
-      if (loginResult?.error) {
-        // Fallback: redirect to login page if auto-login fails
-        router.push("/login?registered=true");
-      } else {
-        router.push("/");
-        router.refresh();
-      }
+      // Registration successful — redirect to login page so user signs in manually
+      router.push("/login?registered=true");
     } catch {
       setError("Terjadi kesalahan koneksi. Silakan coba lagi.");
     } finally {

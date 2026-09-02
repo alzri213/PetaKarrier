@@ -287,8 +287,16 @@ a, button, input, select, textarea {
   color: #15803d;
 }
 
+.dark .text-gradient {
+  color: #4ade80;
+}
+
 @utility text-gradient-blue {
   color: #15803d;
+}
+
+.dark .text-gradient-blue {
+  color: #4ade80;
 }
 
 /* === 3D Depth Extrusion Text (clean, no glow box) === */
@@ -500,34 +508,4 @@ a, button, input, select, textarea {
     15px 15px 20px rgba(0,0,0,0.15);
 }
 
-/* Print: only show the business plan document */
-@media print {
-  body {
-    background: #ffffff !important;
-  }
-  body * {
-    visibility: hidden;
-  }
-  #plan-dokumen,
-  #plan-dokumen * {
-    visibility: visible;
-  }
-  #plan-dokumen {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    padding: 0 !important;
-    margin: 0 !important;
-  }
-  #plan-dokumen section,
-  #plan-dokumen > div {
-    break-inside: avoid;
-    border-color: #e2e8f0 !important;
-    background: #ffffff !important;
-    color: #0f172a !important;
-  }
-  #plan-dokumen h3,
-  #plan-dokumen p {
-    color: #0f172a !important;
-  }
-}
+/* Print styles are handled via dedicated print window in BusinessPlan.tsx */
