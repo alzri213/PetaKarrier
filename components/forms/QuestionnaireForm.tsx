@@ -230,7 +230,7 @@ export default function QuestionnaireForm() {
         throw new Error(res.error ?? "Gagal memproses rekomendasi");
       }
       localStorage.setItem(
-        "konekumkm-profil",
+        "PetaKarrier-profil",
         JSON.stringify({
           profil,
           analisisId: res.id,

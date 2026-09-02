@@ -47,7 +47,7 @@ export default function HasilRekomendasi() {
     let localDataFound = false;
     // Read profil and rekomendasi from localStorage
     try {
-      const stored = localStorage.getItem("konekumkm-profil");
+      const stored = localStorage.getItem("PetaKarrier-profil");
       if (stored) {
         const parsed = JSON.parse(stored);
         if (parsed.analisisId === analisisId || !parsed.analisisId || analisisId.startsWith("local-")) {

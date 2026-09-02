@@ -5,7 +5,7 @@ import kotaList from "../lib/data/umr.json";
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log("🌱 Starting seed for KonekUMKM database...");
+  console.log("🌱 Starting seed for PetaKarrier database...");
 
   // Seed Kota
   console.log("📍 Seeding Kota data...");
