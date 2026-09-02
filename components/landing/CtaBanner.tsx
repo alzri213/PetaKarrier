@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Sparkles, ArrowRight, Calculator } from "lucide-react";
+import { Compass, ArrowRight, Calculator } from "lucide-react";
 import Reveal from "@/components/ui/Reveal";
 
 export default function CtaBanner() {
@@ -17,7 +17,7 @@ export default function CtaBanner() {
 
             <div className="relative mx-auto max-w-2xl">
               <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-xs font-bold backdrop-blur-md">
-                <Sparkles className="h-4 w-4 text-emerald-200" />
+                <Compass className="h-4 w-4 text-emerald-200" />
                 <span>Mulai Tanpa Hambatan</span>
               </div>
 
@@ -34,7 +34,7 @@ export default function CtaBanner() {
                   href="/analisis"
                   className="group inline-flex w-full items-center justify-center gap-2.5 rounded-2xl bg-white px-7 py-3.5 text-sm font-extrabold text-emerald-800 shadow-lg transition-all duration-200 hover:bg-emerald-50 hover:scale-105 sm:w-auto"
                 >
-                  <Sparkles className="h-4 w-4 text-emerald-600" />
+                  <Compass className="h-4 w-4 text-emerald-600" />
                   <span>Mulai Analisis Profil</span>
                   <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
                 </Link>

@@ -7,7 +7,6 @@ import {
   MessageCircle,
   X,
   Send,
-  Sparkles,
   User,
   Loader2,
   RotateCcw,

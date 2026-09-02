@@ -19,7 +19,6 @@ import {
   Moon,
   Sun,
   RotateCcw,
-  Sparkles,
   Play,
   Square,
 } from "lucide-react";

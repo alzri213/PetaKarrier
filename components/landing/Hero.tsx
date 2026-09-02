@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
 import {
-  Sparkles,
+  Compass,
   LineChart,
   CheckCircle2,
   ArrowRight,
@@ -146,7 +146,7 @@ export default function Hero() {
               href="/analisis"
               className="btn-shine group w-full sm:w-auto inline-flex items-center justify-center gap-2 sm:gap-3 rounded-2xl bg-[#00df82] px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base font-extrabold text-slate-950 shadow-lg shadow-emerald-500/25 transition-all duration-300 hover:scale-105 hover:bg-[#00c975]"
             >
-              <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-slate-950" />
+              <Compass className="h-4 w-4 sm:h-5 sm:w-5 text-slate-950" />
               <span>Mulai Analisis Potensi Usaha</span>
               <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 transition-transform duration-300 group-hover:translate-x-1" />
             </Link>

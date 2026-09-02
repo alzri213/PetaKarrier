@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Sparkles } from "lucide-react";
+import { Compass } from "lucide-react";
 
 interface PageHeroProps {
   badge?: string;
@@ -24,7 +24,7 @@ export default function PageHero({ badge, title, description }: PageHeroProps) {
             transition={{ duration: 0.6 }}
             className="inline-flex items-center gap-2 rounded-full border border-emerald-300/80 bg-emerald-50 px-4 py-1.5 text-xs font-bold text-emerald-700 shadow-sm dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-300"
           >
-            <Sparkles className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+            <Compass className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
             {badge}
           </motion.div>
         )}

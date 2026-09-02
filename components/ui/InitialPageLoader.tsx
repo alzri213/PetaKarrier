@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Lightbulb, Sparkles } from "lucide-react";
+import { Lightbulb, Loader2 } from "lucide-react";
 
 const LOADING_TIPS = [
   "Tips: Siapkan estimasi modal awal usahamu sebelum melanjutkan ke kalkulator BEP.",
@@ -231,7 +231,7 @@ export default function InitialPageLoader() {
                       animate={{ rotate: 360 }}
                       transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
                     >
-                      <Sparkles className="h-3.5 w-3.5 text-[#00df82]" />
+                      <Loader2 className="h-3.5 w-3.5 text-[#00df82]" />
                     </motion.div>
                     <span className="text-[11px] text-slate-300">Memuat platform...</span>
                   </div>

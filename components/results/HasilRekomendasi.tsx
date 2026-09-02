@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import {
-  Sparkles,
+  Globe2,
   ArrowRight,
   ArrowLeft,
   AlertTriangle,
@@ -135,7 +135,7 @@ export default function HasilRekomendasi() {
           transition={{ duration: 0.5 }}
         >
           <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-50 px-3.5 py-1 text-xs font-bold text-emerald-700 dark:bg-emerald-950/50 dark:text-[#00df82] dark:border-emerald-500/30">
-            <Sparkles className="h-3.5 w-3.5" />
+            <Globe2 className="h-3.5 w-3.5" />
             SDG 8: Pekerjaan Layak & Pertumbuhan Ekonomi
           </span>
 

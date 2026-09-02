@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Heart, Sparkles, Globe2, ShieldCheck, ArrowUpRight } from "lucide-react";
+import { Heart, Globe2, ShieldCheck, ArrowUpRight } from "lucide-react";
 
 export default function Footer() {
   const pathname = usePathname();
@@ -128,7 +128,6 @@ export default function Footer() {
             </p>
             <div className="space-y-2 rounded-2xl border border-slate-200 bg-white p-4 text-xs shadow-sm dark:border-slate-800 dark:bg-slate-900/60">
               <div className="flex items-center gap-1.5 font-bold text-slate-800 dark:text-white">
-                <Sparkles className="h-3.5 w-3.5 text-emerald-500 dark:text-emerald-400" />
                 ITechnoCup 2026
               </div>
               <p className="text-slate-500 leading-relaxed dark:text-slate-400">
