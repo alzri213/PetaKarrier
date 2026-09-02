@@ -3,9 +3,11 @@ import { NextRequest } from "next/server";
 // Active Google Gemini model endpoints
 const GEMINI_MODELS = [
   "gemini-3.5-flash",
-  "gemini-3.5-flash-lite",
-  "gemini-flash-latest",
+  "gemini-3.7-flash",
   "gemini-3.6-flash",
+  "gemini-3.5-flash-lite",
+  "gemini-flash-lite-latest",
+  "gemini-3.8-flash",
 ];
 
 const SYSTEM_PROMPT = `Kamu adalah Asisten AI Resmi PetaKarier — platform akselerator dan inkubator digital wirausaha muda & UMKM Indonesia.
