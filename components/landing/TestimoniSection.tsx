@@ -89,11 +89,20 @@ const DRAG_THRESHOLD = 60;
 // ── Avatar component: profile image > emoji > UserCircle2 icon ──
 function Avatar({ foto, fotoUrl, nama, size = 11 }: { foto: string; fotoUrl: string; nama: string; size?: number }) {
   const cls = `h-${size} w-${size} shrink-0`;
+  const [imgError, setImgError] = useState(false);
 
-  if (fotoUrl) {
+  if (fotoUrl && !imgError) {
     return (
       <div className={`${cls} relative overflow-hidden rounded-2xl border-2 border-emerald-400/40 shadow-md`}>
-        <Image src={fotoUrl} alt={nama} fill className="object-cover" referrerPolicy="no-referrer" />
+        <Image
+          src={fotoUrl}
+          alt={nama}
+          fill
+          className="object-cover"
+          referrerPolicy="no-referrer"
+          onError={() => setImgError(true)}
+          unoptimized={fotoUrl.includes("googleusercontent.com") || fotoUrl.includes("githubusercontent.com")}
+        />
       </div>
     );
   }
@@ -438,7 +447,14 @@ export default function TestimoniSection() {
                     <div className="flex items-center gap-3 p-3 rounded-2xl bg-slate-50 border border-slate-200 dark:bg-slate-800 dark:border-slate-700">
                       {sessionImage ? (
                         <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-xl border-2 border-emerald-400/40">
-                          <Image src={sessionImage} alt={sessionName} fill className="object-cover" referrerPolicy="no-referrer" />
+                          <Image
+                            src={sessionImage}
+                            alt={sessionName}
+                            fill
+                            className="object-cover"
+                            referrerPolicy="no-referrer"
+                            unoptimized
+                          />
                         </div>
                       ) : (
                         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-200 text-slate-400 dark:bg-slate-700">
