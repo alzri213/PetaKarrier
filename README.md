@@ -1,4 +1,4 @@
-# 🌐 KonekUMKM — Ekosistem Pemberdayaan & Perencanaan Usaha Inklusif
+# 🌐 PetaKarier — Ekosistem Pemberdayaan & Perencanaan Usaha Inklusif
 
 > **Proyek Inovasi Digital untuk ITechnoCup 2026**  
 > **Tema:** Pencapaian **SDG 8: Pekerjaan Layak & Pertumbuhan Ekonomi**  
@@ -8,7 +8,7 @@
 
 ## 📌 Ringkasan Eksekutif
 
-**KonekUMKM** adalah platform *fullstack* berbasis **Next.js 15 (App Router) + Server Actions + Prisma ORM + Neon PostgreSQL + Tailwind CSS + Shadcn/ui**. Dirancang untuk menjembatani kesenjangan antara generasi muda/calon wirausaha dengan kepastian kelayakan usaha mandiri melalui:
+**PetaKarrier** adalah platform *fullstack* berbasis **Next.js 15 (App Router) + Server Actions + Prisma ORM + Neon PostgreSQL + Tailwind CSS + Shadcn/ui**. Dirancang untuk menjembatani kesenjangan antara generasi muda/calon wirausaha dengan kepastian kelayakan usaha mandiri melalui:
 
 1. **Analisis Potensi Usaha (AI Matching):** Pencocokan minat, keterampilan, dan ketersediaan modal dengan 14 model bisnis terkurasi.
 2. **Kalkulator Modal & Break-Even Point (BEP):** Simulasi kebutuhan investasi awal, biaya sewa riil 18 kota, serta kurva arus kas 12 bulan.
@@ -21,7 +21,7 @@
 
 ## 🎯 Keselarasan dengan SDG 8 & RAN TPB Matriks 4
 
-| Target SDG 8 | Deskripsi Mandat | Implementasi Solusi di KonekUMKM |
+| Target SDG 8 | Deskripsi Mandat | Implementasi Solusi di PetaKarrier |
 |---|---|---|
 | **Target 8.3** | *Dukungan UMKM, Kreativitas & Formalisasi Usaha* | Memfasilitasi edukasi alokasi legalitas NIB (OSS RBA) dalam struktur modal awal dan penyusunan rencana bisnis siap modal. |
 | **Target 8.5** | *Pekerjaan Layak & Pendapatan Produktif* | Menghitung potensi penciptaan 1–5 lapangan kerja per unit bisnis dan memvalidasi laba di atas standar UMR daerah. |
@@ -104,7 +104,7 @@ npm run start
 ## 📂 Struktur Direktori
 
 ```
-KonekUMKM/
+PetaKarrier/
 ├── app/
 │   ├── layout.tsx              # Root layout & Toaster provider
 │   ├── page.tsx                # Landing page interaktif

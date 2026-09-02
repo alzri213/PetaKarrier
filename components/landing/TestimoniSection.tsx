@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
+import { Icon } from "@iconify/react";
 import {
   Star, Quote, MapPin, ChevronLeft, ChevronRight,
   Send, CheckCircle2, Loader2, MessageSquare, UserCircle2, Trash2,
@@ -19,7 +20,7 @@ const SEED_TESTIMONI = [
     umur: 24,
     kota: "Bandung, Jawa Barat",
     usaha: "Kedai Kopi Minimalis",
-    foto: "☕",
+    icon: "solar:cup-bold",
     fotoUrl: "",
     rating: 5,
     testimoni:
@@ -32,7 +33,7 @@ const SEED_TESTIMONI = [
     umur: 22,
     kota: "Surabaya, Jawa Timur",
     usaha: "Katering Nasi Box Rumahan",
-    foto: "🍱",
+    icon: "solar:chef-hat-bold",
     fotoUrl: "",
     rating: 5,
     testimoni:
@@ -45,7 +46,7 @@ const SEED_TESTIMONI = [
     umur: 26,
     kota: "Yogyakarta",
     usaha: "Studio Desain & Branding",
-    foto: "🎨",
+    icon: "solar:palette-bold",
     fotoUrl: "",
     rating: 5,
     testimoni:
@@ -58,7 +59,7 @@ const SEED_TESTIMONI = [
     umur: 21,
     kota: "Medan, Sumatera Utara",
     usaha: "Kerajinan Batik Digital",
-    foto: "🪡",
+    icon: "solar:t-shirt-bold",
     fotoUrl: "",
     rating: 5,
     testimoni:
@@ -71,7 +72,7 @@ const SEED_TESTIMONI = [
     umur: 23,
     kota: "Semarang, Jawa Tengah",
     usaha: "Jasa Foto Produk UMKM",
-    foto: "📸",
+    icon: "solar:camera-bold",
     fotoUrl: "",
     rating: 5,
     testimoni:
@@ -84,16 +85,15 @@ type Testimoni = typeof SEED_TESTIMONI[0];
 type FormStatus = "idle" | "sending" | "success" | "error";
 
 const LS_KEY = "petakarier_feedback";
-const DRAG_THRESHOLD = 60;
+const DRAG_THRESHOLD = 50;
 
-// ── Avatar component: profile image > emoji > UserCircle2 icon ──
-function Avatar({ foto, fotoUrl, nama, size = 11 }: { foto: string; fotoUrl: string; nama: string; size?: number }) {
-  const cls = `h-${size} w-${size} shrink-0`;
+// ── Avatar component: profile image > Solar Vector Icon > UserCircle2 icon ──
+function Avatar({ icon, fotoUrl, nama }: { icon?: string; fotoUrl?: string; nama: string }) {
   const [imgError, setImgError] = useState(false);
 
   if (fotoUrl && !imgError) {
     return (
-      <div className={`${cls} relative overflow-hidden rounded-2xl border-2 border-emerald-400/40 shadow-md`}>
+      <div className="h-11 w-11 shrink-0 relative overflow-hidden rounded-2xl border-2 border-emerald-400/40 shadow-md">
         <Image
           src={fotoUrl}
           alt={nama}
@@ -107,16 +107,16 @@ function Avatar({ foto, fotoUrl, nama, size = 11 }: { foto: string; fotoUrl: str
     );
   }
 
-  if (foto) {
+  if (icon) {
     return (
-      <span className={`${cls} flex items-center justify-center rounded-2xl bg-emerald-50 text-2xl shadow-inner dark:bg-emerald-900/30`}>
-        {foto}
+      <span className="h-11 w-11 shrink-0 flex items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700 shadow-inner dark:bg-emerald-950/60 dark:text-[#00df82] border border-emerald-200/60 dark:border-emerald-800">
+        <Icon icon={icon} className="h-6 w-6" />
       </span>
     );
   }
 
   return (
-    <span className={`${cls} flex items-center justify-center rounded-2xl bg-slate-100 text-slate-400 dark:bg-slate-800`}>
+    <span className="h-11 w-11 shrink-0 flex items-center justify-center rounded-2xl bg-slate-100 text-slate-400 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
       <UserCircle2 className="h-6 w-6" />
     </span>
   );
@@ -136,16 +136,15 @@ export default function TestimoniSection() {
     }
   });
 
-  const [index, setIndex]         = useState(0);
+  const [index, setIndex] = useState(0);
   const [direction, setDirection] = useState(0);
-  const startX   = useRef(0);
+  const startX = useRef(0);
   const dragging = useRef(false);
-  const didDrag  = useRef(false);
-  const total    = list.length;
+  const didDrag = useRef(false);
+  const total = list.length;
 
   const goTo = (next: number, dir: number) => {
     setDirection(dir);
-    // wrap around
     setIndex(((next) % total + total) % total);
   };
   const prev = () => goTo(index - 1, -1);
@@ -153,7 +152,8 @@ export default function TestimoniSection() {
 
   const onPointerDown = (e: React.PointerEvent) => {
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-    dragging.current = true; didDrag.current = false;
+    dragging.current = true;
+    didDrag.current = false;
     startX.current = e.clientX;
   };
   const onPointerMove = (e: React.PointerEvent) => {
@@ -172,21 +172,20 @@ export default function TestimoniSection() {
   const slideVariants = {
     enter: (dir: number) => ({ x: dir > 0 ? 80 : -80, opacity: 0 }),
     center: { x: 0, opacity: 1 },
-    exit:  (dir: number) => ({ x: dir > 0 ? -80 : 80, opacity: 0 }),
+    exit: (dir: number) => ({ x: dir > 0 ? -80 : 80, opacity: 0 }),
   };
 
   // Form state
-  const [rating, setRating]   = useState(0);
+  const [rating, setRating] = useState(0);
   const [hovered, setHovered] = useState(0);
-  const [nama, setNama]       = useState("");
-  const [usaha, setUsaha]     = useState("");
-  const [kota, setKota]       = useState("");
-  const [pesan, setPesan]     = useState("");
+  const [nama, setNama] = useState("");
+  const [usaha, setUsaha] = useState("");
+  const [kota, setKota] = useState("");
+  const [pesan, setPesan] = useState("");
   const [formStatus, setFormStatus] = useState<FormStatus>("idle");
-  const [errorMsg, setErrorMsg]     = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
 
-  // Pre-fill name from session
-  const sessionName  = session?.user?.name  ?? "";
+  const sessionName = session?.user?.name ?? "";
   const sessionImage = session?.user?.image ?? "";
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -204,7 +203,7 @@ export default function TestimoniSection() {
       umur: 0,
       kota: kota.trim(),
       usaha: usaha.trim(),
-      foto: "",
+      icon: "solar:user-bold",
       fotoUrl: sessionImage,
       rating,
       testimoni: pesan.trim(),
@@ -238,7 +237,6 @@ export default function TestimoniSection() {
     setRating(0); setNama(""); setUsaha(""); setKota(""); setPesan("");
   };
 
-  // Clear all user feedback data
   const handleClearData = () => {
     if (!confirm("Hapus semua testimoni yang kamu kirimkan? Data ini tidak bisa dikembalikan.")) return;
     try {
@@ -254,7 +252,7 @@ export default function TestimoniSection() {
   // ── Card footer (avatar + name row) ──
   const CardFooter = ({ card }: { card: Testimoni }) => (
     <div className="mt-6 flex items-center gap-3.5 border-t border-slate-200 pt-4 dark:border-slate-800">
-      <Avatar foto={card.foto} fotoUrl={card.fotoUrl} nama={card.nama} />
+      <Avatar icon={card.icon} fotoUrl={card.fotoUrl} nama={card.nama} />
       <div className="min-w-0">
         <h3 className="text-sm font-extrabold text-slate-900 dark:text-white truncate">
           {card.nama}
@@ -273,22 +271,21 @@ export default function TestimoniSection() {
   return (
     <>
       {/* ── CAROUSEL ── */}
-      <section className="relative bg-white px-4 py-24 dark:bg-slate-950 sm:px-6 lg:px-8 overflow-hidden">
+      <section className="relative bg-white px-4 py-16 sm:py-24 dark:bg-slate-950 sm:px-6 lg:px-8 overflow-hidden">
         <div className="mx-auto max-w-7xl">
-          <Reveal className="mx-auto max-w-2xl text-center">
+          <Reveal className="mx-auto max-w-2xl text-center px-2">
             <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white sm:text-4xl">
               Dipercaya Oleh{" "}
               <span className="text-emerald-600 dark:text-emerald-400">Wirausaha Muda Indonesia</span>
             </h2>
-            <p className="mt-4 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
+            <p className="mt-4 text-xs sm:text-sm leading-relaxed text-slate-700 dark:text-slate-300">
               Mereka telah memetakan karier bisnis, menghitung kelayakan modal, dan mewujudkan usaha mandiri berkelanjutan.
             </p>
           </Reveal>
 
           {/* Desktop 3-up — circular: always shows 3 cards, wraps around */}
-          <div className="mt-14 hidden md:grid md:grid-cols-3 gap-6">
+          <div className="mt-12 sm:mt-14 hidden md:grid md:grid-cols-3 gap-6">
             {[-1, 0, 1].map((offset) => {
-              // wrap index so we always have a card on both sides
               const ci = ((index + offset) % total + total) % total;
               const card = list[ci];
               const isCenter = offset === 0;
@@ -299,7 +296,7 @@ export default function TestimoniSection() {
                   animate={{ scale: isCenter ? 1 : 0.96, opacity: isCenter ? 1 : 0.6 }}
                   transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
                   onClick={() => !isCenter && goTo(ci, offset)}
-                  className={`flex flex-col justify-between rounded-3xl border-2 p-7 shadow-md cursor-pointer transition-all duration-300 ${
+                  className={`flex flex-col justify-between rounded-3xl border-2 p-6 sm:p-7 shadow-md cursor-pointer transition-all duration-300 ${
                     isCenter
                       ? "border-emerald-400/60 bg-white dark:bg-slate-900 shadow-xl dark:ring-2 dark:ring-emerald-500/20"
                       : "border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 hover:border-emerald-300"
@@ -321,7 +318,7 @@ export default function TestimoniSection() {
                         <Quote className="h-6 w-6 text-slate-300 dark:text-slate-600" />
                       </div>
                     </div>
-                    <p className="mt-4 text-sm leading-relaxed text-slate-700 dark:text-slate-300 line-clamp-5">
+                    <p className="mt-4 text-xs sm:text-sm leading-relaxed text-slate-700 dark:text-slate-300 line-clamp-5">
                       &ldquo;{card.testimoni}&rdquo;
                     </p>
                   </div>
@@ -333,7 +330,7 @@ export default function TestimoniSection() {
 
           {/* Mobile single+drag */}
           <div
-            className="mt-10 md:hidden cursor-grab active:cursor-grabbing select-none"
+            className="mt-8 sm:mt-10 md:hidden cursor-grab active:cursor-grabbing select-none"
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
@@ -346,7 +343,7 @@ export default function TestimoniSection() {
                 variants={slideVariants}
                 initial="enter" animate="center" exit="exit"
                 transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-                className="rounded-3xl border-2 border-emerald-400/60 bg-white p-7 shadow-xl dark:bg-slate-900 dark:ring-2 dark:ring-emerald-500/20"
+                className="rounded-3xl border-2 border-emerald-400/60 bg-white p-6 shadow-xl dark:bg-slate-900 dark:ring-2 dark:ring-emerald-500/20"
               >
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex gap-1">
@@ -360,26 +357,26 @@ export default function TestimoniSection() {
                     </span>
                   )}
                 </div>
-                <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-300">&ldquo;{t.testimoni}&rdquo;</p>
+                <p className="text-xs sm:text-sm leading-relaxed text-slate-700 dark:text-slate-300">&ldquo;{t.testimoni}&rdquo;</p>
                 <CardFooter card={t} />
               </motion.div>
             </AnimatePresence>
           </div>
 
           {/* Nav */}
-          <div className="mt-8 flex items-center justify-center gap-4">
+          <div className="mt-6 sm:mt-8 flex items-center justify-center gap-4">
             <button onClick={prev} aria-label="Sebelumnya"
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:border-emerald-400 hover:text-emerald-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:border-emerald-400 hover:text-emerald-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 cursor-pointer">
               <ChevronLeft className="h-5 w-5" />
             </button>
             <div className="flex items-center gap-1.5">
               {list.map((_, i) => (
                 <button key={i} onClick={() => goTo(i, i > index ? 1 : -1)}
-                  className={`rounded-full transition-all duration-300 ${i === index ? "w-8 h-2 bg-emerald-500" : "w-2 h-2 bg-slate-300 hover:bg-slate-400 dark:bg-slate-700"}`} />
+                  className={`rounded-full transition-all duration-300 cursor-pointer ${i === index ? "w-7 sm:w-8 h-2 bg-emerald-500" : "w-2 h-2 bg-slate-300 hover:bg-slate-400 dark:bg-slate-700"}`} />
               ))}
             </div>
             <button onClick={next} aria-label="Berikutnya"
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:border-emerald-400 hover:text-emerald-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:border-emerald-400 hover:text-emerald-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 cursor-pointer">
               <ChevronRight className="h-5 w-5" />
             </button>
           </div>
@@ -387,12 +384,12 @@ export default function TestimoniSection() {
             Geser kiri / kanan untuk melihat testimoni lainnya
           </p>
 
-          {/* Clear user data button — only show if there are user-submitted cards */}
+          {/* Clear user data button */}
           {list.some((t) => t.isUser) && (
             <div className="mt-6 flex justify-center">
               <button
                 onClick={handleClearData}
-                className="inline-flex items-center gap-1.5 rounded-full border border-rose-200 bg-rose-50 px-4 py-1.5 text-[11px] font-bold text-rose-600 transition hover:bg-rose-100 hover:border-rose-300 dark:border-rose-800/60 dark:bg-rose-900/20 dark:text-rose-400 dark:hover:bg-rose-900/40"
+                className="inline-flex items-center gap-1.5 rounded-full border border-rose-200 bg-rose-50 px-4 py-1.5 text-[11px] font-bold text-rose-600 transition hover:bg-rose-100 hover:border-rose-300 dark:border-rose-800/60 dark:bg-rose-900/20 dark:text-rose-400 dark:hover:bg-rose-900/40 cursor-pointer"
               >
                 <Trash2 className="h-3 w-3" />
                 Hapus feedback saya
@@ -403,17 +400,17 @@ export default function TestimoniSection() {
       </section>
 
       {/* ── FEEDBACK FORM ── */}
-      <section className="relative bg-white px-4 py-24 dark:bg-slate-950 sm:px-6 lg:px-8">
+      <section className="relative bg-white px-4 py-16 sm:py-24 dark:bg-slate-950 sm:px-6 lg:px-8">
         <div className="relative mx-auto max-w-3xl">
-          <Reveal className="text-center mb-12">
-            <span className="inline-flex items-center gap-2 rounded-full border border-emerald-300/80 bg-emerald-50 px-4 py-1.5 text-xs font-bold text-emerald-700 shadow-sm dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-300 mb-4">
+          <Reveal className="text-center mb-8 sm:mb-12 px-2">
+            <span className="inline-flex items-center gap-2 rounded-full border border-emerald-300/80 bg-emerald-50 px-4 py-1.5 text-xs font-bold text-emerald-700 shadow-sm dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-300 mb-3 sm:mb-4">
               <MessageSquare className="h-3.5 w-3.5" />
               Cerita & Masukan Kamu
             </span>
-            <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white sm:text-4xl">
+            <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 dark:text-white">
               Bagikan <span className="text-emerald-600 dark:text-emerald-400">Pengalamanmu</span>
             </h2>
-            <p className="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+            <p className="mt-2 sm:mt-3 text-xs sm:text-sm leading-relaxed text-slate-600 dark:text-slate-400">
               Feedback kamu akan langsung muncul di bagian testimoni di atas.
             </p>
           </Reveal>
@@ -424,24 +421,24 @@ export default function TestimoniSection() {
                 {formStatus === "success" ? (
                   <motion.div key="success"
                     initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
-                    className="flex flex-col items-center justify-center gap-5 py-20 px-10 text-center"
+                    className="flex flex-col items-center justify-center gap-4 sm:gap-5 py-14 sm:py-20 px-6 sm:px-10 text-center"
                   >
                     <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}
                       transition={{ type: "spring", stiffness: 260, damping: 18, delay: 0.1 }}>
-                      <CheckCircle2 className="h-16 w-16 text-emerald-500" />
+                      <CheckCircle2 className="h-14 w-14 sm:h-16 sm:w-16 text-emerald-500" />
                     </motion.div>
-                    <h3 className="text-xl font-extrabold text-slate-900 dark:text-white">Terima kasih! 🎉</h3>
-                    <p className="text-sm text-slate-600 dark:text-slate-400 max-w-sm leading-relaxed">
+                    <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white">Terima kasih! 🎉</h3>
+                    <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-sm leading-relaxed">
                       Testimonimu sudah muncul di bagian atas. Scroll ke atas untuk melihatnya!
                     </p>
                     <button onClick={() => setFormStatus("idle")}
-                      className="mt-2 rounded-2xl border border-emerald-300 px-6 py-2.5 text-xs font-bold text-emerald-700 hover:bg-emerald-50 transition dark:border-emerald-600 dark:text-emerald-400 dark:hover:bg-emerald-900/20">
+                      className="mt-2 rounded-2xl border border-emerald-300 px-6 py-2.5 text-xs font-bold text-emerald-700 hover:bg-emerald-50 transition dark:border-emerald-600 dark:text-emerald-400 dark:hover:bg-emerald-900/20 cursor-pointer">
                       Kirim feedback lagi
                     </button>
                   </motion.div>
                 ) : (
                   <motion.form key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                    onSubmit={handleSubmit} className="p-8 sm:p-10 space-y-6"
+                    onSubmit={handleSubmit} className="p-6 sm:p-10 space-y-5 sm:space-y-6"
                   >
                     {/* Profile preview */}
                     <div className="flex items-center gap-3 p-3 rounded-2xl bg-slate-50 border border-slate-200 dark:bg-slate-800 dark:border-slate-700">
@@ -465,7 +462,7 @@ export default function TestimoniSection() {
                         <p className="text-xs font-extrabold text-slate-800 dark:text-white truncate">
                           {session ? sessionName : "Tamu"}
                         </p>
-                        <p className="text-[10px] text-slate-400">
+                        <p className="text-[10px] text-slate-400 truncate">
                           {session ? "Foto profil akan tampil di testimoni" : "Login untuk tampilkan foto profilmu"}
                         </p>
                       </div>
@@ -476,14 +473,14 @@ export default function TestimoniSection() {
                       <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-700 dark:text-slate-300">
                         Rating Pengalamanmu *
                       </label>
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
                         {[1,2,3,4,5].map((star) => (
                           <button key={star} type="button"
                             onClick={() => setRating(star)}
                             onMouseEnter={() => setHovered(star)}
                             onMouseLeave={() => setHovered(0)}
-                            className="transition-transform hover:scale-125 active:scale-110">
-                            <Star className={`h-8 w-8 transition-colors duration-150 ${
+                            className="transition-transform hover:scale-125 active:scale-110 cursor-pointer">
+                            <Star className={`h-7 w-7 sm:h-8 sm:w-8 transition-colors duration-150 ${
                               star <= (hovered || rating) ? "fill-amber-400 text-amber-400" : "fill-transparent text-slate-300 dark:text-slate-600"
                             }`} />
                           </button>
@@ -504,7 +501,7 @@ export default function TestimoniSection() {
                         </label>
                         <input id="fb-nama" type="text" value={nama} onChange={(e) => setNama(e.target.value)}
                           placeholder="Nama kamu" maxLength={60}
-                          className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 placeholder:text-slate-400 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 transition dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500" />
+                          className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs sm:text-sm font-medium text-slate-800 placeholder:text-slate-400 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 transition dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500" />
                       </div>
                     )}
 
@@ -515,7 +512,7 @@ export default function TestimoniSection() {
                       </label>
                       <textarea id="fb-pesan" value={pesan} onChange={(e) => setPesan(e.target.value)}
                         placeholder="Ceritakan pengalamanmu menggunakan PetaKarier…" rows={4} maxLength={500} required
-                        className="w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 placeholder:text-slate-400 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 transition dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500" />
+                        className="w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs sm:text-sm font-medium text-slate-800 placeholder:text-slate-400 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 transition dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500" />
                       <p className="text-right text-[10px] text-slate-400 tabular-nums">{pesan.length} / 500</p>
                     </div>
 
@@ -529,7 +526,7 @@ export default function TestimoniSection() {
                     </AnimatePresence>
 
                     <button type="submit" disabled={formStatus === "sending"}
-                      className="btn-shine w-full inline-flex items-center justify-center gap-2.5 rounded-2xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-green-500 px-7 py-4 text-sm font-extrabold text-white shadow-lg shadow-emerald-500/25 transition hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed">
+                      className="btn-shine w-full inline-flex items-center justify-center gap-2.5 rounded-2xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-green-500 px-7 py-3.5 sm:py-4 text-xs sm:text-sm font-extrabold text-white shadow-lg shadow-emerald-500/25 transition hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer">
                       {formStatus === "sending"
                         ? <><Loader2 className="h-4 w-4 animate-spin" /><span>Mengirim…</span></>
                         : <><Send className="h-4 w-4" /><span>Kirim & Tampilkan di Testimoni</span></>

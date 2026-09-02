@@ -17,6 +17,8 @@ import {
 } from "lucide-react";
 import type { JenisUsaha, KotaData } from "@/types";
 import { formatRupiah } from "@/lib/utils/formatCurrency";
+import { getLocalSessionState, setLocalSessionState } from "@/lib/utils/sessionSync";
+import { getUserActiveAnalisis, updateKalkulatorAction } from "@/lib/actions/analisis";
 
 interface ModalCalculatorProps {
   daftarUsaha?: JenisUsaha[];
@@ -119,39 +121,81 @@ export default function ModalCalculator({
   const [activeUsahaId, setActiveUsahaId] = useState<string>(initialUsaha?.id || "jasa-web-digital");
   const [activeKotaId, setActiveKotaId] = useState<string>(initialKota?.id || "dki-jakarta");
 
-  const LS_KALK_KEY = "petakarier_kalkulator_form";
-
-  // Restore from localStorage on mount (only if no URL query params)
+  // Restore from unified local storage & PostgreSQL database on mount
   useEffect(() => {
-    if (queryUsahaId || queryKotaId) return; // URL params take priority
-    try {
-      const saved = localStorage.getItem(LS_KALK_KEY);
-      if (saved) {
-        const data = JSON.parse(saved);
-        if (data.selectedUsahaId) setSelectedUsahaId(data.selectedUsahaId);
-        if (data.selectedKotaId)  setSelectedKotaId(data.selectedKotaId);
-        if (data.modalAwal)       { setModalAwal(data.modalAwal); setModalAwalStr(data.modalAwal.toLocaleString("id-ID")); }
-        if (data.operasional)     { setOperasional(data.operasional); setOperasionalStr(data.operasional.toLocaleString("id-ID")); }
-        if (data.hasCalculated)   setHasCalculated(data.hasCalculated);
-        if (data.activeModalAwal)  setActiveModalAwal(data.activeModalAwal);
-        if (data.activeOperasional) setActiveOperasional(data.activeOperasional);
-        if (data.activeUsahaId)   setActiveUsahaId(data.activeUsahaId);
-        if (data.activeKotaId)    setActiveKotaId(data.activeKotaId);
+    // 1. Try restoring from unified session state first
+    const unified = getLocalSessionState();
+    if (unified) {
+      if (!queryUsahaId && unified.selectedUsahaId) {
+        setSelectedUsahaId(unified.selectedUsahaId);
+        setActiveUsahaId(unified.selectedUsahaId);
       }
-    } catch {}
+      if (!queryKotaId && unified.selectedKotaId) {
+        setSelectedKotaId(unified.selectedKotaId);
+        setActiveKotaId(unified.selectedKotaId);
+      }
+      if (unified.modalAwal) {
+        setModalAwal(unified.modalAwal);
+        setModalAwalStr(unified.modalAwal.toLocaleString("id-ID"));
+        setActiveModalAwal(unified.modalAwal);
+      }
+      if (unified.operasional) {
+        setOperasional(unified.operasional);
+        setOperasionalStr(unified.operasional.toLocaleString("id-ID"));
+        setActiveOperasional(unified.operasional);
+      }
+      if (unified.hasCalculated !== undefined) {
+        setHasCalculated(unified.hasCalculated);
+      }
+    }
+
+    // 2. Fetch logged-in user's active session from database
+    getUserActiveAnalisis().then((dbData) => {
+      if (dbData) {
+        if (!queryUsahaId && dbData.usahaId) {
+          setSelectedUsahaId(dbData.usahaId);
+          setActiveUsahaId(dbData.usahaId);
+        }
+        if (!queryKotaId && dbData.kotaId) {
+          setSelectedKotaId(dbData.kotaId);
+          setActiveKotaId(dbData.kotaId);
+        }
+        if (dbData.hasilModal && typeof dbData.hasilModal === "object") {
+          const hm = dbData.hasilModal as any;
+          if (hm.modalAwal) {
+            setModalAwal(hm.modalAwal);
+            setModalAwalStr(hm.modalAwal.toLocaleString("id-ID"));
+            setActiveModalAwal(hm.modalAwal);
+          }
+          if (hm.operasional) {
+            setOperasional(hm.operasional);
+            setOperasionalStr(hm.operasional.toLocaleString("id-ID"));
+            setActiveOperasional(hm.operasional);
+          }
+          setHasCalculated(true);
+        }
+
+        setLocalSessionState({
+          analisisId: dbData.id,
+          selectedUsahaId: dbData.usahaId || "kedai-kopi",
+          selectedKotaId: dbData.kotaId || "dki-jakarta",
+          skala: dbData.skala || "sedang",
+        });
+      }
+    }).catch(() => {});
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Persist to localStorage on every change
+  // Persist to unified local session on every change
   useEffect(() => {
-    try {
-      localStorage.setItem(LS_KALK_KEY, JSON.stringify({
-        selectedUsahaId, selectedKotaId, modalAwal, operasional,
-        hasCalculated, activeModalAwal, activeOperasional, activeUsahaId, activeKotaId,
-      }));
-    } catch {}
-  }, [selectedUsahaId, selectedKotaId, modalAwal, operasional,
-      hasCalculated, activeModalAwal, activeOperasional, activeUsahaId, activeKotaId]);
+    setLocalSessionState({
+      selectedUsahaId,
+      selectedKotaId,
+      modalAwal,
+      operasional,
+      hasCalculated,
+    });
+  }, [selectedUsahaId, selectedKotaId, modalAwal, operasional, hasCalculated]);
 
   // Synchronize input fields when query params change, keeping calculation uncomputed until user clicks
   useEffect(() => {
@@ -186,6 +230,12 @@ export default function ModalCalculator({
       setModalAwalStr(avgModal.toLocaleString("id-ID"));
       setOperasional(ops);
       setOperasionalStr(ops.toLocaleString("id-ID"));
+
+      setLocalSessionState({
+        selectedUsahaId: usahaId,
+        modalAwal: avgModal,
+        operasional: ops,
+      });
     }
   };
 
@@ -302,6 +352,27 @@ export default function ModalCalculator({
       setActiveUsahaId(selectedUsahaId);
       setActiveKotaId(selectedKotaId);
       setIsCalculating(false);
+
+      setLocalSessionState({
+        selectedUsahaId,
+        selectedKotaId,
+        modalAwal,
+        operasional,
+        hasCalculated: true,
+      });
+
+      // Background sync to PostgreSQL database
+      updateKalkulatorAction({
+        usahaId: selectedUsahaId,
+        kotaId: selectedKotaId,
+        modalAwal,
+        operasional,
+        hasilModal: {
+          modalAwal,
+          operasional,
+          bepMonth: calculations.bepMonth,
+        },
+      }).catch(() => {});
     }, 400);
   };
 

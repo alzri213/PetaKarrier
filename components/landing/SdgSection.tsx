@@ -155,7 +155,7 @@ export default function SdgSection() {
                     className="btn-shine group inline-flex items-center gap-2.5 rounded-2xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-green-500 px-6 py-3.5 text-xs font-extrabold text-white shadow-md shadow-emerald-600/20 transition-all duration-300 hover:scale-105 hover:shadow-lg"
                   >
                     <FileText className="h-4 w-4 shrink-0 text-white transition-transform duration-300 group-hover:scale-110" />
-                    <span className="text-white font-extrabold">Unduh PDF Resmi Lampiran III Bappenas</span>
+                    <span className="text-white font-extrabold">Unduh PDF Resmi Buku Capaian SDGs Indonesia 2025</span>
                     <ExternalLink className="h-3.5 w-3.5 shrink-0 text-white/90 transition-transform duration-300 group-hover:translate-x-0.5" />
                   </a>
                 </div>

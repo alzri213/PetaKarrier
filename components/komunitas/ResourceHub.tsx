@@ -1,8 +1,15 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
-import { motion, useMotionValue, useTransform, animate } from "framer-motion";
-import { Users2, ExternalLink, ChevronLeft, ChevronRight } from "lucide-react";
+import { motion } from "framer-motion";
+import { Icon } from "@iconify/react";
+import {
+  Users2,
+  ExternalLink,
+  ChevronLeft,
+  ChevronRight,
+  Compass,
+} from "lucide-react";
 import Reveal from "@/components/ui/Reveal";
 import type { ResourceItem } from "@/types";
 
@@ -15,19 +22,21 @@ const RESOURCES: ResourceItem[] = [
       "Panduan pendaftaran legalitas usaha mikro & kecil secara gratis melalui sistem OSS RBA Kementerian Investasi/BKPM.",
     link: "https://oss.go.id",
     badge: "Resmi Pemerintah",
-    icon: "🏛️",
+    icon: "solar:buildings-3-bold",
     color: "from-emerald-600 to-teal-700",
+    image: "/resources/oss-nib.jpg",
   },
   {
     id: "sertifikasi-halal",
     kategori: "perizinan",
-    judul: "Sertifikasi Halal Gratis BPJPH",
+    judul: "Sertifikasi Halal BPJPH",
     deskripsi:
       "Program sertifikasi halal self-declare untuk produk makanan, minuman, dan olahan UMKM melalui Badan Penyelenggara Jaminan Produk Halal.",
     link: "https://ptsp.halal.go.id",
     badge: "Fasilitasi Kemenag",
-    icon: "📜",
+    icon: "solar:shield-check-bold",
     color: "from-amber-600 to-orange-700",
+    image: "/resources/sertifikasi-halal.jpg",
   },
   {
     id: "kur-bank",
@@ -37,8 +46,9 @@ const RESOURCES: ResourceItem[] = [
       "Pinjaman modal kerja bersubsidi bunga 6% efektif per tahun untuk UMKM pemula tanpa agunan tambahan hingga Rp50 juta.",
     link: "https://kur.ekon.go.id",
     badge: "Bunga Subsidi 6%",
-    icon: "💳",
+    icon: "solar:card-bold",
     color: "from-blue-600 to-indigo-700",
+    image: "/resources/kur-bank.jpg",
   },
   {
     id: "lpdb-kumkm",
@@ -46,10 +56,11 @@ const RESOURCES: ResourceItem[] = [
     judul: "Dana Bergulir LPDB UKM",
     deskripsi:
       "Akses pembiayaan murah dan pendampingan manajemen bisnis bagi koperasi dan kelompok UMKM potensial di seluruh Indonesia.",
-    link: "https://lpdb.kemenkopukm.go.id",
+    link: "https://www.lpdb.go.id",
     badge: "Dana Bergulir",
-    icon: "💰",
+    icon: "solar:wallet-money-bold",
     color: "from-violet-600 to-purple-700",
+    image: "/resources/lpdb-kumkm.jpg",
   },
   {
     id: "qris-bi",
@@ -59,8 +70,9 @@ const RESOURCES: ResourceItem[] = [
       "Panduan registrasi merchant QRIS resmi dari Bank Indonesia untuk menerima pembayaran dari seluruh e-wallet dan mobile banking.",
     link: "https://qris.id",
     badge: "Cashless Ecosystem",
-    icon: "📱",
+    icon: "solar:qr-code-bold",
     color: "from-cyan-600 to-sky-700",
+    image: "/resources/qris-bi.jpg",
   },
   {
     id: "katalog-lkpp",
@@ -68,21 +80,23 @@ const RESOURCES: ResourceItem[] = [
     judul: "E-Katalog LKPP Pemerintah",
     deskripsi:
       "Daftarkan produk UMKM ke katalog elektronik nasional untuk mendapatkan akses belanja pengadaan pemerintah (APBN/APBD).",
-    link: "https://e-katalog.lkpp.go.id",
+    link: "https://katalog.inaproc.id",
     badge: "Pasar Pengadaan",
-    icon: "🛒",
+    icon: "solar:cart-large-4-bold",
     color: "from-rose-600 to-pink-700",
+    image: "/resources/katalog-lkpp.jpg",
   },
   {
     id: "pelatihan-kemenkop",
     kategori: "pelatihan",
-    judul: "Pelatihan Wirausaha Kemenkop",
+    judul: "Pelatihan Wirausaha Digital",
     deskripsi:
-      "Akses kursus online gratis: literasi keuangan, foto produk, packaging, dan digital marketing untuk wirausaha rintisan.",
-    link: "https://edukukm.id",
+      "Akses pelatihan dan modul wirausaha online gratis: literasi keuangan, foto produk, packaging, dan digital marketing UMKM.",
+    link: "https://linkumkm.id",
     badge: "Gratis Bersertifikat",
-    icon: "🎓",
+    icon: "solar:square-academic-cap-bold",
     color: "from-lime-600 to-green-700",
+    image: "/resources/pelatihan-kemenkop.jpg",
   },
   {
     id: "rumah-bumn",
@@ -90,220 +104,231 @@ const RESOURCES: ResourceItem[] = [
     judul: "Rumah BUMN & Inkubator",
     deskripsi:
       "Pusat pembinaan, coworking space, dan temu komunitas UMKM yang dikelola BUMN di ratusan kota/kabupaten di Indonesia.",
-    link: "https://rumahbumn.id",
+    link: "https://rumah-bumn.id",
     badge: "Jaringan 200+ Kota",
-    icon: "🤝",
+    icon: "solar:users-group-two-rounded-bold",
     color: "from-teal-600 to-emerald-800",
+    image: "/resources/rumah-bumn.jpg",
   },
 ];
 
-// Layout constants — desktop base values
-const ROT_STEP   = 16;
-const Y_STEP     = 30;
-const X_STEP     = 230;
-const SCALE_STEP = 0.10;
-const PX_PER_CARD = 120;
-
-// Responsive helpers
+// Responsive helper for 3D Cylinder Orbit Layout
 function useResponsive() {
-  const [width, setWidth] = useState(768);
+  const [width, setWidth] = useState(1024);
+
   useEffect(() => {
     const update = () => setWidth(window.innerWidth);
     update();
     window.addEventListener("resize", update);
     return () => window.removeEventListener("resize", update);
   }, []);
+
   const isMobile = width < 640;
   const isTablet = width >= 640 && width < 1024;
+
   return {
-    cardW:    isMobile ? 220  : isTablet ? 270  : 300,
-    cardH:    isMobile ? 320  : isTablet ? 380  : 440,
-    stageH:   isMobile ? 380  : isTablet ? 460  : 520,
-    xStep:    isMobile ? 130  : isTablet ? 175  : X_STEP,
-    yStep:    isMobile ? 18   : isTablet ? 24   : Y_STEP,
-    rotStep:  isMobile ? 10   : isTablet ? 13   : ROT_STEP,
-    pxPerCard: isMobile ? 80  : isTablet ? 100  : PX_PER_CARD,
-    maxOffset: isMobile ? 2   : 3,
+    cardW: isMobile ? 240 : isTablet ? 290 : 330,
+    cardH: isMobile ? 360 : isTablet ? 410 : 460,
+    stageH: isMobile ? 420 : isTablet ? 480 : 540,
+    radius: isMobile ? 260 : isTablet ? 380 : 480,
+    xSpacing: isMobile ? 140 : isTablet ? 200 : 260,
+    pxPerCard: isMobile ? 100 : isTablet ? 130 : 160,
+    maxVisible: isMobile ? 2 : 3,
   };
 }
 
 export default function ResourceHub() {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [dragOffset, setDragOffset] = useState(0);
   const total = RESOURCES.length;
-  const resp  = useResponsive();
+  const resp = useResponsive();
 
-  // Single shared motion value: raw drag offset in pixels
-  const dragPx = useMotionValue(0);
+  const isDragging = useRef(false);
+  const startX = useRef(0);
+  const didDrag = useRef(false);
 
-  const isDragging  = useRef(false);
-  const startX      = useRef(0);
-  const startActive = useRef(0);
-  // track how far pointer has moved so we can distinguish drag vs click
-  const didDrag     = useRef(false);
-
-  const isAnimating = useRef(false);
-
+  // Smooth target navigation
   const goTo = useCallback(
     (idx: number) => {
-      if (isAnimating.current) return;
-      const target = ((idx) % total + total) % total;
-
-      let diff = idx - activeIndex;
-      if (diff > total / 2)  diff -= total;
-      if (diff < -total / 2) diff += total;
-      const slideDir = diff < 0 ? 1 : -1;
-
-      isAnimating.current = true;
-      animate(dragPx, slideDir * resp.pxPerCard, {
-        duration: 0.32,
-        ease: [0.22, 1, 0.36, 1],
-        onComplete: () => {
-          dragPx.set(0);
-          setActiveIndex(target);
-          isAnimating.current = false;
-        },
-      });
+      const target = ((idx % total) + total) % total;
+      setActiveIndex(target);
     },
-    [activeIndex, dragPx, total, resp.pxPerCard]
+    [total]
   );
 
-  /* ── Pointer handlers ─────────────────────────────────────────── */
-  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+  const goNext = useCallback(() => goTo(activeIndex + 1), [goTo, activeIndex]);
+  const goPrev = useCallback(() => goTo(activeIndex - 1), [goTo, activeIndex]);
+
+  // Pointer drag event handlers for continuous fluid tracking
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    const target = e.target as HTMLElement;
+    // Do NOT capture drag if user is clicking directly on a link or button
+    if (target.closest("a") || target.closest("button")) {
+      return;
+    }
+
     (e.currentTarget as HTMLDivElement).setPointerCapture(e.pointerId);
-    isDragging.current  = true;
-    didDrag.current     = false;
-    startX.current      = e.clientX;
-    startActive.current = activeIndex;
-    dragPx.set(0);
+    isDragging.current = true;
+    didDrag.current = false;
+    startX.current = e.clientX;
+    setDragOffset(0);
   };
 
-  const onPointerMove = (e: React.PointerEvent) => {
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!isDragging.current) return;
     const dx = e.clientX - startX.current;
-    if (Math.abs(dx) > 3) didDrag.current = true;
-    dragPx.set(dx);
+    if (Math.abs(dx) > 6) {
+      didDrag.current = true;
+    }
+    setDragOffset(dx / resp.pxPerCard);
   };
 
-  const onPointerUp = () => {
+  const handlePointerUp = () => {
     if (!isDragging.current) return;
     isDragging.current = false;
 
-    const steps  = Math.round(dragPx.get() / resp.pxPerCard);
-    const raw    = startActive.current - steps;
-    const target = ((raw) % total + total) % total;
+    const steps = Math.round(dragOffset);
+    const target = (((activeIndex - steps) % total) + total) % total;
 
-    dragPx.set(0);
+    setDragOffset(0);
     setActiveIndex(target);
-    
-    // Reset didDrag after a short delay to allow click events
+
     setTimeout(() => {
       didDrag.current = false;
-    }, 100);
+    }, 150);
   };
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 space-y-10">
+    <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 space-y-12">
+      {/* ── 3D CYLINDER ROTATING CAROUSEL STAGE ── */}
+      <div className="relative select-none" style={{ isolation: "isolate" }}>
+        {/* Ambient Orbit Glow Backing */}
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center -z-10">
+          <div className="h-[360px] w-[650px] rounded-full bg-emerald-500/15 blur-[140px] dark:bg-emerald-500/10" />
+        </div>
 
-      {/* ── FAN CAROUSEL ── */}
-      <div className="relative select-none"
-           style={{ isolation: "isolate" }}>
-
-        {/* Stage */}
+        {/* 3D Stage Container with Deep Perspective */}
         <div
-          className="relative mx-auto flex items-end justify-center"
-          style={{ 
-            height: resp.stageH, 
-            perspective: 1600, 
+          className="relative mx-auto flex items-center justify-center"
+          style={{
+            height: resp.stageH,
+            perspective: 1800,
+            perspectiveOrigin: "50% 50%",
             overflow: "visible",
             cursor: isDragging.current ? "grabbing" : "grab",
+            touchAction: "pan-y",
           }}
-          onPointerDown={onPointerDown}
-          onPointerMove={onPointerMove}
-          onPointerUp={onPointerUp}
-          onPointerLeave={onPointerUp}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerUp}
         >
           {RESOURCES.map((item, idx) => {
+            // Calculate shortest relative circular offset (-total/2 to +total/2)
             let baseOffset = idx - activeIndex;
-            if (baseOffset > total / 2)  baseOffset -= total;
-            if (baseOffset < -total / 2) baseOffset += total;
-            if (Math.abs(baseOffset) > resp.maxOffset) return null;
+            while (baseOffset > total / 2) baseOffset -= total;
+            while (baseOffset < -total / 2) baseOffset += total;
+
+            const liveOffset = baseOffset + dragOffset;
+            if (Math.abs(liveOffset) > resp.maxVisible + 0.5) return null;
 
             return (
-              <FanCard
+              <Orbit3DCard
                 key={item.id}
                 item={item}
-                baseOffset={baseOffset}
-                dragPx={dragPx}
+                index={idx}
+                liveOffset={liveOffset}
+                isDragging={isDragging.current}
                 didDrag={didDrag}
-                isCenter={baseOffset === 0}
-                onTap={() => { if (baseOffset !== 0) goTo(idx); }}
+                onSelectCard={() => goTo(idx)}
                 resp={resp}
               />
             );
           })}
         </div>
 
-        {/* Navigation — z-60, strictly below the cards won't overlap */}
-        <div
-          className="relative mt-6 flex items-center justify-between px-4 sm:px-8"
-          style={{ zIndex: 60 }}
-        >
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => goTo(activeIndex - 1)}
-              aria-label="Sebelumnya"
-              className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-slate-200 bg-white text-slate-700 shadow-md transition-all hover:border-teal-400 hover:bg-teal-50 hover:text-teal-600 active:scale-95 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-teal-500 dark:hover:bg-teal-900/20"
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </button>
-            <button
-              onClick={() => goTo(activeIndex + 1)}
-              aria-label="Berikutnya"
-              className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-slate-200 bg-white text-slate-700 shadow-md transition-all hover:border-teal-400 hover:bg-teal-50 hover:text-teal-600 active:scale-95 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-teal-500 dark:hover:bg-teal-900/20"
-            >
-              <ChevronRight className="h-5 w-5" />
-            </button>
-          </div>
+        {/* Floating Side Quick Navigation Chevrons */}
+        <div className="pointer-events-none absolute inset-y-0 left-0 right-0 flex items-center justify-between px-2 sm:px-6 z-40">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              goPrev();
+            }}
+            aria-label="Sebelumnya"
+            className="pointer-events-auto flex h-12 w-12 items-center justify-center rounded-full border border-slate-200/80 bg-white/90 text-slate-800 shadow-xl backdrop-blur-md transition-all duration-300 hover:scale-110 hover:border-emerald-400 hover:bg-emerald-50 hover:text-emerald-700 active:scale-95 dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-100 dark:hover:border-emerald-500/60 dark:hover:bg-emerald-950/40 cursor-pointer"
+          >
+            <ChevronLeft className="h-6 w-6" />
+          </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              goNext();
+            }}
+            aria-label="Berikutnya"
+            className="pointer-events-auto flex h-12 w-12 items-center justify-center rounded-full border border-slate-200/80 bg-white/90 text-slate-800 shadow-xl backdrop-blur-md transition-all duration-300 hover:scale-110 hover:border-emerald-400 hover:bg-emerald-50 hover:text-emerald-700 active:scale-95 dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-100 dark:hover:border-emerald-500/60 dark:hover:bg-emerald-950/40 cursor-pointer"
+          >
+            <ChevronRight className="h-6 w-6" />
+          </button>
+        </div>
 
-          <span className="text-sm font-bold text-slate-500 dark:text-slate-400 tabular-nums">
-            {activeIndex + 1} / {total}
-          </span>
+        {/* ── CLEAN CENTERED FLOATING CONTROL DOCK ── */}
+        <div className="relative mt-6 flex flex-col sm:flex-row items-center justify-center gap-4 z-50">
+          <div className="flex items-center gap-3.5 rounded-full border border-slate-200/80 bg-white/95 px-6 py-2.5 shadow-xl backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/90">
+            {/* Page Count */}
+            <span className="text-xs font-extrabold text-slate-700 dark:text-slate-300 tabular-nums">
+              <span className="text-emerald-600 dark:text-[#00df82]">{activeIndex + 1}</span>
+              <span className="text-slate-400 dark:text-slate-500"> / {total}</span>
+            </span>
 
-          <div className="flex items-center gap-1.5">
-            {RESOURCES.map((_, idx) => (
-              <button
-                key={idx}
-                onClick={() => goTo(idx)}
-                aria-label={`Kartu ${idx + 1}`}
-                className={`rounded-full transition-all duration-300 ${
-                  idx === activeIndex
-                    ? "w-7 h-2 bg-teal-500"
-                    : "w-2 h-2 bg-slate-300 hover:bg-slate-400 dark:bg-slate-600 dark:hover:bg-slate-500"
-                }`}
-              />
-            ))}
+            {/* Separator */}
+            <div className="h-4 w-px bg-slate-200 dark:bg-slate-800" />
+
+            {/* Interactive Dot Bar */}
+            <div className="flex items-center gap-1.5">
+              {RESOURCES.map((_, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => goTo(idx)}
+                  aria-label={`Ke Kartu ${idx + 1}`}
+                  className={`rounded-full transition-all duration-300 cursor-pointer ${
+                    idx === activeIndex
+                      ? "h-2 w-6 bg-[#00df82] shadow-sm shadow-emerald-500/50"
+                      : "h-2 w-2 bg-slate-300 hover:bg-slate-400 dark:bg-slate-700 dark:hover:bg-slate-500"
+                  }`}
+                />
+              ))}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Community Callout */}
+      {/* ── COMMUNITY CALLOUT BANNER ── */}
       <Reveal delay={0.2}>
-        <div className="rounded-3xl border border-teal-200 bg-gradient-to-br from-teal-50 via-white to-cyan-50 p-8 sm:p-10 text-center sm:text-left flex flex-col sm:flex-row items-center justify-between gap-6 dark:border-teal-500/25 dark:from-teal-900/30 dark:via-slate-900 dark:to-cyan-900/20">
-          <div className="space-y-2">
-            <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white">
+        <div className="relative overflow-hidden rounded-[2.5rem] border border-emerald-300/60 bg-gradient-to-br from-emerald-50 via-white to-teal-50 p-8 sm:p-12 shadow-2xl dark:border-emerald-500/30 dark:from-[#0a0f1d] dark:via-[#06121e] dark:to-[#0a0f1d] flex flex-col lg:flex-row items-center justify-between gap-8">
+          <div className="space-y-3 text-center lg:text-left">
+            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-300 bg-emerald-100/60 px-3.5 py-1 text-xs font-bold text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/60 dark:text-[#00df82]">
+              <Compass className="h-3.5 w-3.5" />
+              Jejaring Wirausaha Indonesia
+            </div>
+            <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white leading-tight">
               Butuh Pendampingan atau Mau Berkolaborasi?
             </h3>
-            <p className="text-xs sm:text-sm text-slate-600 max-w-2xl leading-relaxed dark:text-slate-300">
-              Bergabunglah dengan jaringan ratusan wirausaha muda binaan PetaKarier di seluruh Indonesia. Saling berbagi supplier, strategi promosi digital, dan peluang pasar bersama.
+            <p className="text-sm text-slate-600 max-w-2xl leading-relaxed dark:text-slate-300">
+              Bergabunglah dengan jaringan ratusan wirausaha muda binaan PetaKarier di seluruh Indonesia. Saling berbagi supplier bahan baku, strategi promosi digital, dan peluang pasar bersama.
             </p>
           </div>
+
           <a
             href="https://wa.me/?text=Halo%20PetaKarier%2C%20saya%20tertarik%20bergabung%20dengan%20komunitas%20wirausaha%20muda."
             target="_blank"
             rel="noopener noreferrer"
-            className="btn-shine inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-teal-500 via-teal-600 to-cyan-400 px-7 py-4 text-xs font-extrabold text-white shadow-xl shadow-teal-500/25 transition hover:scale-105 shrink-0"
+            className="btn-shine inline-flex items-center justify-center gap-2.5 rounded-2xl bg-[#00df82] px-8 py-4 text-sm font-extrabold text-slate-950 shadow-xl shadow-emerald-500/25 transition-all duration-300 hover:bg-[#00c975] hover:scale-105 active:scale-95 shrink-0 w-full sm:w-auto"
           >
-            <Users2 className="h-4 w-4" /> Gabung Grup Komunitas
+            <Users2 className="h-4 w-4" />
+            <span>Gabung Grup Komunitas</span>
           </a>
         </div>
       </Reveal>
@@ -312,126 +337,169 @@ export default function ResourceHub() {
 }
 
 /* ─────────────────────────────────────────────────────────────────
-   FanCard
-   Reads dragPx directly — ONE useTransform per value, no chaining.
-   baseOffset is the card's position relative to center at rest.
+   Orbit3DCard
+   - Selected center card: crystal clear, bright (blur-0), sharp
+   - Side inactive cards: depth-of-field bokeh (blur-sm, dimmed)
+   - Official portal button is 100% clickable and opens in new tab
 ───────────────────────────────────────────────────────────────── */
-interface FanCardProps {
+interface Orbit3DCardProps {
   item: ResourceItem;
-  baseOffset: number;
-  dragPx: ReturnType<typeof useMotionValue<number>>;
+  index: number;
+  liveOffset: number;
+  isDragging: boolean;
   didDrag: React.RefObject<boolean>;
-  isCenter: boolean;
-  onTap: () => void;
+  onSelectCard: () => void;
   resp: ReturnType<typeof useResponsive>;
 }
 
-function FanCard({ item, baseOffset, dragPx, didDrag, isCenter, onTap, resp }: FanCardProps) {
-  const getLiveOffset = (px: number) => baseOffset + px / resp.pxPerCard;
+function Orbit3DCard({
+  item,
+  liveOffset,
+  isDragging,
+  didDrag,
+  onSelectCard,
+  resp,
+}: Orbit3DCardProps) {
+  const isCenter = Math.abs(liveOffset) < 0.35;
 
-  const x = useTransform(dragPx, (px) => getLiveOffset(px) * resp.xStep);
-  const y = useTransform(dragPx, (px) => Math.abs(getLiveOffset(px)) * resp.yStep);
-  const rotateY = useTransform(dragPx, (px) => getLiveOffset(px) * resp.rotStep);
-  const scale = useTransform(dragPx, (px) =>
-    Math.max(0.35, 1 - Math.abs(getLiveOffset(px)) * SCALE_STEP)
-  );
-  const opacity = useTransform(dragPx, (px) => {
-    const abs = Math.abs(getLiveOffset(px));
-    return abs > 3 ? 0 : abs > 2 ? 0.5 : 1;
-  });
-  const zIndex = useTransform(dragPx, (px) =>
-    Math.round(50 - Math.abs(getLiveOffset(px)) * 10)
-  );
+  // 3D coordinate math
+  const x = liveOffset * resp.xSpacing;
+  const z = -Math.pow(Math.abs(liveOffset), 1.35) * (resp.radius * 0.42);
+  const rotateY = liveOffset * -24;
+  const scale = Math.max(0.6, 1.05 - Math.abs(liveOffset) * 0.16);
+  const opacity =
+    Math.abs(liveOffset) > 2.6 ? 0 : Math.abs(liveOffset) > 1.8 ? 0.45 : 1;
+  const zIndex = Math.round(50 - Math.abs(liveOffset) * 10);
 
   const handleCardClick = (e: React.MouseEvent) => {
-    // Prevent if user was dragging
+    // If click originated from a link/button, let the link handle it
+    const target = e.target as HTMLElement;
+    if (target.closest("a") || target.closest("button")) {
+      return;
+    }
+
     if (didDrag.current) {
       e.preventDefault();
       e.stopPropagation();
       return;
     }
-    
-    // Only navigate if not center card
     if (!isCenter) {
       e.stopPropagation();
-      onTap();
+      onSelectCard();
     }
   };
 
   return (
     <motion.div
       onClick={handleCardClick}
+      animate={{
+        x,
+        z,
+        rotateY,
+        scale,
+        opacity,
+        zIndex,
+      }}
+      transition={
+        isDragging
+          ? { duration: 0 }
+          : { type: "spring", stiffness: 280, damping: 28, mass: 0.8 }
+      }
       style={{
-        x, y, rotateY, scale, opacity, zIndex,
         position: "absolute",
-        bottom: 0,
         transformStyle: "preserve-3d",
-        transformOrigin: "bottom center",
-        cursor: isCenter ? "grab" : "pointer",
-        willChange: "transform",
+        cursor: isCenter ? "default" : "pointer",
+        willChange: "transform, opacity",
         width: resp.cardW,
+        height: resp.cardH,
         pointerEvents: "auto",
       }}
     >
       <div
-        className={`relative w-full overflow-hidden rounded-[2rem] bg-gradient-to-br ${
+        className={`relative h-full w-full overflow-hidden rounded-[2.5rem] bg-gradient-to-br ${
           item.color ?? "from-slate-700 to-slate-900"
-        } flex flex-col justify-between p-5 sm:p-7 transition-all duration-200 ${
-          !isCenter ? "hover:scale-[1.02] hover:shadow-2xl" : ""
+        } flex flex-col justify-between p-6 sm:p-8 transition-all duration-500 select-none ${
+          isCenter
+            ? "ring-2 ring-white/50 shadow-[0_35px_80px_-15px_rgba(0,0,0,0.8)]"
+            : "hover:scale-[1.03] shadow-[0_20px_45px_-12px_rgba(0,0,0,0.5)] filter brightness-[0.9] hover:brightness-100"
         }`}
-        style={{
-          height: resp.cardH,
-          boxShadow: isCenter
-            ? "0 30px 60px -10px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08)"
-            : "0 15px 35px -10px rgba(0,0,0,0.4)",
-        }}
       >
-        {/* Top */}
-        <div className="flex items-start justify-between">
-          <span className="text-3xl sm:text-4xl leading-none">{item.icon}</span>
-          <span className="rounded-full bg-white/20 backdrop-blur-sm px-2.5 py-1 text-[9px] sm:text-[10px] font-extrabold text-white border border-white/20 text-right max-w-[45%] leading-tight">
+        {/* Real Live Website Background Photo with Bokeh Depth-of-Field */}
+        {item.image && (
+          <div className="absolute inset-0 -z-0 overflow-hidden pointer-events-none">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={item.image}
+              alt={item.judul}
+              className={`h-full w-full object-cover object-top transition-all duration-500 ${
+                isCenter
+                  ? "filter brightness-[0.75] contrast-[1.08] blur-0 scale-100"
+                  : "filter brightness-[0.32] contrast-[0.95] blur-[5px] scale-105 opacity-40"
+              }`}
+            />
+            {/* Elegant glassmorphism readability overlay */}
+            <div
+              className={`absolute inset-0 transition-all duration-500 ${
+                isCenter
+                  ? "bg-gradient-to-t from-slate-950/92 via-slate-950/35 to-transparent"
+                  : "bg-slate-950/75"
+              }`}
+            />
+          </div>
+        )}
+
+        {/* Card Top: Icon & Badge */}
+        <div className="relative z-10 flex items-start justify-between gap-3">
+          <div className="flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-2xl bg-white/25 backdrop-blur-md border border-white/30 shadow-md text-white">
+            <Icon icon={item.icon} className="h-6 w-6 sm:h-8 sm:w-8 text-white drop-shadow-sm" />
+          </div>
+          <span className="rounded-full bg-white/25 backdrop-blur-md px-3.5 py-1 text-[10px] sm:text-xs font-extrabold text-white border border-white/30 shadow-sm text-right leading-tight max-w-[55%]">
             {item.badge}
           </span>
         </div>
 
-        {/* Bottom */}
-        <div className="space-y-2 sm:space-y-3">
-          <h3 className="text-base sm:text-xl font-extrabold text-white leading-snug tracking-tight">
+        {/* Card Bottom: Title, Description & Action */}
+        <div className="relative z-10 space-y-3 sm:space-y-4">
+          <h3 className="text-lg sm:text-2xl font-extrabold text-white leading-tight tracking-tight drop-shadow-md">
             {item.judul}
           </h3>
 
-          <motion.div
-            animate={{ opacity: isCenter ? 1 : 0, height: isCenter ? "auto" : 0 }}
-            transition={{ duration: 0.35, ease: "easeInOut" }}
-            className="overflow-hidden"
+          <p
+            className={`text-xs sm:text-sm leading-relaxed text-white/95 font-medium transition-all duration-300 drop-shadow ${
+              isCenter ? "line-clamp-4" : "line-clamp-2 opacity-75"
+            }`}
           >
-            <p className="text-xs leading-relaxed text-white/80 font-medium">{item.deskripsi}</p>
-          </motion.div>
+            {item.deskripsi}
+          </p>
 
+          {/* Action Link: fully clickable with stopPropagation and direct external opening */}
           {isCenter && (
-            <motion.a
-              initial={{ opacity: 0, y: 6 }}
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15, duration: 0.3 }}
-              href={item.link}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(e) => {
-                  // block link open if this was a drag gesture
-                  if (didDrag.current) { e.preventDefault(); return; }
+              transition={{ delay: 0.1, duration: 0.3 }}
+              className="pt-1 relative z-20"
+            >
+              <a
+                href={item.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                onPointerDown={(e) => e.stopPropagation()}
+                onClick={(e) => {
                   e.stopPropagation();
                 }}
-              className="inline-flex items-center gap-2 rounded-2xl bg-white/15 backdrop-blur-sm border border-white/25 px-4 py-2.5 text-xs font-extrabold text-white hover:bg-white/25 transition-all duration-200 hover:gap-3"
-            >
-              <span>Akses Layanan Resmi</span>
-              <ExternalLink className="h-3.5 w-3.5 shrink-0" />
-            </motion.a>
+                className="inline-flex items-center gap-2 rounded-2xl bg-white/30 hover:bg-white/45 active:bg-white/50 backdrop-blur-md border border-white/40 px-5 py-3 text-xs sm:text-sm font-extrabold text-white shadow-xl transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer select-auto"
+              >
+                <span>Akses Layanan Resmi</span>
+                <ExternalLink className="h-4 w-4 shrink-0" />
+              </a>
+            </motion.div>
           )}
         </div>
 
-        {/* Glow blobs */}
-        <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10 blur-2xl" />
-        <div className="pointer-events-none absolute -bottom-8 -left-8 h-32 w-32 rounded-full bg-black/20 blur-2xl" />
+        {/* Decorative Ambient Glass Glow Highlights */}
+        <div className="pointer-events-none absolute -right-12 -top-12 h-44 w-44 rounded-full bg-white/15 blur-2xl" />
+        <div className="pointer-events-none absolute -bottom-10 -left-10 h-36 w-36 rounded-full bg-black/25 blur-2xl" />
       </div>
     </motion.div>
   );

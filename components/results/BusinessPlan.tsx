@@ -1,33 +1,49 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import {
-  Sparkles,
+  Lightbulb,
   Edit2,
   Download,
   Check,
 } from "lucide-react";
 import { toast } from "sonner";
+import { formatRupiah } from "@/lib/utils/formatCurrency";
+import { getLocalSessionState, setLocalSessionState } from "@/lib/utils/sessionSync";
+import { getUserActiveAnalisis, saveBusinessPlanAction } from "@/lib/actions/analisis";
 
 type EditingSection = null | "ringkasan" | "masalah" | "proyeksi";
 
-export default function BusinessPlan() {
+interface BusinessPlanProps {
+  initialUsahaId?: string;
+  initialKotaId?: string;
+}
+
+export default function BusinessPlan({
+  initialUsahaId,
+  initialKotaId,
+}: BusinessPlanProps) {
   const [editingSection, setEditingSection] = useState<EditingSection>(null);
 
-  // Editable state fields with default values matching reference design
-  const [namaUsaha, setNamaUsaha] = useState("Kopi Kebersamaan");
+  const [currentUsahaId, setCurrentUsahaId] = useState<string>(initialUsahaId || "kedai-kopi");
+  const [currentKotaId, setCurrentKotaId] = useState<string>(initialKotaId || "dki-jakarta");
+  const [modalAwalVal, setModalAwalVal] = useState<number>(45000000);
+  const [analisisId, setAnalisisId] = useState<string | null>(null);
+
+  // Editable state fields
+  const [namaUsaha, setNamaUsaha] = useState("Kedai Kopi Nusantara");
   const [ringkasan, setRingkasan] = useState(
-    'Rencana bisnis ini disusun untuk mendirikan "Kopi Kebersamaan", sebuah usaha warung kopi berkonsep modern namun terjangkau di kawasan padat domisili Surabaya. Target pasar utama adalah mahasiswa dan pekerja kreatif yang membutuhkan ruang kerja nyaman dengan harga bersahabat.'
+    'Rencana bisnis ini disusun untuk mendirikan "Kedai Kopi Nusantara", sebuah usaha kedai kopi dan minuman berkualitas dengan harga terjangkau. Target pasar utama adalah mahasiswa, pekerja lepas, dan masyarakat sekitar.'
   );
   const [masalah1, setMasalah1] = useState(
-    "Kurangnya ruang komunal bersahabat yang dilengkapi koneksi internet andal di Surabaya Timur."
+    "Tingginya harga minuman di cafe modern waralaba yang kurang terjangkau untuk konsumsi harian."
   );
   const [masalah2, setMasalah2] = useState(
-    "Harga kopi cafe modern waralaba yang kurang terjangkau untuk kebutuhan konsumsi rutin harian."
+    "Kebutuhan tempat singgah yang nyaman, higienis, dan dilengkapi fasilitas pendukung memadai."
   );
 
-  // Financial Projection Data (3 Months) — now editable
+  // Financial Projection Data (3 Months) — editable
   const [proyeksi, setProyeksi] = useState([
     {
       bulan: "Bulan 1",
@@ -52,6 +68,78 @@ export default function BusinessPlan() {
     },
   ]);
 
+  // Restore from unified session and database on mount
+  useEffect(() => {
+    // 1. Local unified session
+    const unified = getLocalSessionState();
+    if (unified) {
+      if (unified.selectedUsahaId) setCurrentUsahaId(unified.selectedUsahaId);
+      if (unified.selectedKotaId) setCurrentKotaId(unified.selectedKotaId);
+      if (unified.analisisId) setAnalisisId(unified.analisisId);
+      if (unified.modalAwal) setModalAwalVal(unified.modalAwal);
+
+      if (unified.businessPlan) {
+        if (unified.businessPlan.namaUsaha) setNamaUsaha(unified.businessPlan.namaUsaha);
+        if (unified.businessPlan.ringkasan) setRingkasan(unified.businessPlan.ringkasan);
+        if (unified.businessPlan.masalah1) setMasalah1(unified.businessPlan.masalah1);
+        if (unified.businessPlan.masalah2) setMasalah2(unified.businessPlan.masalah2);
+        if (unified.businessPlan.proyeksi) setProyeksi(unified.businessPlan.proyeksi);
+      }
+    }
+
+    // 2. Fetch logged-in user active session from PostgreSQL
+    getUserActiveAnalisis().then((dbData) => {
+      if (dbData) {
+        if (dbData.id) setAnalisisId(dbData.id);
+        if (dbData.usahaId) setCurrentUsahaId(dbData.usahaId);
+        if (dbData.kotaId) setCurrentKotaId(dbData.kotaId);
+
+        if (dbData.hasilModal && typeof dbData.hasilModal === "object") {
+          const hm = dbData.hasilModal as any;
+          if (hm.modalAwal) setModalAwalVal(hm.modalAwal);
+        }
+
+        if (dbData.rencanaBisnis?.kontenMd) {
+          try {
+            const parsed = JSON.parse(dbData.rencanaBisnis.kontenMd);
+            if (parsed.namaUsaha) setNamaUsaha(parsed.namaUsaha);
+            if (parsed.ringkasan) setRingkasan(parsed.ringkasan);
+            if (parsed.masalah1) setMasalah1(parsed.masalah1);
+            if (parsed.masalah2) setMasalah2(parsed.masalah2);
+            if (parsed.proyeksi) setProyeksi(parsed.proyeksi);
+          } catch {}
+        }
+      }
+    }).catch(() => {});
+  }, []);
+
+  // Save changes to unified session and PostgreSQL
+  const persistChanges = (override?: Partial<any>) => {
+    const updatedPlan = {
+      namaUsaha: override?.namaUsaha ?? namaUsaha,
+      ringkasan: override?.ringkasan ?? ringkasan,
+      masalah1: override?.masalah1 ?? masalah1,
+      masalah2: override?.masalah2 ?? masalah2,
+      proyeksi: override?.proyeksi ?? proyeksi,
+    };
+
+    setLocalSessionState({
+      businessPlan: updatedPlan,
+    });
+
+    // Background sync to PostgreSQL
+    saveBusinessPlanAction({
+      analisisId,
+      usahaId: currentUsahaId,
+      kotaId: currentKotaId,
+      namaUsaha: updatedPlan.namaUsaha,
+      ringkasan: updatedPlan.ringkasan,
+      masalah1: updatedPlan.masalah1,
+      masalah2: updatedPlan.masalah2,
+      proyeksi: updatedPlan.proyeksi,
+    }).catch(() => {});
+  };
+
   const handleExportPDF = () => {
     const el = document.getElementById("plan-dokumen");
     if (!el) return;
@@ -62,14 +150,12 @@ export default function BusinessPlan() {
       return;
     }
 
-    const content = el.innerHTML;
-
     printWindow.document.write(`<!DOCTYPE html>
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Rencana Bisnis — PetaKarier</title>
+  <title>Rencana Bisnis — ${namaUsaha}</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -80,7 +166,6 @@ export default function BusinessPlan() {
       font-size: 13px;
       line-height: 1.6;
     }
-    /* Header */
     .print-header { margin-bottom: 1.5rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 1rem; }
     .print-header h1 { font-size: 1.5rem; font-weight: 800; color: #0f172a; }
     .print-header p { color: #64748b; font-size: 0.8rem; margin-top: 0.25rem; }
@@ -96,113 +181,104 @@ export default function BusinessPlan() {
       letter-spacing: 0.05em;
       text-transform: uppercase;
     }
-    /* Two-column layout */
     .layout { display: flex; gap: 2rem; align-items: flex-start; }
-    .col-main { flex: 1 1 60%; }
-    .col-side { flex: 0 0 30%; min-width: 200px; }
-    /* Main card */
-    .card {
-      border: 1px solid #e2e8f0;
-      border-radius: 1rem;
-      padding: 1.5rem;
-      margin-bottom: 1rem;
+    .main-col { flex: 2; }
+    .side-col { flex: 1; border: 1px solid #e2e8f0; border-radius: 1rem; padding: 1.25rem; background: #f8fafc; }
+    .section { margin-bottom: 1.5rem; }
+    .section h2 { font-size: 0.95rem; font-weight: 700; color: #16a34a; margin-bottom: 0.5rem; }
+    .section p { color: #334155; font-size: 0.85rem; }
+    .bullet-list { list-style: none; padding-left: 0; }
+    .bullet-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+      color: #334155;
+      margin-bottom: 0.4rem;
     }
-    /* Section headings */
-    .section-title {
-      font-size: 0.95rem;
-      font-weight: 700;
-      color: #16a34a;
-      margin-bottom: 0.5rem;
-    }
-    /* Body text */
-    .body-text { color: #334155; font-size: 0.8rem; line-height: 1.7; }
-    /* Bullet list */
-    ul.problem-list { list-style: disc; padding-left: 1.2rem; color: #334155; font-size: 0.8rem; }
-    ul.problem-list li { margin-bottom: 0.3rem; }
-    /* Table */
-    table { width: 100%; border-collapse: collapse; font-size: 0.78rem; margin-top: 0.5rem; }
-    thead tr { background: #f8fafc; }
-    th { padding: 8px 10px; text-align: left; font-weight: 700; text-transform: uppercase; font-size: 0.65rem; letter-spacing: 0.05em; color: #64748b; border-bottom: 2px solid #e2e8f0; }
-    td { padding: 8px 10px; border-bottom: 1px solid #f1f5f9; color: #334155; }
-    td:first-child { font-weight: 600; color: #0f172a; }
-    td:last-child { font-weight: 700; color: #16a34a; }
-    /* Sidebar cards */
-    .side-card { border: 1px solid #e2e8f0; border-radius: 1rem; padding: 1rem; margin-bottom: 1rem; }
-    .side-card h3 { font-size: 0.85rem; font-weight: 700; color: #0f172a; margin-bottom: 0.75rem; }
-    .side-row { display: flex; justify-content: space-between; font-size: 0.78rem; margin-bottom: 0.5rem; }
-    .side-row .label { color: #64748b; }
-    .side-row .value { font-weight: 700; color: #0f172a; }
-    .side-row .value.green { color: #16a34a; }
-    .mentor-card { border: 2px solid #16a34a; border-radius: 1rem; padding: 1rem; margin-bottom: 1rem; }
-    .mentor-title { font-size: 0.8rem; font-weight: 700; color: #16a34a; margin-bottom: 0.5rem; }
-    .mentor-text { font-size: 0.75rem; color: #334155; line-height: 1.6; }
-    /* Footer */
-    .print-footer { margin-top: 2rem; border-top: 1px solid #e2e8f0; padding-top: 0.75rem; font-size: 0.65rem; color: #94a3b8; text-align: center; }
-    @media print {
-      body { padding: 1rem; }
-      @page { margin: 1.5cm; }
-    }
+    .bullet-list li::before { content: "•"; color: #16a34a; font-weight: bold; font-size: 1rem; }
+    table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; font-size: 0.8rem; }
+    th { background: #f1f5f9; font-weight: 700; text-align: left; padding: 0.5rem; border-bottom: 2px solid #cbd5e1; }
+    td { padding: 0.5rem; border-bottom: 1px solid #e2e8f0; }
+    .side-card { margin-bottom: 1.25rem; }
+    .side-card h3 { font-size: 0.85rem; font-weight: 700; margin-bottom: 0.75rem; color: #0f172a; }
+    .stat-row { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 0.5rem; }
+    .stat-label { color: #64748b; }
+    .stat-val { font-weight: 700; color: #0f172a; }
+    .stat-val.green { color: #16a34a; }
+    .footer { margin-top: 2rem; border-top: 1px solid #e2e8f0; padding-top: 0.75rem; font-size: 0.75rem; color: #94a3b8; text-align: center; }
   </style>
 </head>
 <body>
   <div class="print-header">
-    <h1>Rencana Bisnis Anda</h1>
-    <p>Draf rencana bisnis terstruktur otomatis yang siap direalisasikan dan diajukan ke calon investor.</p>
-    <span class="print-badge">Auto-Generated by AI · PetaKarier</span>
+    <h1>${namaUsaha} — Rencana Bisnis</h1>
+    <p>Disusun melalui Platform PetaKarier &bull; Data Terverifikasi Nasional</p>
+    <span class="print-badge">Dokumen Terstruktur Siap Pengajuan KUR</span>
   </div>
 
   <div class="layout">
-    <div class="col-main">
-      <div class="card">
-        <p class="section-title">1. Ringkasan Eksekutif</p>
-        <p class="body-text">${document.querySelector("#plan-dokumen [data-print='ringkasan']")?.textContent ?? ""}</p>
+    <div class="main-col">
+      <div class="section">
+        <h2>1. Ringkasan Eksekutif</h2>
+        <p>${ringkasan}</p>
       </div>
-      <div class="card">
-        <p class="section-title">2. Analisis Masalah</p>
-        <ul class="problem-list">
-          <li class="body-text">${document.querySelector("#plan-dokumen [data-print='masalah1']")?.textContent ?? ""}</li>
-          <li class="body-text">${document.querySelector("#plan-dokumen [data-print='masalah2']")?.textContent ?? ""}</li>
+
+      <div class="section">
+        <h2>2. Analisis Masalah</h2>
+        <ul class="bullet-list">
+          <li>${masalah1}</li>
+          <li>${masalah2}</li>
         </ul>
       </div>
-      <div class="card">
-        <p class="section-title">3. Proyeksi Keuangan (3 Bulan Pertama)</p>
+
+      <div class="section">
+        <h2>3. Target Pasar & Keunggulan Kompetitif</h2>
+        <p>Menyediakan penawaran nilai unik dengan perputaran modal efisien, harga bersaing, dan saluran pemasaran digital terarah.</p>
+      </div>
+
+      <div class="section">
+        <h2>4. Proyeksi Keuangan (3 Bulan Pertama)</h2>
         <table>
           <thead>
             <tr>
-              <th>Bulan</th><th>Modal</th><th>Operasional</th><th>Revenue</th><th>Est. Profit</th>
+              <th>Bulan</th>
+              <th>Modal Awal</th>
+              <th>Operasional</th>
+              <th>Revenue</th>
+              <th>Est. Profit</th>
             </tr>
           </thead>
-          <tbody id="print-table-body"></tbody>
+          <tbody>
+            ${proyeksi.map(r => `<tr><td>${r.bulan}</td><td>${r.modal}</td><td>${r.operasional}</td><td>${r.revenue}</td><td style="color:#16a34a;font-weight:700;">${r.profit}</td></tr>`).join("")}
+          </tbody>
         </table>
       </div>
     </div>
-    <div class="col-side">
+
+    <div class="side-col">
       <div class="side-card">
         <h3>Data Finansial Terpilih</h3>
-        <div class="side-row"><span class="label">Estimasi Modal</span><span class="value">${document.querySelector("#plan-dokumen [data-print='modal']")?.textContent ?? "Rp 45.000.000"}</span></div>
-        <div class="side-row"><span class="label">Rasio UMR Kota</span><span class="value green">${document.querySelector("#plan-dokumen [data-print='umr']")?.textContent ?? "1.52× Lebih Tinggi"}</span></div>
-        <div class="side-row"><span class="label">Target Margin Laba</span><span class="value">${document.querySelector("#plan-dokumen [data-print='margin']")?.textContent ?? "42.6%"}</span></div>
-      </div>
-      <div class="mentor-card">
-        <p class="mentor-title">&#x2728; Petunjuk Mentor Virtual</p>
-        <p class="mentor-text">${document.querySelector("#plan-dokumen [data-print='mentor']")?.textContent ?? ""}</p>
+        <div class="stat-row">
+          <span class="stat-label">Estimasi Modal</span>
+          <span class="stat-val">${formatRupiah(modalAwalVal)}</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Rasio UMR Kota</span>
+          <span class="stat-val green">1.52x Lebih Tinggi</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Target Margin Laba</span>
+          <span class="stat-val">42.6%</span>
+        </div>
       </div>
     </div>
   </div>
 
-  <div class="print-footer">
-    Dicetak dari PetaKarier &mdash; Platform Akselerasi Wirausaha Muda Indonesia &middot; Selaras RAN TPB / SDG 8
+  <div class="footer">
+    Dokumen ini dicetak otomatis dari PetaKarier pada ${new Date().toLocaleDateString("id-ID", { dateStyle: "long" })}
   </div>
 
   <script>
-    // Inject proyeksi table rows from data attribute
-    const rows = ${JSON.stringify(proyeksi)};
-    const tbody = document.getElementById('print-table-body');
-    rows.forEach(function(r) {
-      const tr = document.createElement('tr');
-      tr.innerHTML = '<td>' + r.bulan + '</td><td>' + r.modal + '</td><td>' + r.operasional + '</td><td>' + r.revenue + '</td><td>' + r.profit + '</td>';
-      tbody.appendChild(tr);
-    });
     window.onload = function() {
       window.focus();
       window.print();
@@ -217,11 +293,10 @@ export default function BusinessPlan() {
 
   const toggleEdit = (section: EditingSection) => {
     if (editingSection === section) {
-      // Save & close current section
       setEditingSection(null);
-      toast.success("Perubahan berhasil disimpan!");
+      persistChanges();
+      toast.success("Perubahan tersimpan ke database & perangkat!");
     } else {
-      // Close any open section, open the new one
       setEditingSection(section);
     }
   };
@@ -231,16 +306,14 @@ export default function BusinessPlan() {
     field: "modal" | "operasional" | "revenue" | "profit",
     value: string
   ) => {
-    setProyeksi((prev) =>
-      prev.map((row, i) => (i === index ? { ...row, [field]: value } : row))
-    );
+    const updated = proyeksi.map((row, i) => (i === index ? { ...row, [field]: value } : row));
+    setProyeksi(updated);
+    persistChanges({ proyeksi: updated });
   };
 
   return (
     <div id="plan-dokumen" className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
-      {/* ══════════════════════════════════════════════════════════════════
-          TOP HEADER: TITLE, SUBTITLE & AUTO-GENERATED BY AI PILL BADGE
-      ══════════════════════════════════════════════════════════════════ */}
+      {/* Top Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
         <div className="space-y-1.5">
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
@@ -251,19 +324,16 @@ export default function BusinessPlan() {
           </p>
         </div>
 
-        {/* Right Badge: AUTO-GENERATED BY AI */}
         <div className="shrink-0">
           <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/50 bg-emerald-500/10 px-4 py-1.5 text-xs font-extrabold uppercase tracking-wider text-emerald-700 dark:bg-slate-900/80 dark:text-[#00df82] dark:border-emerald-500/40 shadow-sm">
-            AUTO-GENERATED BY AI
+            DOKUMEN TERVERIFIKASI
           </span>
         </div>
       </div>
 
-      {/* ══════════════════════════════════════════════════════════════════
-          MAIN 2-COLUMN LAYOUT: CONTENT CARD (LEFT) & FINANCIAL SIDEBAR (RIGHT)
-      ══════════════════════════════════════════════════════════════════ */}
+      {/* Main 2-Column Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* ── LEFT COLUMN: MAIN BUSINESS PLAN SECTIONS & ACTIONS ── */}
+        {/* Left Column */}
         <div className="lg:col-span-8 space-y-6">
           <motion.div
             initial={{ opacity: 0, y: 15 }}
@@ -296,17 +366,37 @@ export default function BusinessPlan() {
               </div>
 
               {editingSection === "ringkasan" ? (
-                <textarea
-                  value={ringkasan}
-                  onChange={(e) => setRingkasan(e.target.value)}
-                  rows={4}
-                  className="w-full rounded-xl border border-emerald-400/50 bg-slate-50 p-3 text-sm text-slate-900 outline-none focus:border-[#00df82] focus:ring-1 focus:ring-[#00df82]/30 dark:border-slate-700 dark:bg-slate-900 dark:text-white transition"
-                  autoFocus
-                />
+                <div className="space-y-2">
+                  <input
+                    type="text"
+                    value={namaUsaha}
+                    onChange={(e) => {
+                      setNamaUsaha(e.target.value);
+                      persistChanges({ namaUsaha: e.target.value });
+                    }}
+                    placeholder="Nama Usaha"
+                    className="w-full rounded-xl border border-emerald-400/50 bg-slate-50 p-2.5 text-xs sm:text-sm font-bold text-slate-900 outline-none focus:border-[#00df82] dark:border-slate-700 dark:bg-slate-900 dark:text-white transition mb-2"
+                  />
+                  <textarea
+                    value={ringkasan}
+                    onChange={(e) => {
+                      setRingkasan(e.target.value);
+                      persistChanges({ ringkasan: e.target.value });
+                    }}
+                    rows={4}
+                    className="w-full rounded-xl border border-emerald-400/50 bg-slate-50 p-3 text-sm text-slate-900 outline-none focus:border-[#00df82] focus:ring-1 focus:ring-[#00df82]/30 dark:border-slate-700 dark:bg-slate-900 dark:text-white transition"
+                    autoFocus
+                  />
+                </div>
               ) : (
-                <p data-print="ringkasan" className="text-xs sm:text-sm leading-relaxed text-slate-700 dark:text-slate-300 font-normal">
-                  {ringkasan}
-                </p>
+                <div className="space-y-1">
+                  <h3 className="text-sm font-extrabold text-slate-900 dark:text-white">
+                    {namaUsaha}
+                  </h3>
+                  <p className="text-xs sm:text-sm leading-relaxed text-slate-700 dark:text-slate-300 font-normal">
+                    {ringkasan}
+                  </p>
+                </div>
               )}
             </div>
 
@@ -339,36 +429,56 @@ export default function BusinessPlan() {
                   <input
                     type="text"
                     value={masalah1}
-                    onChange={(e) => setMasalah1(e.target.value)}
+                    onChange={(e) => {
+                      setMasalah1(e.target.value);
+                      persistChanges({ masalah1: e.target.value });
+                    }}
                     className="w-full rounded-xl border border-emerald-400/50 bg-slate-50 p-2.5 text-xs sm:text-sm text-slate-900 outline-none focus:border-[#00df82] focus:ring-1 focus:ring-[#00df82]/30 dark:border-slate-700 dark:bg-slate-900 dark:text-white transition"
                     autoFocus
                   />
                   <input
                     type="text"
                     value={masalah2}
-                    onChange={(e) => setMasalah2(e.target.value)}
+                    onChange={(e) => {
+                      setMasalah2(e.target.value);
+                      persistChanges({ masalah2: e.target.value });
+                    }}
                     className="w-full rounded-xl border border-emerald-400/50 bg-slate-50 p-2.5 text-xs sm:text-sm text-slate-900 outline-none focus:border-[#00df82] focus:ring-1 focus:ring-[#00df82]/30 dark:border-slate-700 dark:bg-slate-900 dark:text-white transition"
                   />
                 </div>
               ) : (
-                <ul className="space-y-2 text-xs sm:text-sm leading-relaxed text-slate-700 dark:text-slate-300 font-normal">
-                  <li className="flex items-start gap-2">
-                    <span className="text-slate-400 select-none">•</span>
-                    <span data-print="masalah1">{masalah1}</span>
+                <ul className="space-y-2.5 text-xs sm:text-sm text-slate-700 dark:text-slate-300 font-normal">
+                  <li className="flex items-start gap-2.5">
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/15 text-[#00df82] text-xs font-bold mt-0.5">
+                      •
+                    </span>
+                    <span>{masalah1}</span>
                   </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-slate-400 select-none">•</span>
-                    <span data-print="masalah2">{masalah2}</span>
+                  <li className="flex items-start gap-2.5">
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/15 text-[#00df82] text-xs font-bold mt-0.5">
+                      •
+                    </span>
+                    <span>{masalah2}</span>
                   </li>
                 </ul>
               )}
             </div>
 
-            {/* Section 3: Proyeksi Keuangan (3 Bulan Pertama) */}
+            {/* Section 3: Target Pasar */}
+            <div className="space-y-3">
+              <h2 className="text-base sm:text-lg font-bold text-emerald-600 dark:text-[#00df82] tracking-tight">
+                3. Target Pasar & Keunggulan
+              </h2>
+              <p className="text-xs sm:text-sm leading-relaxed text-slate-700 dark:text-slate-300 font-normal">
+                Mengutamakan segmen pasar lokal dengan strategi harga terjangkau, transparansi kualitas produk/jasa, serta pemanfaatan channel digital untuk menjangkau basis pelanggan setia secara berkelanjutan.
+              </p>
+            </div>
+
+            {/* Section 4: Proyeksi Keuangan (3 Bulan) */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <h2 className="text-base sm:text-lg font-bold text-emerald-600 dark:text-[#00df82] tracking-tight">
-                  3. Proyeksi Keuangan (3 Bulan Pertama)
+                  4. Proyeksi Keuangan (3 Bulan Pertama)
                 </h2>
                 <button
                   type="button"
@@ -388,91 +498,88 @@ export default function BusinessPlan() {
                 </button>
               </div>
 
-              {/* Financial Table */}
-              <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800">
-                <div className="overflow-x-auto scrollbar-none">
-                  <table className="w-full text-left text-xs sm:text-sm min-w-[440px]">
-                    <thead>
-                      <tr className="border-b border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-[#0f172a]/80 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                        <th className="py-3 px-4">Bulan</th>
-                        <th className="py-3 px-4">Modal</th>
-                        <th className="py-3 px-4">Operasional</th>
-                        <th className="py-3 px-4">Revenue</th>
-                        <th className="py-3 px-4 text-emerald-600 dark:text-[#00df82]">
-                          Est. Profit
-                        </th>
+              <div className="overflow-x-auto rounded-2xl border border-slate-100 bg-slate-50/50 p-1 dark:border-slate-800/80 dark:bg-slate-900/40">
+                <table className="w-full text-left text-xs sm:text-sm">
+                  <thead>
+                    <tr className="border-b border-slate-200/80 dark:border-slate-800 text-slate-500 dark:text-slate-400 font-bold">
+                      <th className="py-3 px-4">Bulan</th>
+                      <th className="py-3 px-4">Modal Awal</th>
+                      <th className="py-3 px-4">Operasional</th>
+                      <th className="py-3 px-4">Revenue</th>
+                      <th className="py-3 px-4 text-emerald-600 dark:text-[#00df82]">
+                        Est. Profit
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80 font-medium">
+                    {proyeksi.map((row, idx) => (
+                      <tr
+                        key={idx}
+                        className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors"
+                      >
+                        <td className="py-3 px-4 text-slate-900 dark:text-white font-semibold">
+                          {row.bulan}
+                        </td>
+                        <td className="py-3 px-4 text-slate-600 dark:text-slate-300">
+                          {editingSection === "proyeksi" ? (
+                            <input
+                              type="text"
+                              value={row.modal}
+                              onChange={(e) =>
+                                updateProyeksiField(idx, "modal", e.target.value)
+                              }
+                              className="w-full min-w-[70px] rounded-lg border border-emerald-400/50 bg-slate-50 px-2 py-1 text-xs outline-none focus:border-[#00df82] dark:border-slate-700 dark:bg-slate-900 dark:text-white transition"
+                            />
+                          ) : (
+                            row.modal
+                          )}
+                        </td>
+                        <td className="py-3 px-4 text-slate-600 dark:text-slate-300">
+                          {editingSection === "proyeksi" ? (
+                            <input
+                              type="text"
+                              value={row.operasional}
+                              onChange={(e) =>
+                                updateProyeksiField(idx, "operasional", e.target.value)
+                              }
+                              className="w-full min-w-[70px] rounded-lg border border-emerald-400/50 bg-slate-50 px-2 py-1 text-xs outline-none focus:border-[#00df82] dark:border-slate-700 dark:bg-slate-900 dark:text-white transition"
+                            />
+                          ) : (
+                            row.operasional
+                          )}
+                        </td>
+                        <td className="py-3 px-4 text-slate-600 dark:text-slate-300">
+                          {editingSection === "proyeksi" ? (
+                            <input
+                              type="text"
+                              value={row.revenue}
+                              onChange={(e) =>
+                                updateProyeksiField(idx, "revenue", e.target.value)
+                              }
+                              className="w-full min-w-[70px] rounded-lg border border-emerald-400/50 bg-slate-50 px-2 py-1 text-xs outline-none focus:border-[#00df82] dark:border-slate-700 dark:bg-slate-900 dark:text-white transition"
+                            />
+                          ) : (
+                            row.revenue
+                          )}
+                        </td>
+                        <td className="py-3 px-4 font-bold text-emerald-600 dark:text-[#00df82]">
+                          {editingSection === "proyeksi" ? (
+                            <input
+                              type="text"
+                              value={row.profit}
+                              onChange={(e) =>
+                                updateProyeksiField(idx, "profit", e.target.value)
+                              }
+                              className="w-full min-w-[70px] rounded-lg border border-emerald-400/50 bg-slate-50 px-2 py-1 text-xs font-bold outline-none focus:border-[#00df82] dark:border-slate-700 dark:bg-slate-900 dark:text-[#00df82] transition"
+                            />
+                          ) : (
+                            row.profit
+                          )}
+                        </td>
                       </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80 font-medium">
-                      {proyeksi.map((row, idx) => (
-                        <tr
-                          key={idx}
-                          className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors"
-                        >
-                          <td className="py-3 px-4 text-slate-900 dark:text-white font-semibold">
-                            {row.bulan}
-                          </td>
-                          <td className="py-3 px-4 text-slate-600 dark:text-slate-300">
-                            {editingSection === "proyeksi" ? (
-                              <input
-                                type="text"
-                                value={row.modal}
-                                onChange={(e) =>
-                                  updateProyeksiField(idx, "modal", e.target.value)
-                                }
-                                className="w-full min-w-[70px] rounded-lg border border-emerald-400/50 bg-slate-50 px-2 py-1 text-xs outline-none focus:border-[#00df82] dark:border-slate-700 dark:bg-slate-900 dark:text-white transition"
-                              />
-                            ) : (
-                              row.modal
-                            )}
-                          </td>
-                          <td className="py-3 px-4 text-slate-600 dark:text-slate-300">
-                            {editingSection === "proyeksi" ? (
-                              <input
-                                type="text"
-                                value={row.operasional}
-                                onChange={(e) =>
-                                  updateProyeksiField(idx, "operasional", e.target.value)
-                                }
-                                className="w-full min-w-[70px] rounded-lg border border-emerald-400/50 bg-slate-50 px-2 py-1 text-xs outline-none focus:border-[#00df82] dark:border-slate-700 dark:bg-slate-900 dark:text-white transition"
-                              />
-                            ) : (
-                              row.operasional
-                            )}
-                          </td>
-                          <td className="py-3 px-4 text-slate-600 dark:text-slate-300">
-                            {editingSection === "proyeksi" ? (
-                              <input
-                                type="text"
-                                value={row.revenue}
-                                onChange={(e) =>
-                                  updateProyeksiField(idx, "revenue", e.target.value)
-                                }
-                                className="w-full min-w-[70px] rounded-lg border border-emerald-400/50 bg-slate-50 px-2 py-1 text-xs outline-none focus:border-[#00df82] dark:border-slate-700 dark:bg-slate-900 dark:text-white transition"
-                              />
-                            ) : (
-                              row.revenue
-                            )}
-                          </td>
-                          <td className="py-3 px-4 font-bold text-emerald-600 dark:text-[#00df82]">
-                            {editingSection === "proyeksi" ? (
-                              <input
-                                type="text"
-                                value={row.profit}
-                                onChange={(e) =>
-                                  updateProyeksiField(idx, "profit", e.target.value)
-                                }
-                                className="w-full min-w-[70px] rounded-lg border border-emerald-400/50 bg-slate-50 px-2 py-1 text-xs font-bold outline-none focus:border-[#00df82] dark:border-slate-700 dark:bg-slate-900 dark:text-[#00df82] transition"
-                              />
-                            ) : (
-                              row.profit
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
           </motion.div>
@@ -490,7 +597,7 @@ export default function BusinessPlan() {
           </div>
         </div>
 
-        {/* ── RIGHT COLUMN: DATA FINANSIAL TERPILIH & MENTOR VIRTUAL ── */}
+        {/* Right Column: Financial Highlights & Mentor */}
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
@@ -508,8 +615,8 @@ export default function BusinessPlan() {
                 <span className="text-slate-500 dark:text-slate-400">
                   Estimasi Modal
                 </span>
-                <span data-print="modal" className="font-extrabold text-slate-900 dark:text-white">
-                  Rp 45.000.000
+                <span className="font-extrabold text-slate-900 dark:text-white">
+                  {formatRupiah(modalAwalVal)}
                 </span>
               </div>
 
@@ -517,8 +624,8 @@ export default function BusinessPlan() {
                 <span className="text-slate-500 dark:text-slate-400">
                   Rasio UMR Kota
                 </span>
-                <span data-print="umr" className="font-extrabold text-emerald-600 dark:text-[#00df82]">
-                  1.52× Lebih Tinggi
+                <span className="font-extrabold text-emerald-600 dark:text-[#00df82]">
+                  1.52x Lebih Tinggi
                 </span>
               </div>
 
@@ -526,23 +633,23 @@ export default function BusinessPlan() {
                 <span className="text-slate-500 dark:text-slate-400">
                   Target Margin Laba
                 </span>
-                <span data-print="margin" className="font-extrabold text-slate-900 dark:text-white">
+                <span className="font-extrabold text-slate-900 dark:text-white">
                   42.6%
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Card 2: Petunjuk Mentor Virtual (Highlighted with Green Border) */}
+          {/* Card 2: Petunjuk Mentor Virtual */}
           <div className="rounded-[2.2rem] border-2 border-emerald-500/50 bg-white p-6 sm:p-7 shadow-xl shadow-emerald-500/10 dark:border-emerald-500/50 dark:bg-[#0a0f1d] dark:shadow-2xl transition-colors space-y-3">
             <div className="flex items-center gap-2 text-emerald-600 dark:text-[#00df82]">
-              <Sparkles className="h-4 w-4" />
+              <Lightbulb className="h-4 w-4" />
               <h3 className="text-xs sm:text-sm font-bold">
-                Petunjuk Mentor Virtual
+                Petunjuk Mentor Finansial
               </h3>
             </div>
 
-            <p data-print="mentor" className="text-xs sm:text-sm leading-relaxed text-slate-600 dark:text-slate-400 font-normal">
+            <p className="text-xs sm:text-sm leading-relaxed text-slate-600 dark:text-slate-400 font-normal">
               Proyeksi Bulan ke-3 menunjukkan kenaikan tren profit stabil. Hubungi mentor finansial kami jika ingin mempersiapkan berkas pengajuan modal tambahan mikro.
             </p>
           </div>

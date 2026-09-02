@@ -1,4 +1,4 @@
-import { Sparkles, Lightbulb } from "lucide-react";
+import { Lightbulb } from "lucide-react";
 
 export default function GlobalLoading() {
   return (

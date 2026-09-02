@@ -75,7 +75,6 @@ export const DEFAULT_STEPS: TimelineStep[] = [
 
 interface VerticalUserFlowTimelineProps {
   steps?: TimelineStep[];
-  badgeText?: string;
   titlePrefix?: string;
   titleHighlight?: string;
   subtitle?: string;
@@ -89,13 +88,13 @@ export default function FlowSection({
 }: VerticalUserFlowTimelineProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // 1. Scroll Progress tied strictly to this section container
+  // Scroll Progress tied strictly to this section container
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start 65%", "end 80%"],
   });
 
-  // 2. Spring physics for smooth drawing/undrawing line effect
+  // Spring physics for smooth drawing/undrawing line effect
   const scaleY = useSpring(scrollYProgress, {
     stiffness: 220,
     damping: 28,
@@ -106,7 +105,7 @@ export default function FlowSection({
     <section
       id="cara-kerja"
       ref={containerRef}
-      className="relative overflow-hidden bg-white px-4 py-24 dark:bg-slate-950 sm:px-6 lg:px-8"
+      className="relative overflow-hidden bg-white px-4 py-16 sm:py-24 dark:bg-slate-950 sm:px-6 lg:px-8"
     >
       {/* Ambient background glow (Dark Mode Only) */}
       <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden hidden dark:block">
@@ -116,70 +115,70 @@ export default function FlowSection({
 
       <div className="mx-auto max-w-5xl">
         {/* Section Header */}
-        <Reveal className="text-center">
-          <h2 className="text-3xl font-extrabold leading-tight text-slate-900 dark:text-white sm:text-5xl">
+        <Reveal className="text-center px-2">
+          <h2 className="text-3xl font-extrabold leading-tight text-slate-900 dark:text-white sm:text-4xl lg:text-5xl">
             <span>{titlePrefix}</span>
             <span className="text-[#16a34a]">{titleHighlight}</span>
           </h2>
 
-          <p className="mx-auto mt-4 max-w-xl text-base font-medium leading-relaxed text-slate-600 dark:text-slate-300">
+          <p className="mx-auto mt-4 max-w-xl text-sm sm:text-base font-medium leading-relaxed text-slate-600 dark:text-slate-300">
             {subtitle}
           </p>
         </Reveal>
 
         {/* Vertical Zigzag Flow Container */}
-        <div className="relative mt-20">
+        <div className="relative mt-14 sm:mt-20">
           {/* Base Background Central Line (Gray Track) */}
-          <div className="absolute left-[27px] top-4 h-[calc(100%-32px)] w-1 rounded-full bg-slate-200 dark:bg-slate-800 sm:left-1/2 sm:-translate-x-1/2" />
+          <div className="absolute left-[22px] top-4 h-[calc(100%-32px)] w-1 rounded-full bg-slate-200 dark:bg-slate-800 sm:left-1/2 sm:-translate-x-1/2" />
 
-          {/* Animated Scroll-Linked Green Filling Line (Draws/Undraws dynamically) */}
+          {/* Animated Scroll-Linked Green Filling Line */}
           <motion.div
             style={{ scaleY }}
-            className="absolute left-[27px] top-4 h-[calc(100%-32px)] w-1.5 origin-top rounded-full bg-[#16a34a] shadow-[0_0_12px_rgba(22,163,74,0.6)] sm:left-1/2 sm:-translate-x-1/2"
+            className="absolute left-[22px] top-4 h-[calc(100%-32px)] w-1.5 origin-top rounded-full bg-[#16a34a] shadow-[0_0_12px_rgba(22,163,74,0.6)] sm:left-1/2 sm:-translate-x-1/2"
           />
 
           {/* Timeline Steps List */}
-          <div className="space-y-12 sm:space-y-16">
+          <div className="space-y-8 sm:space-y-16">
             {steps.map((step, index) => {
               const isEven = index % 2 === 0;
 
               return (
                 <div
                   key={step.title}
-                  className={`relative flex items-center gap-6 sm:gap-0 ${
+                  className={`relative flex items-start sm:items-center gap-3.5 sm:gap-0 ${
                     isEven
                       ? "sm:flex-row sm:pr-[calc(50%+3.5rem)]"
                       : "sm:flex-row-reverse sm:pl-[calc(50%+3.5rem)]"
                   }`}
                 >
-                  {/* Central Line Icon Badge (Scales & Highlights when Scrolled Into View) */}
+                  {/* Central Line Icon Badge */}
                   <motion.div
-                    initial={{ scale: 0.75, opacity: 0.5 }}
-                    whileInView={{ scale: 1.15, opacity: 1 }}
-                    viewport={{ once: false, amount: 0.5 }}
+                    initial={{ scale: 0.8, opacity: 0.6 }}
+                    whileInView={{ scale: 1.1, opacity: 1 }}
+                    viewport={{ once: false, amount: 0.4 }}
                     transition={{
                       type: "spring",
                       stiffness: 350,
                       damping: 20,
                     }}
-                    className="relative z-20 flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[#16a34a] text-white shadow-lg shadow-[#16a34a]/30 border-4 border-white sm:absolute sm:left-1/2 sm:-translate-x-1/2"
+                    className="relative z-20 flex h-11 w-11 sm:h-14 sm:w-14 shrink-0 items-center justify-center rounded-full bg-[#16a34a] text-white shadow-lg shadow-[#16a34a]/30 border-[3px] sm:border-4 border-white dark:border-slate-900 sm:absolute sm:left-1/2 sm:-translate-x-1/2 mt-2 sm:mt-0"
                   >
-                    <Icon icon={step.icon} className="h-6 w-6 text-white" />
+                    <Icon icon={step.icon} className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                   </motion.div>
 
-                  {/* Reactive Step Card with Image (Reverses animation on scroll up: once: false) */}
+                  {/* Reactive Step Card with Image */}
                   <motion.div
-                    initial={{ opacity: 0, x: isEven ? -60 : 60 }}
+                    initial={{ opacity: 0, x: isEven ? -40 : 40 }}
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: false, amount: 0.2 }}
                     transition={{
-                      duration: 0.6,
-                      ease: [0.34, 1.56, 0.64, 1], // Cubic-bezier spring easing
+                      duration: 0.5,
+                      ease: [0.34, 1.56, 0.64, 1],
                     }}
-                    className="group flex-1 overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-md transition-all duration-300 hover:scale-[1.02] hover:border-emerald-300 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900"
+                    className="group flex-1 min-w-0 overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-md transition-all duration-300 hover:scale-[1.02] hover:border-emerald-300 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900"
                   >
                     {/* Top Image Container */}
-                    <div className="relative h-44 w-full overflow-hidden sm:h-48">
+                    <div className="relative h-36 sm:h-48 w-full overflow-hidden">
                       <Image
                         src={step.imageSrc}
                         alt={step.imageAlt}
@@ -191,30 +190,30 @@ export default function FlowSection({
                     </div>
 
                     {/* Bottom Card Content */}
-                    <div className="p-6">
-                      <span className="inline-block rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-extrabold uppercase tracking-wider text-[#16a34a] mb-2.5">
+                    <div className="p-4 sm:p-6">
+                      <span className="inline-block rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 sm:px-3 sm:py-1 text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-[#16a34a] mb-2 dark:border-emerald-900 dark:bg-emerald-950/60 dark:text-[#00df82]">
                         LANGKAH {index + 1}
                       </span>
-                      <h3 className="text-lg font-extrabold leading-snug text-slate-900 dark:text-white sm:text-xl">
+                      <h3 className="text-base sm:text-xl font-extrabold leading-snug text-slate-900 dark:text-white">
                         {step.title}
                       </h3>
-                      <p className="mt-2 text-sm font-medium leading-relaxed text-slate-600 dark:text-slate-400">
+                      <p className="mt-1.5 text-xs sm:text-sm font-medium leading-relaxed text-slate-600 dark:text-slate-400">
                         {step.desc}
                       </p>
 
                       {/* Bottom Interactive Link */}
-                      <div className="mt-5 pt-3.5 border-t border-slate-100 flex items-center justify-between">
+                      <div className="mt-4 sm:mt-5 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
                         <Link
                           href={step.href || "/analisis"}
-                          className="inline-flex items-center gap-1.5 text-xs font-bold text-[#16a34a] hover:text-emerald-800 transition-colors"
+                          className="inline-flex items-center gap-1.5 text-xs font-bold text-[#16a34a] hover:text-emerald-800 dark:text-[#00df82] dark:hover:text-emerald-400 transition-colors"
                         >
                           <span>Selengkapnya</span>
                           <Icon
                             icon="solar:arrow-right-linear"
-                            className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1"
+                            className="h-3.5 w-3.5 sm:h-4 sm:w-4 transition-transform duration-200 group-hover:translate-x-1"
                           />
                         </Link>
-                        <span className="text-[11px] font-medium text-slate-400">
+                        <span className="text-[10px] sm:text-[11px] font-medium text-slate-400">
                           Estimasi ~1 Menit
                         </span>
                       </div>

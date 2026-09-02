@@ -8,6 +8,8 @@ import {
   Check,
 } from "lucide-react";
 import { formatRupiah } from "@/lib/utils/formatCurrency";
+import { getLocalSessionState, setLocalSessionState } from "@/lib/utils/sessionSync";
+import { getUserActiveAnalisis, updateKalkulatorAction } from "@/lib/actions/analisis";
 
 interface UsahaItem {
   id: string;
@@ -101,25 +103,48 @@ export default function UMRComparison({
   const [isCitySelectorOpen, setIsCitySelectorOpen] = useState<boolean>(false);
   const [isUsahaModalOpen, setIsUsahaModalOpen] = useState<boolean>(false);
 
-  const LS_PERB_KEY = "petakarier_perbandingan_form";
-
-  // Restore from localStorage on mount
+  // Restore from unified local storage & PostgreSQL database on mount
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(LS_PERB_KEY);
-      if (saved) {
-        const data = JSON.parse(saved);
-        if (data.selectedKotaId)  setSelectedKotaId(data.selectedKotaId);
-        if (data.selectedUsahaId) setSelectedUsahaId(data.selectedUsahaId);
+    // 1. Unified local storage
+    const unified = getLocalSessionState();
+    if (unified) {
+      if (unified.selectedKotaId) {
+        const match = kotaList.find((k) => k.id === unified.selectedKotaId || k.id.toLowerCase() === unified.selectedKotaId.toLowerCase());
+        if (match) setSelectedKotaId(match.id);
       }
-    } catch {}
+      if (unified.selectedUsahaId) {
+        const match = usahaList.find((u) => u.id === unified.selectedUsahaId || u.id.toLowerCase() === unified.selectedUsahaId.toLowerCase());
+        if (match) setSelectedUsahaId(match.id);
+      }
+    }
+
+    // 2. PostgreSQL database check
+    getUserActiveAnalisis().then((dbData) => {
+      if (dbData) {
+        if (dbData.kotaId) {
+          const targetKota = dbData.kotaId;
+          const match = kotaList.find((k) => k.id === targetKota || k.id.toLowerCase() === targetKota.toLowerCase());
+          if (match) setSelectedKotaId(match.id);
+        }
+        if (dbData.usahaId) {
+          const targetUsaha = dbData.usahaId;
+          const match = usahaList.find((u) => u.id === targetUsaha || u.id.toLowerCase() === targetUsaha.toLowerCase());
+          if (match) setSelectedUsahaId(match.id);
+        }
+      }
+    }).catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Persist on every change
   useEffect(() => {
-    try {
-      localStorage.setItem(LS_PERB_KEY, JSON.stringify({ selectedKotaId, selectedUsahaId }));
-    } catch {}
+    setLocalSessionState({ selectedKotaId, selectedUsahaId });
+
+    // Background sync to database
+    updateKalkulatorAction({
+      usahaId: selectedUsahaId,
+      kotaId: selectedKotaId,
+    }).catch(() => {});
   }, [selectedKotaId, selectedUsahaId]);
 
   const selectedKota = useMemo(

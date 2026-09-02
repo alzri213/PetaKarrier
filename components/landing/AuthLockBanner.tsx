@@ -4,7 +4,6 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   Lock,
-  Sparkles,
   ArrowRight,
   ShieldCheck,
   Zap,
@@ -35,7 +34,7 @@ export default function AuthLockBanner() {
 
           <div className="mt-6 space-y-3">
             <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/60 dark:text-[#00df82]">
-              <Sparkles className="h-3.5 w-3.5" />
+              <ShieldCheck className="h-3.5 w-3.5" />
               Eksplorasi Lebih Lengkap
             </span>
             <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight max-w-3xl mx-auto">

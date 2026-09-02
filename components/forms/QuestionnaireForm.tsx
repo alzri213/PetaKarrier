@@ -9,14 +9,15 @@ import {
   ArrowLeft,
   ChevronDown,
   Loader2,
-  Sparkles,
+  Compass,
   Calculator,
   FileText,
 } from "lucide-react";
 import { toast } from "sonner";
 import type { KategoriUsaha, ProfilUser, Rekomendasi } from "@/types";
-import { submitAnalisisAction } from "@/lib/actions/analisis";
+import { submitAnalisisAction, getUserActiveAnalisis } from "@/lib/actions/analisis";
 import { formatRupiah } from "@/lib/utils/formatCurrency";
+import { getLocalSessionState, setLocalSessionState } from "@/lib/utils/sessionSync";
 
 interface KategoriItem {
   key: KategoriUsaha;
@@ -120,7 +121,7 @@ export default function QuestionnaireForm() {
   const [waktu, setWaktu] = useState<string>("");
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
 
-  // Restore form state from localStorage on mount
+  // Restore form state from localStorage & database on mount
   useEffect(() => {
     try {
       const saved = localStorage.getItem(LS_FORM_KEY);
@@ -133,8 +134,45 @@ export default function QuestionnaireForm() {
         if (data.waktu)          setWaktu(data.waktu);
         if (data.selectedSkills) setSelectedSkills(data.selectedSkills);
         if (data.step !== undefined) setStep(data.step);
+      } else {
+        const unified = getLocalSessionState();
+        if (unified?.profil) {
+          if (unified.profil.minat) setMinat(unified.profil.minat as KategoriUsaha[]);
+          if (unified.profil.budget) setModalValue(unified.profil.budget);
+          if (unified.profil.waktu) setWaktu(unified.profil.waktu);
+          if (unified.profil.pengalaman) setKeahlian(unified.profil.pengalaman);
+          if (unified.selectedKotaId) setSelectedProvinsi(unified.selectedKotaId);
+        }
       }
     } catch {}
+
+    // Check database for logged in user's latest analysis
+    getUserActiveAnalisis().then((dbAnalisis) => {
+      if (dbAnalisis) {
+        if (dbAnalisis.minat && dbAnalisis.minat.length > 0) {
+          setMinat(dbAnalisis.minat as KategoriUsaha[]);
+        }
+        if (dbAnalisis.budget) setModalValue(dbAnalisis.budget);
+        if (dbAnalisis.waktu) setWaktu(dbAnalisis.waktu);
+        if (dbAnalisis.pengalaman) setKeahlian(dbAnalisis.pengalaman);
+        if (dbAnalisis.kotaId) setSelectedProvinsi(dbAnalisis.kotaId);
+
+        setLocalSessionState({
+          analisisId: dbAnalisis.id,
+          selectedUsahaId: dbAnalisis.usahaId || "kedai-kopi",
+          selectedKotaId: dbAnalisis.kotaId || "dki-jakarta",
+          skala: dbAnalisis.skala || "sedang",
+          profil: {
+            minat: dbAnalisis.minat,
+            skill: dbAnalisis.skill,
+            budget: dbAnalisis.budget,
+            waktu: dbAnalisis.waktu,
+            pengalaman: dbAnalisis.pengalaman,
+          },
+          rekomendasi: (dbAnalisis.rekomendasi as any) || undefined,
+        });
+      }
+    }).catch(() => {});
   }, []);
 
   // Persist form state to localStorage on every change
@@ -229,8 +267,20 @@ export default function QuestionnaireForm() {
       if (!res.success || !res.rekomendasi) {
         throw new Error(res.error ?? "Gagal memproses rekomendasi");
       }
+
+      const defaultUsahaId = res.rekomendasi[0]?.usaha.id || "kedai-kopi";
+
+      setLocalSessionState({
+        analisisId: res.id,
+        profil,
+        rekomendasi: res.rekomendasi,
+        selectedUsahaId: defaultUsahaId,
+        selectedKotaId: selectedProvinsi || "dki-jakarta",
+        modalAwal: modalValue,
+      });
+
       localStorage.setItem(
-        "konekumkm-profil",
+        "PetaKarrier-profil",
         JSON.stringify({
           profil,
           analisisId: res.id,
@@ -238,7 +288,7 @@ export default function QuestionnaireForm() {
           rekomendasi: res.rekomendasi,
         })
       );
-      // Clear form state after successful submit
+      // Clear temporary draft form state after successful submit
       localStorage.removeItem(LS_FORM_KEY);
       router.push(`/analisis/${res.id}`);
     } catch (err) {
@@ -610,7 +660,7 @@ export default function QuestionnaireForm() {
                         onClick={handleProcessAnalysis}
                         className="group flex flex-1 items-center justify-center gap-2 rounded-full bg-[#00df82] py-3.5 text-sm font-bold text-slate-950 shadow-lg shadow-emerald-500/20 transition hover:bg-[#00c975] active:scale-[0.99]"
                       >
-                        <Sparkles className="h-4 w-4" />
+                        <Compass className="h-4 w-4" />
                         <span>Analisis & Cocokkan Usaha</span>
                       </button>
                     </div>
