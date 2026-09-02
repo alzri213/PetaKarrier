@@ -1,5 +1,4 @@
 # 🌐 PetaKarier — Ekosistem Pemberdayaan & Perencanaan Usaha Inklusif
->>>>>>> 5791fa0c2a954590dd52fcf8763cafa3c2b5efb6
 
 > **Proyek Inovasi Digital untuk ITechnoCup 2026**  
 > **Tema:** Pencapaian **SDG 8: Pekerjaan Layak & Pertumbuhan Ekonomi**  
