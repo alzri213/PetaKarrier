@@ -1,8 +1,13 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { Heart, Sparkles, Globe2, ShieldCheck, ArrowUpRight } from "lucide-react";
 
 export default function Footer() {
+  const pathname = usePathname();
+
   return (
     <footer className="relative border-t border-slate-200 bg-slate-50 px-4 pt-16 pb-12 text-slate-600 transition-colors duration-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400 sm:px-6 lg:px-8">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent" />
@@ -50,7 +55,11 @@ export default function Footer() {
                 <li key={href}>
                   <Link
                     href={href}
-                    className="text-slate-600 transition hover:text-emerald-600 dark:text-slate-400 dark:hover:text-emerald-400"
+                    className={`transition font-medium ${
+                      pathname === href
+                        ? "text-emerald-600 font-semibold dark:text-emerald-400"
+                        : "text-slate-600 hover:text-emerald-600 dark:text-slate-400 dark:hover:text-emerald-400"
+                    }`}
                   >
                     {label}
                   </Link>
@@ -68,7 +77,11 @@ export default function Footer() {
               <li>
                 <Link
                   href="/sdg-impact"
-                  className="flex items-center gap-1 font-semibold text-emerald-600 transition hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300"
+                  className={`flex items-center gap-1 font-semibold transition ${
+                    pathname === "/sdg-impact"
+                      ? "text-emerald-600 dark:text-emerald-400"
+                      : "text-slate-600 hover:text-emerald-600 dark:text-slate-400 dark:hover:text-emerald-400"
+                  }`}
                 >
                   Dashboard Dampak SDG 8 <ArrowUpRight className="h-3.5 w-3.5" />
                 </Link>
@@ -76,7 +89,11 @@ export default function Footer() {
               <li>
                 <Link
                   href="/komunitas"
-                  className="text-slate-600 transition hover:text-emerald-600 dark:text-slate-400 dark:hover:text-emerald-400"
+                  className={`transition font-semibold ${
+                    pathname === "/komunitas"
+                      ? "text-emerald-600 dark:text-emerald-400"
+                      : "text-slate-600 hover:text-emerald-600 dark:text-slate-400 dark:hover:text-emerald-400"
+                  }`}
                 >
                   Resource Hub & Panduan UMKM
                 </Link>

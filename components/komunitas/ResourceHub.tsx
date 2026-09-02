@@ -180,7 +180,7 @@ export default function ResourceHub() {
   const onPointerMove = (e: React.PointerEvent) => {
     if (!isDragging.current) return;
     const dx = e.clientX - startX.current;
-    if (Math.abs(dx) > 5) didDrag.current = true;
+    if (Math.abs(dx) > 3) didDrag.current = true;
     dragPx.set(dx);
   };
 
@@ -194,6 +194,11 @@ export default function ResourceHub() {
 
     dragPx.set(0);
     setActiveIndex(target);
+    
+    // Reset didDrag after a short delay to allow click events
+    setTimeout(() => {
+      didDrag.current = false;
+    }, 100);
   };
 
   return (
@@ -205,8 +210,13 @@ export default function ResourceHub() {
 
         {/* Stage */}
         <div
-          className="relative mx-auto flex items-end justify-center cursor-grab active:cursor-grabbing"
-          style={{ height: resp.stageH, perspective: 1600, overflow: "visible" }}
+          className="relative mx-auto flex items-end justify-center"
+          style={{ 
+            height: resp.stageH, 
+            perspective: 1600, 
+            overflow: "visible",
+            cursor: isDragging.current ? "grabbing" : "grab",
+          }}
           onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}
           onPointerUp={onPointerUp}
@@ -333,12 +343,24 @@ function FanCard({ item, baseOffset, dragPx, didDrag, isCenter, onTap, resp }: F
     Math.round(50 - Math.abs(getLiveOffset(px)) * 10)
   );
 
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Prevent if user was dragging
+    if (didDrag.current) {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+    
+    // Only navigate if not center card
+    if (!isCenter) {
+      e.stopPropagation();
+      onTap();
+    }
+  };
+
   return (
     <motion.div
-      onClick={(e) => {
-        if (didDrag.current) { e.preventDefault(); return; }
-        onTap();
-      }}
+      onClick={handleCardClick}
       style={{
         x, y, rotateY, scale, opacity, zIndex,
         position: "absolute",
@@ -348,12 +370,15 @@ function FanCard({ item, baseOffset, dragPx, didDrag, isCenter, onTap, resp }: F
         cursor: isCenter ? "grab" : "pointer",
         willChange: "transform",
         width: resp.cardW,
+        pointerEvents: "auto",
       }}
     >
       <div
         className={`relative w-full overflow-hidden rounded-[2rem] bg-gradient-to-br ${
           item.color ?? "from-slate-700 to-slate-900"
-        } flex flex-col justify-between p-5 sm:p-7`}
+        } flex flex-col justify-between p-5 sm:p-7 transition-all duration-200 ${
+          !isCenter ? "hover:scale-[1.02] hover:shadow-2xl" : ""
+        }`}
         style={{
           height: resp.cardH,
           boxShadow: isCenter

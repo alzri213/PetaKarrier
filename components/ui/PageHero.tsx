@@ -12,9 +12,9 @@ interface PageHeroProps {
 export default function PageHero({ badge, title, description }: PageHeroProps) {
   return (
     <section className="relative overflow-hidden px-4 pb-10 pt-32 sm:px-6 lg:px-8">
-      <div className="pointer-events-none absolute -top-32 left-1/2 h-96 w-[42rem] -translate-x-1/2 rounded-full bg-emerald-600/15 blur-[120px]" />
-      <div className="pointer-events-none absolute right-0 top-10 h-64 w-64 rounded-full bg-emerald-400/10 blur-[100px]" />
-      <div className="pointer-events-none absolute left-0 top-40 h-64 w-64 rounded-full bg-emerald-500/10 blur-[100px]" />
+      <div className="pointer-events-none absolute -top-32 left-1/2 h-96 w-[42rem] -translate-x-1/2 rounded-full bg-emerald-600/15 blur-[120px] hidden dark:block" />
+      <div className="pointer-events-none absolute right-0 top-10 h-64 w-64 rounded-full bg-emerald-400/10 blur-[100px] hidden dark:block" />
+      <div className="pointer-events-none absolute left-0 top-40 h-64 w-64 rounded-full bg-emerald-500/10 blur-[100px] hidden dark:block" />
 
       <div className="relative mx-auto max-w-3xl text-center">
         {badge && (

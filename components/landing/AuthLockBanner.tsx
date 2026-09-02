@@ -17,7 +17,7 @@ export default function AuthLockBanner() {
     <section className="relative overflow-hidden py-16 px-4 sm:px-6 lg:px-8">
       {/* Background Decorative Glow */}
       <div className="pointer-events-none absolute inset-0 -z-10 flex items-center justify-center">
-        <div className="h-[400px] w-[600px] rounded-full bg-emerald-500/10 blur-[120px] dark:bg-emerald-500/15" />
+        <div className="h-[400px] w-[600px] rounded-full bg-emerald-500/10 blur-[120px] hidden dark:block" />
       </div>
 
       <div className="mx-auto max-w-6xl">

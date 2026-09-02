@@ -121,8 +121,8 @@ export default function HasilRekomendasi() {
     <div className="relative min-h-screen overflow-hidden bg-slate-50 dark:bg-[#060a14] pt-28 pb-20 transition-colors duration-300">
       {/* Smooth Ambient Background Glow */}
       <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute left-1/2 top-0 h-[600px] w-[900px] -translate-x-1/2 -translate-y-1/3 rounded-full bg-emerald-500/[0.07] blur-[140px] dark:bg-[#00df82]/[0.05]" />
-        <div className="absolute right-0 bottom-0 h-[500px] w-[500px] rounded-full bg-teal-500/[0.05] blur-[120px] dark:bg-teal-500/[0.03]" />
+        <div className="absolute left-1/2 top-0 h-[600px] w-[900px] -translate-x-1/2 -translate-y-1/3 rounded-full bg-emerald-500/[0.07] blur-[140px] hidden dark:block" />
+        <div className="absolute right-0 bottom-0 h-[500px] w-[500px] rounded-full bg-teal-500/[0.05] blur-[120px] hidden dark:block" />
       </div>
 
       <div className="relative z-10 mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">

@@ -280,7 +280,7 @@ export default function TestimoniSection() {
               Dipercaya Oleh{" "}
               <span className="text-emerald-600 dark:text-emerald-400">Wirausaha Muda Indonesia</span>
             </h2>
-            <p className="mt-4 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+            <p className="mt-4 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
               Mereka telah memetakan karier bisnis, menghitung kelayakan modal, dan mewujudkan usaha mandiri berkelanjutan.
             </p>
           </Reveal>
@@ -301,7 +301,7 @@ export default function TestimoniSection() {
                   onClick={() => !isCenter && goTo(ci, offset)}
                   className={`flex flex-col justify-between rounded-3xl border-2 p-7 shadow-md cursor-pointer transition-all duration-300 ${
                     isCenter
-                      ? "border-emerald-400/60 bg-white dark:bg-slate-900 shadow-xl ring-2 ring-emerald-500/20"
+                      ? "border-emerald-400/60 bg-white dark:bg-slate-900 shadow-xl dark:ring-2 dark:ring-emerald-500/20"
                       : "border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 hover:border-emerald-300"
                   }`}
                 >
@@ -321,7 +321,7 @@ export default function TestimoniSection() {
                         <Quote className="h-6 w-6 text-slate-300 dark:text-slate-600" />
                       </div>
                     </div>
-                    <p className="mt-4 text-sm leading-relaxed text-slate-600 dark:text-slate-300 line-clamp-5">
+                    <p className="mt-4 text-sm leading-relaxed text-slate-700 dark:text-slate-300 line-clamp-5">
                       &ldquo;{card.testimoni}&rdquo;
                     </p>
                   </div>
@@ -346,7 +346,7 @@ export default function TestimoniSection() {
                 variants={slideVariants}
                 initial="enter" animate="center" exit="exit"
                 transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-                className="rounded-3xl border-2 border-emerald-400/60 bg-white p-7 shadow-xl dark:bg-slate-900 ring-2 ring-emerald-500/20"
+                className="rounded-3xl border-2 border-emerald-400/60 bg-white p-7 shadow-xl dark:bg-slate-900 dark:ring-2 dark:ring-emerald-500/20"
               >
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex gap-1">
@@ -360,7 +360,7 @@ export default function TestimoniSection() {
                     </span>
                   )}
                 </div>
-                <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-300">&ldquo;{t.testimoni}&rdquo;</p>
+                <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-300">&ldquo;{t.testimoni}&rdquo;</p>
                 <CardFooter card={t} />
               </motion.div>
             </AnimatePresence>
@@ -383,7 +383,7 @@ export default function TestimoniSection() {
               <ChevronRight className="h-5 w-5" />
             </button>
           </div>
-          <p className="mt-3 text-center text-[11px] text-slate-400 dark:text-slate-600">
+          <p className="mt-3 text-center text-[11px] text-slate-500 dark:text-slate-600">
             Geser kiri / kanan untuk melihat testimoni lainnya
           </p>
 
@@ -403,7 +403,7 @@ export default function TestimoniSection() {
       </section>
 
       {/* ── FEEDBACK FORM ── */}
-      <section className="relative bg-slate-50 px-4 py-24 dark:bg-slate-950 sm:px-6 lg:px-8">
+      <section className="relative bg-white px-4 py-24 dark:bg-slate-950 sm:px-6 lg:px-8">
         <div className="relative mx-auto max-w-3xl">
           <Reveal className="text-center mb-12">
             <span className="inline-flex items-center gap-2 rounded-full border border-emerald-300/80 bg-emerald-50 px-4 py-1.5 text-xs font-bold text-emerald-700 shadow-sm dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-300 mb-4">
@@ -413,7 +413,7 @@ export default function TestimoniSection() {
             <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white sm:text-4xl">
               Bagikan <span className="text-emerald-600 dark:text-emerald-400">Pengalamanmu</span>
             </h2>
-            <p className="mt-3 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+            <p className="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
               Feedback kamu akan langsung muncul di bagian testimoni di atas.
             </p>
           </Reveal>
@@ -431,7 +431,7 @@ export default function TestimoniSection() {
                       <CheckCircle2 className="h-16 w-16 text-emerald-500" />
                     </motion.div>
                     <h3 className="text-xl font-extrabold text-slate-900 dark:text-white">Terima kasih! 🎉</h3>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 max-w-sm leading-relaxed">
+                    <p className="text-sm text-slate-600 dark:text-slate-400 max-w-sm leading-relaxed">
                       Testimonimu sudah muncul di bagian atas. Scroll ke atas untuk melihatnya!
                     </p>
                     <button onClick={() => setFormStatus("idle")}
@@ -536,7 +536,7 @@ export default function TestimoniSection() {
                       }
                     </button>
 
-                    <p className="text-center text-[10px] text-slate-400 dark:text-slate-600 leading-relaxed">
+                    <p className="text-center text-[10px] text-slate-500 dark:text-slate-600 leading-relaxed">
                       Testimonimu langsung muncul di atas. Data tersimpan di perangkat ini.
                     </p>
                   </motion.form>

@@ -265,6 +265,7 @@ export default function InteractiveUMRMap() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedKota, setSelectedKota] = useState<KotaPin | null>(null);
   const [zoom, setZoom] = useState<number>(1);
+  const [isDragging, setIsDragging] = useState(false);
   const mapControls = useAnimationControls();
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -285,21 +286,58 @@ export default function InteractiveUMRMap() {
 
   const handleResetView = () => {
     setZoom(1);
-    mapControls.start({ x: 0, y: 0, scale: 1, transition: { type: "spring", stiffness: 300, damping: 28 } });
+    mapControls.start({ 
+      x: 0, 
+      y: 0, 
+      scale: 1, 
+      transition: { 
+        type: "spring", 
+        stiffness: 200, 
+        damping: 30,
+        mass: 0.8
+      } 
+    });
   };
 
   const handleZoomIn = () => {
-    setZoom((prev) => Math.min(prev + 0.25, 2.0));
-    mapControls.start({ scale: Math.min(zoom + 0.25, 2.0), transition: { type: "spring", stiffness: 300, damping: 25 } });
+    const nextZoom = Math.min(zoom + 0.3, 1.8);
+    setZoom(nextZoom);
+    mapControls.start({ 
+      scale: nextZoom, 
+      transition: { 
+        type: "spring", 
+        stiffness: 200, 
+        damping: 30,
+        mass: 0.8
+      } 
+    });
   };
 
   const handleZoomOut = () => {
-    const next = Math.max(zoom - 0.25, 1.0);
-    setZoom(next);
-    if (next <= 1) {
-      mapControls.start({ x: 0, y: 0, scale: 1, transition: { type: "spring", stiffness: 300, damping: 28 } });
+    const nextZoom = Math.max(zoom - 0.3, 1.0);
+    setZoom(nextZoom);
+    if (nextZoom <= 1) {
+      mapControls.start({ 
+        x: 0, 
+        y: 0, 
+        scale: 1, 
+        transition: { 
+          type: "spring", 
+          stiffness: 200, 
+          damping: 30,
+          mass: 0.8
+        } 
+      });
     } else {
-      mapControls.start({ scale: next, transition: { type: "spring", stiffness: 300, damping: 25 } });
+      mapControls.start({ 
+        scale: nextZoom, 
+        transition: { 
+          type: "spring", 
+          stiffness: 200, 
+          damping: 30,
+          mass: 0.8
+        } 
+      });
     }
   };
 
@@ -382,27 +420,42 @@ export default function InteractiveUMRMap() {
         </div>
 
         {/* Interactive Map Visual Area (Strictly Bounded Frame) */}
-        <div ref={containerRef} className="relative w-full h-[480px] sm:h-[540px] rounded-3xl overflow-hidden border border-slate-200 bg-slate-100 dark:border-slate-800/80 dark:bg-slate-950">
+        <div 
+          ref={containerRef} 
+          className="relative w-full h-[420px] sm:h-[480px] lg:h-[540px] rounded-3xl overflow-hidden border border-slate-200 bg-slate-100 dark:border-slate-800/80 dark:bg-slate-950"
+          style={{ 
+            WebkitOverflowScrolling: "touch",
+            transform: "translate3d(0,0,0)"
+          }}
+        >
           {/* Framer Motion Draggable & Zoomable Canvas */}
           <motion.div
             drag={zoom > 1}
             dragConstraints={getDragConstraints(zoom)}
-            dragElastic={0.05}
+            dragElastic={0.02}
+            dragMomentum={false}
+            dragTransition={{ bounceStiffness: 300, bounceDamping: 25, power: 0.2 }}
             animate={mapControls}
             initial={{ x: 0, y: 0, scale: 1 }}
-            transition={{ type: "spring", stiffness: 300, damping: 25 }}
+            onDragStart={() => setIsDragging(true)}
+            onDragEnd={() => setIsDragging(false)}
             className={`absolute inset-0 origin-center select-none ${
               zoom > 1 ? "cursor-grab active:cursor-grabbing" : "cursor-default"
             }`}
+            style={{ 
+              willChange: zoom > 1 ? "transform" : "auto",
+              touchAction: zoom > 1 ? "none" : "auto"
+            }}
           >
             {/* Real Satellite Map Image */}
             <Image
               src="/indonesia-map-satellite.jpg"
               alt="Peta Satelit Indonesia Interaktif PetaKarier"
               fill
-              sizes="100vw"
-              unoptimized
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
+              quality={85}
               className="object-cover object-center brightness-95 contrast-105 pointer-events-none"
+              style={{ transform: "translate3d(0,0,0)" }}
               priority
             />
 
@@ -419,22 +472,26 @@ export default function InteractiveUMRMap() {
                     style={{ top: `${k.y}%`, left: `${k.x}%` }}
                     onClick={(e) => {
                       e.stopPropagation();
-                      setSelectedKota(k);
+                      if (!isDragging) {
+                        setSelectedKota(k);
+                      }
                     }}
                     className="absolute -translate-x-1/2 -translate-y-1/2 z-20 cursor-pointer group select-none"
                   >
                     {/* Radar Pulse Rings */}
-                    <span
-                      className={`absolute -inset-3 rounded-full animate-ping opacity-75 ${
-                        isSelected ? "bg-[#00df82]" : "bg-emerald-400/40"
-                      }`}
-                    />
+                    {!isDragging && (
+                      <span
+                        className={`absolute -inset-3 rounded-full animate-ping opacity-75 ${
+                          isSelected ? "bg-[#00df82]" : "bg-emerald-400/40"
+                        }`}
+                      />
+                    )}
 
                     {/* Pin Dot / Icon Marker */}
                     <motion.div
                       animate={{ scale: isSelected ? 1.35 : 1 }}
-                      whileHover={{ scale: 1.25 }}
-                      transition={{ type: "spring", stiffness: 400, damping: 15 }}
+                      whileHover={{ scale: isDragging ? 1 : 1.25 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 20, mass: 0.5 }}
                       className={`relative flex h-8 w-8 items-center justify-center rounded-full border-2 shadow-2xl transition-all ${
                         isSelected
                           ? "bg-[#00df82] text-slate-950 border-white ring-4 ring-emerald-400/60 shadow-emerald-500/50"

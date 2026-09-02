@@ -118,16 +118,16 @@ export default function SdgDashboard({ stats }: SdgDashboardProps) {
             value: stats.totalKotaAktif,
             suffix: " Kota",
             icon: Globe2,
-            textColor: "text-amber-500 dark:text-amber-400",
+            textColor: "text-amber-600 dark:text-amber-400",
             badge: "Pilar Daerah",
           },
         ].map((c, i) => (
           <Reveal key={c.label} delay={i * 0.08}>
-            <div className="relative overflow-hidden rounded-3xl border-2 border-slate-200 bg-white p-6 shadow-md transition-all hover:shadow-xl hover:border-emerald-400 hover:-translate-y-0.5 flex flex-col justify-between h-full dark:border-slate-700 dark:bg-slate-800/80 dark:hover:border-emerald-500 dark:shadow-lg dark:hover:shadow-emerald-500/10">
+            <div className="relative overflow-hidden rounded-3xl border-2 border-emerald-100 bg-white p-6 shadow-md transition-all hover:shadow-xl hover:border-emerald-400 hover:-translate-y-0.5 flex flex-col justify-between h-full dark:border-slate-700 dark:bg-slate-800 dark:shadow-lg dark:hover:border-emerald-500 dark:hover:shadow-emerald-500/10">
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <c.icon className={`h-8 w-8 ${c.textColor}`} />
-                  <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[10px] font-extrabold text-slate-700 border border-slate-200 dark:bg-slate-700/80 dark:text-slate-200 dark:border-slate-600">
+                  <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-[10px] font-extrabold text-emerald-700 border border-emerald-200 dark:bg-emerald-500/20 dark:text-emerald-300 dark:border-emerald-500/40">
                     {c.badge}
                   </span>
                 </div>
@@ -137,7 +137,7 @@ export default function SdgDashboard({ stats }: SdgDashboardProps) {
                     format={(n) => `${n.toLocaleString("id-ID")}${c.suffix ?? "+"}`}
                   />
                 </p>
-                <h3 className="mt-1.5 text-xs font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                <h3 className="mt-1.5 text-xs font-extrabold uppercase tracking-wider text-slate-700 dark:text-slate-400">
                   {c.label}
                 </h3>
               </div>
@@ -149,17 +149,17 @@ export default function SdgDashboard({ stats }: SdgDashboardProps) {
       {/* Interactive Charts: Category Distribution & Impact Metrics */}
       <div className="grid gap-6 lg:grid-cols-2">
         <Reveal>
-          <div className="rounded-3xl border-2 border-slate-200 bg-white p-7 shadow-md h-full flex flex-col justify-between dark:border-slate-700 dark:bg-slate-800/80 dark:shadow-lg">
+          <div className="rounded-3xl border-2 border-emerald-100 bg-white p-7 shadow-md h-full flex flex-col justify-between dark:border-slate-700 dark:bg-slate-800 dark:shadow-lg">
             <div>
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-extrabold uppercase tracking-wider text-slate-900 dark:text-white">
                   Distribusi Sektor Usaha yang Diminati
                 </h3>
-                <span className="text-[10px] font-extrabold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200 dark:text-emerald-300 dark:bg-emerald-500/20 dark:border-emerald-500/40">
+                <span className="text-[10px] font-extrabold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200 dark:text-emerald-300 dark:bg-emerald-500/20 dark:border-emerald-500/40">
                   14 Model Terkurasi
                 </span>
               </div>
-              <p className="text-xs text-slate-500 mt-1 dark:text-slate-400">
+              <p className="text-xs text-slate-600 mt-1 dark:text-slate-400">
                 Persentase wirausaha muda berdasarkan bidang sektor ekonomi
               </p>
 
@@ -182,8 +182,8 @@ export default function SdgDashboard({ stats }: SdgDashboardProps) {
                     <Tooltip
                       formatter={(val) => [`${val}%`, "Porsi Minat"]}
                       contentStyle={{
-                        background: "var(--tooltip-bg, #ffffff)",
-                        border: "1px solid #cbd5e1",
+                        background: "#ffffff",
+                        border: "1px solid #d1d5db",
                         borderRadius: 16,
                         fontSize: 12,
                         color: "#0f172a",
@@ -201,7 +201,7 @@ export default function SdgDashboard({ stats }: SdgDashboardProps) {
                 <div key={item.name} className="flex items-center gap-1.5 text-slate-700 dark:text-slate-200">
                   <span className="h-2.5 w-2.5 rounded-full" style={{ background: item.color }} />
                   <span className="font-extrabold">{item.name}</span>
-                  <span className="text-slate-400 dark:text-slate-500">({item.value}%)</span>
+                  <span className="text-slate-500 dark:text-slate-400">({item.value}%)</span>
                 </div>
               ))}
             </div>
@@ -209,17 +209,17 @@ export default function SdgDashboard({ stats }: SdgDashboardProps) {
         </Reveal>
 
         <Reveal delay={0.1}>
-          <div className="rounded-3xl border-2 border-slate-200 bg-white p-7 shadow-md h-full flex flex-col justify-between dark:border-slate-700 dark:bg-slate-800/80 dark:shadow-lg">
+          <div className="rounded-3xl border-2 border-emerald-100 bg-white p-7 shadow-md h-full flex flex-col justify-between dark:border-slate-700 dark:bg-slate-800 dark:shadow-lg">
             <div>
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-extrabold uppercase tracking-wider text-slate-900 dark:text-white">
                   Indikator Kesiapan Usaha Inklusif
                 </h3>
-                <span className="text-[10px] font-extrabold text-cyan-800 bg-cyan-50 px-2.5 py-0.5 rounded-full border border-cyan-200 dark:text-cyan-300 dark:bg-cyan-500/20 dark:border-cyan-500/40">
+                <span className="text-[10px] font-extrabold text-cyan-700 bg-cyan-50 px-2.5 py-0.5 rounded-full border border-cyan-200 dark:text-cyan-300 dark:bg-cyan-500/20 dark:border-cyan-500/40">
                   Indeks PetaKarier
                 </span>
               </div>
-              <p className="text-xs text-slate-500 mt-1 dark:text-slate-400">
+              <p className="text-xs text-slate-600 mt-1 dark:text-slate-400">
                 Rata-rata skor parameter keberlanjutan unit bisnis
               </p>
 
@@ -233,7 +233,7 @@ export default function SdgDashboard({ stats }: SdgDashboardProps) {
                   <div key={item.label} className="space-y-1.5">
                     <div className="flex justify-between text-xs">
                       <span className="text-slate-700 font-extrabold dark:text-slate-200">{item.label}</span>
-                      <span className="text-emerald-600 font-extrabold dark:text-emerald-400">{item.score}%</span>
+                      <span className="text-emerald-700 font-extrabold dark:text-emerald-400">{item.score}%</span>
                     </div>
                     <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-100 border border-slate-200 dark:bg-slate-700 dark:border-slate-600">
                       <div
@@ -261,7 +261,7 @@ export default function SdgDashboard({ stats }: SdgDashboardProps) {
             <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white">
               Keselarasan dengan Target SDG 8 & RAN TPB Matriks 4
             </h3>
-            <p className="text-sm text-slate-500 mt-1 dark:text-slate-400">
+            <p className="text-sm text-slate-600 mt-1 dark:text-slate-400">
               Rincian implementasi teknis dan indikator capaian pada setiap sub-target Tujuan Pembangunan Berkelanjutan.
             </p>
           </div>
@@ -270,7 +270,7 @@ export default function SdgDashboard({ stats }: SdgDashboardProps) {
         <div className="grid gap-5 md:grid-cols-2">
           {SDG_TARGET_DETAILS.map((t, idx) => (
             <Reveal key={t.target} delay={idx * 0.1}>
-              <div className="rounded-3xl border-2 border-slate-200 bg-white p-7 shadow-md space-y-4 hover:border-emerald-300 transition-all hover:shadow-xl hover:-translate-y-0.5 dark:border-slate-700 dark:bg-slate-800/80 dark:hover:border-emerald-500 dark:shadow-lg dark:hover:shadow-emerald-500/10">
+              <div className="rounded-3xl border-2 border-emerald-100 bg-white p-7 shadow-md space-y-4 hover:border-emerald-400 transition-all hover:shadow-xl hover:-translate-y-0.5 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-emerald-500 dark:shadow-lg dark:hover:shadow-emerald-500/10">
                 <div className="flex items-center justify-between border-b border-slate-100 pb-3 dark:border-slate-700">
                   <div>
                     <span className="text-xs font-mono font-extrabold text-emerald-700 dark:text-emerald-400">
@@ -278,24 +278,24 @@ export default function SdgDashboard({ stats }: SdgDashboardProps) {
                     </span>
                     <h4 className="text-base font-extrabold text-slate-900 dark:text-white">{t.pilar}</h4>
                   </div>
-                  <span className="flex items-center gap-1 text-[10px] font-extrabold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-300 dark:text-emerald-200 dark:bg-emerald-500/20 dark:border-emerald-500/40">
+                  <span className="flex items-center gap-1 text-[10px] font-extrabold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200 dark:text-emerald-200 dark:bg-emerald-500/20 dark:border-emerald-500/40">
                     <CheckCircle2 className="h-3 w-3 text-emerald-600 dark:text-emerald-400" /> {t.status}
                   </span>
                 </div>
 
                 <div className="space-y-3 text-xs">
                   <div>
-                    <p className="text-slate-500 font-extrabold uppercase tracking-wider text-[10px] dark:text-slate-400">
+                    <p className="text-slate-600 font-extrabold uppercase tracking-wider text-[10px] dark:text-slate-400">
                       Mandat SDG 8 PBB & Bappenas:
                     </p>
-                    <p className="text-slate-600 leading-relaxed mt-0.5 font-medium dark:text-slate-300">{t.deskripsi}</p>
+                    <p className="text-slate-700 leading-relaxed mt-0.5 font-medium dark:text-slate-300">{t.deskripsi}</p>
                   </div>
 
                   <div className="pt-2 border-t border-slate-100 dark:border-slate-700">
                     <p className="text-emerald-700 font-extrabold uppercase tracking-wider text-[10px] dark:text-emerald-400">
                       Kontribusi Nyata Platform PetaKarier:
                     </p>
-                    <p className="text-slate-900 leading-relaxed mt-0.5 font-bold dark:text-slate-100">{t.kontribusiPetaKarier}</p>
+                    <p className="text-slate-900 leading-relaxed mt-0.5 font-bold dark:text-white">{t.kontribusiPetaKarier}</p>
                   </div>
                 </div>
               </div>
@@ -306,12 +306,12 @@ export default function SdgDashboard({ stats }: SdgDashboardProps) {
 
       {/* Official Bappenas Reference Box */}
       <Reveal delay={0.2}>
-        <div className="rounded-3xl border-2 border-emerald-200 bg-gradient-to-r from-emerald-50 via-white to-teal-50 p-8 sm:p-10 shadow-lg flex flex-col sm:flex-row items-center justify-between gap-6 dark:border-emerald-500/40 dark:from-emerald-900/30 dark:via-slate-800/80 dark:to-teal-900/30 dark:shadow-xl">
+        <div className="rounded-3xl border-2 border-emerald-200 bg-gradient-to-r from-emerald-50 via-white to-teal-50 p-8 sm:p-10 shadow-lg flex flex-col sm:flex-row items-center justify-between gap-6 dark:border-emerald-500/40 dark:from-emerald-900/30 dark:via-slate-800 dark:to-teal-900/30 dark:shadow-xl">
           <div className="space-y-2 text-center sm:text-left">
             <h4 className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white">
               Pelajari Dokumen Rencana Aksi Nasional TPB/SDGs
             </h4>
-            <p className="text-xs sm:text-sm text-slate-600 max-w-2xl leading-relaxed dark:text-slate-300">
+            <p className="text-xs sm:text-sm text-slate-700 max-w-2xl leading-relaxed dark:text-slate-300">
               PetaKarier mengadopsi indikator Lampiran III Matriks 4 (Pelaku Usaha) yang diterbitkan oleh Kementerian PPN/Bappenas RI sebagai rujukan formal pengembangan ekosistem kewirausahaan digital.
             </p>
           </div>
@@ -322,7 +322,7 @@ export default function SdgDashboard({ stats }: SdgDashboardProps) {
             download
             className="btn-shine inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-green-500 px-6 py-3.5 text-xs font-extrabold text-white shadow-lg transition-all hover:scale-105 hover:shadow-xl hover:shadow-emerald-500/30 shrink-0 dark:from-emerald-600 dark:via-emerald-500 dark:to-green-600 dark:hover:shadow-emerald-400/20"
           >
-            <span>Unduh Dokumen Bappenas</span>
+            <span>Unduh Buku Capaian SDGs Indonesia 2025</span>
             <ExternalLink className="h-4 w-4" />
           </a>
         </div>

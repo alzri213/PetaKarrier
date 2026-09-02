@@ -324,11 +324,11 @@ export default function AccessibilityPanel() {
         className="fixed bottom-20 right-4 sm:right-6 z-[45] flex h-11 w-11 sm:h-13 sm:w-13 items-center justify-center
                    rounded-full bg-[#00df82] text-slate-950 shadow-xl
                    shadow-emerald-500/30 transition-shadow duration-300 hover:bg-[#00c975]
-                   border-2 border-emerald-300/60 group font-black text-base sm:text-lg cursor-grab active:cursor-grabbing touch-none select-none"
+                   border-2 border-emerald-300/60 group cursor-grab active:cursor-grabbing touch-none select-none"
         aria-label="Buka Menu Aksesibilitas (Bisa digeser)"
         title="Menu Aksesibilitas (Pintasan: CTRL+U — Tahan & Geser untuk memindahkan)"
       >
-        <span className="font-extrabold text-lg sm:text-xl leading-none select-none pointer-events-none">?</span>
+        <Accessibility className="h-5 w-5 sm:h-6 sm:w-6 select-none pointer-events-none" strokeWidth={2.5} />
         <span className="sr-only">Menu Aksesibilitas (CTRL+U)</span>
       </motion.button>
 

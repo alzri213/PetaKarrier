@@ -13,7 +13,7 @@ export default async function SdgImpactPage() {
   const stats = await getPlatformStats();
 
   return (
-    <div className="min-h-screen pb-24 bg-slate-50 dark:bg-slate-950">
+    <div className="min-h-screen pb-24 bg-white dark:bg-slate-950">
       <PageHero
         title={
           <>

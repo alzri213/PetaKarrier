@@ -106,7 +106,7 @@ export default function FlowSection({
     <section
       id="cara-kerja"
       ref={containerRef}
-      className="relative overflow-hidden bg-slate-50/60 px-4 py-24 dark:bg-slate-950 sm:px-6 lg:px-8"
+      className="relative overflow-hidden bg-white px-4 py-24 dark:bg-slate-950 sm:px-6 lg:px-8"
     >
       {/* Ambient background glow (Dark Mode Only) */}
       <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden hidden dark:block">
