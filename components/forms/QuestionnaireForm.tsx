@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import {
@@ -47,25 +47,42 @@ const PRESET_TIERS = [
   { label: "> Rp 50 Juta", value: 65_000_000 },
 ];
 
-const DAFTAR_KOTA = [
-  { id: "jakarta", nama: "DKI Jakarta" },
-  { id: "bandung", nama: "Bandung" },
-  { id: "surabaya", nama: "Surabaya" },
-  { id: "yogyakarta", nama: "Yogyakarta" },
-  { id: "medan", nama: "Medan" },
-  { id: "makassar", nama: "Makassar" },
-  { id: "bali", nama: "Denpasar / Bali" },
-  { id: "semarang", nama: "Semarang" },
-  { id: "malang", nama: "Malang" },
-  { id: "bekasi", nama: "Bekasi" },
-  { id: "tangerang", nama: "Tangerang" },
-  { id: "depok", nama: "Depok" },
-  { id: "bogor", nama: "Bogor" },
-  { id: "palembang", nama: "Palembang" },
-  { id: "batam", nama: "Batam" },
-  { id: "padang", nama: "Padang" },
-  { id: "pekanbaru", nama: "Pekanbaru" },
-  { id: "balikpapan", nama: "Balikpapan" },
+// Full 34 Provinsi Indonesia dengan UMR 2024/2025
+const DAFTAR_PROVINSI = [
+  { id: "aceh", nama: "Aceh" },
+  { id: "sumatera-utara", nama: "Sumatera Utara" },
+  { id: "sumatera-barat", nama: "Sumatera Barat" },
+  { id: "riau", nama: "Riau" },
+  { id: "kepulauan-riau", nama: "Kepulauan Riau" },
+  { id: "jambi", nama: "Jambi" },
+  { id: "sumatera-selatan", nama: "Sumatera Selatan" },
+  { id: "bangka-belitung", nama: "Bangka Belitung" },
+  { id: "bengkulu", nama: "Bengkulu" },
+  { id: "lampung", nama: "Lampung" },
+  { id: "banten", nama: "Banten" },
+  { id: "dki-jakarta", nama: "DKI Jakarta" },
+  { id: "jawa-barat", nama: "Jawa Barat" },
+  { id: "jawa-tengah", nama: "Jawa Tengah" },
+  { id: "diy", nama: "DI Yogyakarta" },
+  { id: "jawa-timur", nama: "Jawa Timur" },
+  { id: "bali", nama: "Bali" },
+  { id: "ntb", nama: "Nusa Tenggara Barat" },
+  { id: "ntt", nama: "Nusa Tenggara Timur" },
+  { id: "kalimantan-barat", nama: "Kalimantan Barat" },
+  { id: "kalimantan-tengah", nama: "Kalimantan Tengah" },
+  { id: "kalimantan-selatan", nama: "Kalimantan Selatan" },
+  { id: "kalimantan-timur", nama: "Kalimantan Timur" },
+  { id: "kalimantan-utara", nama: "Kalimantan Utara" },
+  { id: "sulawesi-utara", nama: "Sulawesi Utara" },
+  { id: "sulawesi-tengah", nama: "Sulawesi Tengah" },
+  { id: "sulawesi-selatan", nama: "Sulawesi Selatan" },
+  { id: "sulawesi-tenggara", nama: "Sulawesi Tenggara" },
+  { id: "sulawesi-barat", nama: "Sulawesi Barat" },
+  { id: "gorontalo", nama: "Gorontalo" },
+  { id: "maluku", nama: "Maluku" },
+  { id: "maluku-utara", nama: "Maluku Utara" },
+  { id: "papua-barat", nama: "Papua Barat" },
+  { id: "papua", nama: "Papua" },
 ];
 
 // UI skill labels mapped to actual data tags used in jenisUsaha.json
@@ -87,28 +104,51 @@ const ANALISIS_STEPS_TEXT = [
   "Menyusun rekomendasi siap eksekusi...",
 ];
 
+const LS_FORM_KEY = "petakarier_analisis_form";
+
 export default function QuestionnaireForm() {
   const router = useRouter();
 
-  // Active step: 0 = Minat & Skill, 1 = Modal Awal & Detail, 2 = Rekomendasi
+  // Active step: 0 = Minat & Skill, 1 = Modal Awal & Detail
   const [step, setStep] = useState<number>(0);
 
-  // Form Fields
+  // Form Fields — restored from localStorage on mount
   const [minat, setMinat] = useState<KategoriUsaha[]>([]);
   const [keahlian, setKeahlian] = useState<string>("");
-
-  // Smooth continuous modal slider state: 2jt to 80jt
   const [modalValue, setModalValue] = useState<number>(12_000_000);
-
-  const [selectedKota, setSelectedKota] = useState<string>("");
+  const [selectedProvinsi, setSelectedProvinsi] = useState<string>("");
   const [waktu, setWaktu] = useState<string>("");
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
+
+  // Restore form state from localStorage on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(LS_FORM_KEY);
+      if (saved) {
+        const data = JSON.parse(saved);
+        if (data.minat)          setMinat(data.minat);
+        if (data.keahlian)       setKeahlian(data.keahlian);
+        if (data.modalValue)     setModalValue(data.modalValue);
+        if (data.selectedProvinsi) setSelectedProvinsi(data.selectedProvinsi);
+        if (data.waktu)          setWaktu(data.waktu);
+        if (data.selectedSkills) setSelectedSkills(data.selectedSkills);
+        if (data.step !== undefined) setStep(data.step);
+      }
+    } catch {}
+  }, []);
+
+  // Persist form state to localStorage on every change
+  useEffect(() => {
+    try {
+      localStorage.setItem(LS_FORM_KEY, JSON.stringify({
+        step, minat, keahlian, modalValue, selectedProvinsi, waktu, selectedSkills,
+      }));
+    } catch {}
+  }, [step, minat, keahlian, modalValue, selectedProvinsi, waktu, selectedSkills]);
 
   // Loading & Results
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loadingTextIndex, setLoadingTextIndex] = useState(0);
-  const [hasil, setHasil] = useState<Rekomendasi[] | null>(null);
-  const [analisisId, setAnalisisId] = useState<string | null>(null);
 
   const toggleMinat = (k: KategoriUsaha) => {
     setMinat((prev) =>
@@ -150,8 +190,8 @@ export default function QuestionnaireForm() {
   };
 
   const handleProcessAnalysis = async () => {
-    if (!selectedKota) {
-      toast.error("Pilih kota domisili / target operasional.");
+    if (!selectedProvinsi) {
+      toast.error("Pilih provinsi domisili / target operasional.");
       return;
     }
     if (!waktu) {
@@ -170,12 +210,10 @@ export default function QuestionnaireForm() {
       }
     }, 600);
 
-    // Map selected UI skill labels to actual data tags used in jenisUsaha.json
     const resolvedSkillTags = selectedSkills.flatMap((label) => {
       const found = SKILL_TAGS.find((st) => st.label === label);
       return found ? found.dataTags : [];
     });
-    // Deduplicate
     const uniqueSkillTags = [...new Set(resolvedSkillTags)];
 
     const profil: ProfilUser = {
@@ -191,17 +229,17 @@ export default function QuestionnaireForm() {
       if (!res.success || !res.rekomendasi) {
         throw new Error(res.error ?? "Gagal memproses rekomendasi");
       }
-      // Store profile and calculated recommendations in localStorage for instant reference
       localStorage.setItem(
         "konekumkm-profil",
         JSON.stringify({
           profil,
           analisisId: res.id,
-          kota: selectedKota,
+          provinsi: selectedProvinsi,
           rekomendasi: res.rekomendasi,
         })
       );
-      // Redirect to the dedicated results page
+      // Clear form state after successful submit
+      localStorage.removeItem(LS_FORM_KEY);
       router.push(`/analisis/${res.id}`);
     } catch (err) {
       clearInterval(interval);
@@ -478,21 +516,21 @@ export default function QuestionnaireForm() {
                       </h2>
                     </div>
 
-                    {/* Field 1: Kota Domisili Target */}
+                    {/* Field 1: Provinsi Domisili Target */}
                     <div className="space-y-3">
                       <label className="text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300">
-                        Pilih Kota Domisili / Target Operasional
+                        Pilih Provinsi Domisili / Target Operasional
                       </label>
                       <div className="relative">
                         <select
-                          value={selectedKota}
-                          onChange={(e) => setSelectedKota(e.target.value)}
-                          className={`w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs sm:text-sm font-medium outline-none transition focus:border-[#00df82] dark:border-slate-700 dark:bg-slate-900/90 ${selectedKota ? 'text-slate-900 dark:text-white' : 'text-slate-400 dark:text-slate-500'}`}
+                          value={selectedProvinsi}
+                          onChange={(e) => setSelectedProvinsi(e.target.value)}
+                          className={`w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs sm:text-sm font-medium outline-none transition focus:border-[#00df82] dark:border-slate-700 dark:bg-slate-900/90 ${selectedProvinsi ? 'text-slate-900 dark:text-white' : 'text-slate-400 dark:text-slate-500'}`}
                         >
                           <option value="" disabled className="bg-white text-slate-400 dark:bg-slate-950 dark:text-slate-500">
-                            — Pilih Kota Domisili —
+                            — Pilih Provinsi —
                           </option>
-                          {DAFTAR_KOTA.map((k) => (
+                          {DAFTAR_PROVINSI.map((k) => (
                             <option key={k.id} value={k.id} className="bg-white text-slate-900 dark:bg-slate-950 dark:text-white">
                               {k.nama}
                             </option>
@@ -678,7 +716,7 @@ export default function QuestionnaireForm() {
                             {/* CTA Button */}
                             <button
                               type="button"
-                              onClick={() => router.push(`/kalkulator?usahaId=${item.usaha.id}&kota=${selectedKota}`)}
+                              onClick={() => router.push(`/kalkulator?usahaId=${item.usaha.id}&kota=${selectedProvinsi}`)}
                               className="mt-4 group flex w-full items-center justify-center gap-2 rounded-full bg-[#00df82] py-3 text-xs font-bold text-slate-950 shadow-md shadow-emerald-500/20 transition-all hover:bg-[#00c975] hover:shadow-lg hover:shadow-emerald-500/30 active:scale-[0.98]"
                             >
                               <span>Lanjut ke Kalkulator Modal</span>

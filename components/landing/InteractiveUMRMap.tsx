@@ -352,17 +352,17 @@ export default function InteractiveUMRMap() {
       {/* ══════════════════════════════════════════════════════════════════
           MAIN SATELLITE MAP CONTAINER (BOUNDED & DRAGGABLE/PANNABLE)
       ══════════════════════════════════════════════════════════════════ */}
-      <div className="relative rounded-[2.5rem] border border-slate-200 bg-slate-950 p-4 sm:p-6 shadow-2xl dark:border-slate-800/90 overflow-hidden min-h-[540px]">
+      <div className="relative rounded-[2.5rem] border border-slate-200 bg-white p-4 sm:p-6 shadow-2xl dark:border-slate-800/90 dark:bg-slate-950 overflow-hidden min-h-[540px]">
         {/* Top Floating Badge */}
         <div className="absolute top-6 right-8 z-30 flex items-center gap-2">
-          <span className="flex items-center gap-1.5 rounded-full border border-slate-700/80 bg-slate-900/90 px-4 py-1.5 text-xs font-extrabold text-white shadow-lg backdrop-blur-md">
-            <Globe2 className="h-3.5 w-3.5 text-[#00df82]" />
+          <span className="flex items-center gap-1.5 rounded-full border border-slate-300/80 bg-white/90 px-4 py-1.5 text-xs font-extrabold text-slate-700 shadow-lg backdrop-blur-md dark:border-slate-700/80 dark:bg-slate-900/90 dark:text-white">
+            <Globe2 className="h-3.5 w-3.5 text-emerald-500 dark:text-[#00df82]" />
             <span>Peta Nusantara • Data Resmi 2026</span>
           </span>
         </div>
 
         {/* Instruction Badge */}
-        <div className="absolute top-6 left-8 z-30 hidden sm:flex items-center gap-2 rounded-full border border-emerald-500/30 bg-slate-900/80 px-3.5 py-1.5 text-[11px] font-bold text-emerald-300 backdrop-blur-md">
+        <div className="absolute top-6 left-8 z-30 hidden sm:flex items-center gap-2 rounded-full border border-emerald-500/30 bg-white/80 px-3.5 py-1.5 text-[11px] font-bold text-emerald-700 backdrop-blur-md dark:bg-slate-900/80 dark:text-emerald-300">
           {!isLoggedIn ? (
             <>
               <Lock className="h-3.5 w-3.5 text-[#00df82]" />
@@ -382,7 +382,7 @@ export default function InteractiveUMRMap() {
         </div>
 
         {/* Interactive Map Visual Area (Strictly Bounded Frame) */}
-        <div ref={containerRef} className="relative w-full h-[480px] sm:h-[540px] rounded-3xl overflow-hidden border border-slate-800/80 bg-slate-950">
+        <div ref={containerRef} className="relative w-full h-[480px] sm:h-[540px] rounded-3xl overflow-hidden border border-slate-200 bg-slate-100 dark:border-slate-800/80 dark:bg-slate-950">
           {/* Framer Motion Draggable & Zoomable Canvas */}
           <motion.div
             drag={zoom > 1}
@@ -438,7 +438,7 @@ export default function InteractiveUMRMap() {
                       className={`relative flex h-8 w-8 items-center justify-center rounded-full border-2 shadow-2xl transition-all ${
                         isSelected
                           ? "bg-[#00df82] text-slate-950 border-white ring-4 ring-emerald-400/60 shadow-emerald-500/50"
-                          : "bg-slate-950/90 text-[#00df82] border-emerald-400/80 hover:bg-emerald-500 hover:text-slate-950"
+                          : "bg-slate-900/80 text-[#00df82] border-emerald-400/80 hover:bg-emerald-500 hover:text-white dark:bg-slate-950/90 dark:text-[#00df82]"
                       }`}
                     >
                       <MapPin className="h-4 w-4" />
@@ -449,7 +449,7 @@ export default function InteractiveUMRMap() {
                       className={`absolute top-9 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-lg px-2.5 py-0.5 text-[10px] font-extrabold transition-all shadow-xl backdrop-blur-md ${
                         isSelected
                           ? "bg-[#00df82] text-slate-950 border border-white"
-                          : "bg-slate-950/90 text-slate-100 border border-slate-700/80 group-hover:bg-emerald-500 group-hover:text-slate-950"
+                          : "bg-slate-900/80 text-slate-100 border border-slate-600/80 group-hover:bg-emerald-500 group-hover:text-white dark:bg-slate-950/90 dark:text-slate-100 dark:border-slate-700/80"
                       }`}
                     >
                       {k.nama}
@@ -469,32 +469,32 @@ export default function InteractiveUMRMap() {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 20, scale: 0.92 }}
                 transition={{ duration: 0.25, ease: "easeOut" }}
-                className="absolute bottom-4 left-4 right-4 sm:left-6 sm:right-auto sm:max-w-sm z-40 rounded-2xl border-2 border-emerald-400/80 bg-slate-950/95 p-5 backdrop-blur-2xl text-white shadow-2xl shadow-emerald-500/15"
+                className="absolute bottom-4 left-4 right-4 sm:left-6 sm:right-auto sm:max-w-sm z-40 rounded-2xl border-2 border-emerald-400/80 bg-white/95 p-5 backdrop-blur-2xl text-slate-900 shadow-2xl shadow-emerald-500/15 dark:bg-slate-950/95 dark:text-white"
               >
                 {/* Header with Close (X) Button */}
-                <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div className="flex items-center justify-between border-b border-slate-200 pb-3 dark:border-slate-800">
                   <div className="flex items-center gap-2.5">
-                    <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-500/20 text-[#00df82] border border-emerald-500/40 shadow-sm">
+                    <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-600 border border-emerald-500/40 shadow-sm dark:text-[#00df82]">
                       <MapPin className="h-4 w-4" />
                     </span>
                     <div>
-                      <h4 className="text-base font-extrabold text-white leading-tight">
+                      <h4 className="text-base font-extrabold text-slate-900 leading-tight dark:text-white">
                         {selectedKota.nama}
                       </h4>
-                      <p className="text-[11px] text-slate-400 font-semibold">
+                      <p className="text-[11px] text-slate-500 font-semibold dark:text-slate-400">
                         {selectedKota.provinsi}
                       </p>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <span className="rounded-full bg-emerald-500/20 border border-emerald-400/40 px-2.5 py-0.5 text-[10px] font-extrabold text-emerald-300">
+                    <span className="rounded-full bg-emerald-500/20 border border-emerald-400/40 px-2.5 py-0.5 text-[10px] font-extrabold text-emerald-600 dark:text-emerald-300">
                       2026
                     </span>
                     <button
                       type="button"
                       onClick={() => setSelectedKota(null)}
-                      className="rounded-lg p-1 text-slate-400 hover:bg-slate-800 hover:text-white transition"
+                      className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition dark:hover:bg-slate-800 dark:hover:text-white"
                       title="Tutup Insight"
                     >
                       <X className="h-4 w-4" />
@@ -504,31 +504,31 @@ export default function InteractiveUMRMap() {
 
                 {/* Metric Grid */}
                 <div className="grid grid-cols-2 gap-2.5 pt-3 text-xs">
-                  <div className="rounded-xl border border-slate-800 bg-white/5 p-2.5">
-                    <span className="text-[10px] text-slate-400 font-bold uppercase block">
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-2.5 dark:border-slate-800 dark:bg-white/5">
+                    <span className="text-[10px] text-slate-500 font-bold uppercase block dark:text-slate-400">
                       Standar UMR Resmi
                     </span>
-                    <p className="text-sm font-extrabold text-[#00df82] mt-0.5">
+                    <p className="text-sm font-extrabold text-emerald-600 mt-0.5 dark:text-[#00df82]">
                       {formatRupiah(selectedKota.umr)}
                     </p>
                   </div>
 
-                  <div className="rounded-xl border border-slate-800 bg-white/5 p-2.5">
-                    <span className="text-[10px] text-slate-400 font-bold uppercase block">
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-2.5 dark:border-slate-800 dark:bg-white/5">
+                    <span className="text-[10px] text-slate-500 font-bold uppercase block dark:text-slate-400">
                       Potensi UMKM Aktif
                     </span>
-                    <p className="text-sm font-extrabold text-white mt-0.5">
+                    <p className="text-sm font-extrabold text-slate-900 mt-0.5 dark:text-white">
                       {selectedKota.umkmAktif} Unit
                     </p>
                   </div>
                 </div>
 
                 {/* Sektor Favorit */}
-                <div className="mt-3 rounded-xl border border-slate-800/80 bg-white/5 px-3 py-2 text-xs">
-                  <span className="text-[10px] text-slate-400 font-bold uppercase block">
+                <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs dark:border-slate-800/80 dark:bg-white/5">
+                  <span className="text-[10px] text-slate-500 font-bold uppercase block dark:text-slate-400">
                     Sektor Usaha Favorit
                   </span>
-                  <span className="font-extrabold text-white block mt-0.5">
+                  <span className="font-extrabold text-slate-900 block mt-0.5 dark:text-white">
                     {selectedKota.topUsaha}
                   </span>
                 </div>
@@ -546,11 +546,11 @@ export default function InteractiveUMRMap() {
           </AnimatePresence>
 
           {/* Zoom & Pan Controls */}
-          <div className="absolute bottom-4 right-4 z-30 flex flex-col rounded-xl border border-slate-800 bg-slate-900/90 shadow-xl backdrop-blur-md overflow-hidden">
+          <div className="absolute bottom-4 right-4 z-30 flex flex-col rounded-xl border border-slate-200 bg-white/90 shadow-xl backdrop-blur-md overflow-hidden dark:border-slate-800 dark:bg-slate-900/90">
             <button
               type="button"
               onClick={handleZoomIn}
-              className="p-2.5 text-slate-300 hover:bg-slate-800 hover:text-white transition"
+              className="p-2.5 text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
               title="Perbesar Peta (Zoom In)"
             >
               <Plus className="h-4 w-4" />
@@ -558,11 +558,11 @@ export default function InteractiveUMRMap() {
 
             {zoom > 1 && (
               <>
-                <div className="h-px bg-slate-800" />
+                <div className="h-px bg-slate-200 dark:bg-slate-800" />
                 <button
                   type="button"
                   onClick={handleResetView}
-                  className="p-2.5 text-emerald-400 hover:bg-slate-800 transition"
+                  className="p-2.5 text-emerald-600 hover:bg-slate-100 transition dark:text-emerald-400 dark:hover:bg-slate-800"
                   title="Reset Tampilan (100%)"
                 >
                   <RotateCcw className="h-4 w-4" />
@@ -570,11 +570,11 @@ export default function InteractiveUMRMap() {
               </>
             )}
 
-            <div className="h-px bg-slate-800" />
+            <div className="h-px bg-slate-200 dark:bg-slate-800" />
             <button
               type="button"
               onClick={handleZoomOut}
-              className="p-2.5 text-slate-300 hover:bg-slate-800 hover:text-white transition"
+              className="p-2.5 text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
               title="Perkecil Peta (Zoom Out)"
             >
               <Minus className="h-4 w-4" />

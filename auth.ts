@@ -11,7 +11,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     process.env.AUTH_SECRET ||
     process.env.NEXTAUTH_SECRET ||
     "petakarier_super_secret_auth_key_2026_itechnocup_sdg8",
-  session: { strategy: "jwt" },
+  session: {
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60,    // 30 days — stay logged in for a month
+    updateAge: 24 * 60 * 60,       // refresh token once per day
+  },
+  jwt: {
+    maxAge: 30 * 24 * 60 * 60,     // JWT lifetime matches session
+  },
   pages: {
     signIn: "/login",
   },

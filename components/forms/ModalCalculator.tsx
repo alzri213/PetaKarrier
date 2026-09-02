@@ -44,14 +44,42 @@ export default function ModalCalculator({
 
   const kotaList = useMemo(() => {
     if (daftarKota.length > 0) return daftarKota;
+    // Full 34 provinsi UMP/UMR 2024–2025 (Sumber: Kemenaker RI)
     return [
-      { id: "jakarta", nama: "DKI Jakarta", provinsi: "DKI Jakarta", umr: 5067381, sewaTempat: 1500000, utilitas: 600000, retribusi: 150000 },
-      { id: "surabaya", nama: "Surabaya", provinsi: "Jawa Timur", umr: 4725479, sewaTempat: 1100000, utilitas: 450000, retribusi: 100000 },
-      { id: "bandung", nama: "Bandung", provinsi: "Jawa Barat", umr: 4209389, sewaTempat: 950000, utilitas: 400000, retribusi: 90000 },
-      { id: "yogyakarta", nama: "Yogyakarta", provinsi: "DI Yogyakarta", umr: 2417495, sewaTempat: 750000, utilitas: 300000, retribusi: 60000 },
-      { id: "medan", nama: "Medan", provinsi: "Sumatera Utara", umr: 3228949, sewaTempat: 900000, utilitas: 400000, retribusi: 80000 },
-      { id: "makassar", nama: "Makassar", provinsi: "Sulawesi Selatan", umr: 3921088, sewaTempat: 900000, utilitas: 400000, retribusi: 80000 },
-      { id: "bali", nama: "Denpasar (Bali)", provinsi: "Bali", umr: 3207459, sewaTempat: 1200000, utilitas: 500000, retribusi: 100000 },
+      { id: "dki-jakarta",      nama: "DKI Jakarta",          provinsi: "DKI Jakarta",          umr: 5067381, sewaTempat: 1500000, utilitas: 600000, retribusi: 150000 },
+      { id: "jawa-barat",       nama: "Jawa Barat",           provinsi: "Jawa Barat",            umr: 2101000, sewaTempat: 950000,  utilitas: 400000, retribusi: 90000  },
+      { id: "jawa-tengah",      nama: "Jawa Tengah",          provinsi: "Jawa Tengah",           umr: 2036947, sewaTempat: 800000,  utilitas: 350000, retribusi: 80000  },
+      { id: "diy",              nama: "DI Yogyakarta",        provinsi: "DI Yogyakarta",         umr: 2159000, sewaTempat: 750000,  utilitas: 300000, retribusi: 60000  },
+      { id: "jawa-timur",       nama: "Jawa Timur",           provinsi: "Jawa Timur",            umr: 2165244, sewaTempat: 900000,  utilitas: 400000, retribusi: 85000  },
+      { id: "banten",           nama: "Banten",               provinsi: "Banten",                umr: 2727812, sewaTempat: 1100000, utilitas: 450000, retribusi: 100000 },
+      { id: "bali",             nama: "Bali",                 provinsi: "Bali",                  umr: 2713672, sewaTempat: 1200000, utilitas: 500000, retribusi: 100000 },
+      { id: "aceh",             nama: "Aceh",                 provinsi: "Aceh",                  umr: 3460672, sewaTempat: 700000,  utilitas: 300000, retribusi: 70000  },
+      { id: "sumatera-utara",   nama: "Sumatera Utara",       provinsi: "Sumatera Utara",        umr: 2809915, sewaTempat: 800000,  utilitas: 380000, retribusi: 75000  },
+      { id: "sumatera-barat",   nama: "Sumatera Barat",       provinsi: "Sumatera Barat",        umr: 2811000, sewaTempat: 750000,  utilitas: 350000, retribusi: 70000  },
+      { id: "riau",             nama: "Riau",                 provinsi: "Riau",                  umr: 3294625, sewaTempat: 900000,  utilitas: 400000, retribusi: 80000  },
+      { id: "kepulauan-riau",   nama: "Kepulauan Riau",       provinsi: "Kepulauan Riau",        umr: 3402492, sewaTempat: 950000,  utilitas: 420000, retribusi: 85000  },
+      { id: "jambi",            nama: "Jambi",                provinsi: "Jambi",                 umr: 3037121, sewaTempat: 750000,  utilitas: 350000, retribusi: 70000  },
+      { id: "sumatera-selatan", nama: "Sumatera Selatan",     provinsi: "Sumatera Selatan",      umr: 3456874, sewaTempat: 800000,  utilitas: 370000, retribusi: 75000  },
+      { id: "bangka-belitung",  nama: "Bangka Belitung",      provinsi: "Bangka Belitung",       umr: 3640000, sewaTempat: 800000,  utilitas: 370000, retribusi: 75000  },
+      { id: "bengkulu",         nama: "Bengkulu",             provinsi: "Bengkulu",              umr: 2507079, sewaTempat: 650000,  utilitas: 300000, retribusi: 60000  },
+      { id: "lampung",          nama: "Lampung",              provinsi: "Lampung",               umr: 2716497, sewaTempat: 700000,  utilitas: 320000, retribusi: 65000  },
+      { id: "kalimantan-barat", nama: "Kalimantan Barat",     provinsi: "Kalimantan Barat",      umr: 2702616, sewaTempat: 750000,  utilitas: 350000, retribusi: 70000  },
+      { id: "kalimantan-tengah",nama: "Kalimantan Tengah",    provinsi: "Kalimantan Tengah",     umr: 3261616, sewaTempat: 800000,  utilitas: 380000, retribusi: 75000  },
+      { id: "kalimantan-selatan",nama:"Kalimantan Selatan",   provinsi: "Kalimantan Selatan",    umr: 3149977, sewaTempat: 800000,  utilitas: 370000, retribusi: 75000  },
+      { id: "kalimantan-timur", nama: "Kalimantan Timur",     provinsi: "Kalimantan Timur",      umr: 3360067, sewaTempat: 950000,  utilitas: 420000, retribusi: 90000  },
+      { id: "kalimantan-utara", nama: "Kalimantan Utara",     provinsi: "Kalimantan Utara",      umr: 3361653, sewaTempat: 900000,  utilitas: 400000, retribusi: 85000  },
+      { id: "sulawesi-utara",   nama: "Sulawesi Utara",       provinsi: "Sulawesi Utara",        umr: 3545000, sewaTempat: 750000,  utilitas: 350000, retribusi: 70000  },
+      { id: "sulawesi-tengah",  nama: "Sulawesi Tengah",      provinsi: "Sulawesi Tengah",       umr: 2914583, sewaTempat: 700000,  utilitas: 330000, retribusi: 65000  },
+      { id: "sulawesi-selatan", nama: "Sulawesi Selatan",     provinsi: "Sulawesi Selatan",      umr: 3434298, sewaTempat: 800000,  utilitas: 370000, retribusi: 75000  },
+      { id: "sulawesi-tenggara",nama: "Sulawesi Tenggara",    provinsi: "Sulawesi Tenggara",     umr: 2885964, sewaTempat: 680000,  utilitas: 320000, retribusi: 65000  },
+      { id: "sulawesi-barat",   nama: "Sulawesi Barat",       provinsi: "Sulawesi Barat",        umr: 2914583, sewaTempat: 650000,  utilitas: 300000, retribusi: 60000  },
+      { id: "gorontalo",        nama: "Gorontalo",            provinsi: "Gorontalo",             umr: 3025100, sewaTempat: 650000,  utilitas: 300000, retribusi: 60000  },
+      { id: "ntb",              nama: "Nusa Tenggara Barat",  provinsi: "Nusa Tenggara Barat",   umr: 2371407, sewaTempat: 650000,  utilitas: 300000, retribusi: 60000  },
+      { id: "ntt",              nama: "Nusa Tenggara Timur",  provinsi: "Nusa Tenggara Timur",   umr: 2186826, sewaTempat: 600000,  utilitas: 280000, retribusi: 55000  },
+      { id: "maluku",           nama: "Maluku",               provinsi: "Maluku",                umr: 3141700, sewaTempat: 650000,  utilitas: 300000, retribusi: 60000  },
+      { id: "maluku-utara",     nama: "Maluku Utara",         provinsi: "Maluku Utara",          umr: 3200000, sewaTempat: 650000,  utilitas: 300000, retribusi: 60000  },
+      { id: "papua-barat",      nama: "Papua Barat",          provinsi: "Papua Barat",           umr: 3600000, sewaTempat: 700000,  utilitas: 320000, retribusi: 65000  },
+      { id: "papua",            nama: "Papua",                provinsi: "Papua",                 umr: 4024270, sewaTempat: 750000,  utilitas: 350000, retribusi: 70000  },
     ];
   }, [daftarKota]);
 
@@ -73,7 +101,7 @@ export default function ModalCalculator({
   }, [queryKotaId, kotaList]);
 
   const [selectedUsahaId, setSelectedUsahaId] = useState<string>(initialUsaha?.id || usahaList[0]?.id || "jasa-web-digital");
-  const [selectedKotaId, setSelectedKotaId] = useState<string>(initialKota?.id || kotaList[0]?.id || "jakarta");
+  const [selectedKotaId, setSelectedKotaId] = useState<string>(initialKota?.id || kotaList[0]?.id || "dki-jakarta");
 
   // Calculate default numbers based on selected business & city
   const initialModalVal = initialUsaha?.modalMin ? Math.round((initialUsaha.modalMin + initialUsaha.modalMax) / 2) : 20000000;
@@ -86,11 +114,44 @@ export default function ModalCalculator({
   const [isCalculating, setIsCalculating] = useState<boolean>(false);
   const [hasCalculated, setHasCalculated] = useState<boolean>(false);
 
-  // Active calculated results (only update on 'Hitung Sekarang' click)
   const [activeModalAwal, setActiveModalAwal] = useState<number>(initialModalVal);
   const [activeOperasional, setActiveOperasional] = useState<number>(initialOpsVal);
   const [activeUsahaId, setActiveUsahaId] = useState<string>(initialUsaha?.id || "jasa-web-digital");
-  const [activeKotaId, setActiveKotaId] = useState<string>(initialKota?.id || "jakarta");
+  const [activeKotaId, setActiveKotaId] = useState<string>(initialKota?.id || "dki-jakarta");
+
+  const LS_KALK_KEY = "petakarier_kalkulator_form";
+
+  // Restore from localStorage on mount (only if no URL query params)
+  useEffect(() => {
+    if (queryUsahaId || queryKotaId) return; // URL params take priority
+    try {
+      const saved = localStorage.getItem(LS_KALK_KEY);
+      if (saved) {
+        const data = JSON.parse(saved);
+        if (data.selectedUsahaId) setSelectedUsahaId(data.selectedUsahaId);
+        if (data.selectedKotaId)  setSelectedKotaId(data.selectedKotaId);
+        if (data.modalAwal)       { setModalAwal(data.modalAwal); setModalAwalStr(data.modalAwal.toLocaleString("id-ID")); }
+        if (data.operasional)     { setOperasional(data.operasional); setOperasionalStr(data.operasional.toLocaleString("id-ID")); }
+        if (data.hasCalculated)   setHasCalculated(data.hasCalculated);
+        if (data.activeModalAwal)  setActiveModalAwal(data.activeModalAwal);
+        if (data.activeOperasional) setActiveOperasional(data.activeOperasional);
+        if (data.activeUsahaId)   setActiveUsahaId(data.activeUsahaId);
+        if (data.activeKotaId)    setActiveKotaId(data.activeKotaId);
+      }
+    } catch {}
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Persist to localStorage on every change
+  useEffect(() => {
+    try {
+      localStorage.setItem(LS_KALK_KEY, JSON.stringify({
+        selectedUsahaId, selectedKotaId, modalAwal, operasional,
+        hasCalculated, activeModalAwal, activeOperasional, activeUsahaId, activeKotaId,
+      }));
+    } catch {}
+  }, [selectedUsahaId, selectedKotaId, modalAwal, operasional,
+      hasCalculated, activeModalAwal, activeOperasional, activeUsahaId, activeKotaId]);
 
   // Synchronize input fields when query params change, keeping calculation uncomputed until user clicks
   useEffect(() => {

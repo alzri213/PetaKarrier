@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   MapPin,
@@ -33,24 +33,46 @@ export default function UMRComparison({
   daftarUsaha = [],
   daftarKota = [],
 }: UMRComparisonProps) {
-  // Available cities
+  // Available cities — full 34 provinsi UMP/UMR 2024–2025
   const kotaList: KotaItem[] = useMemo(() => {
     if (daftarKota.length > 0) {
-      return daftarKota.map((k) => ({
-        ...k,
-        // Format clean display name without redundant "Kota " prefix
-        nama: k.nama.replace(/^Kota\s+/i, ""),
-      }));
+      return daftarKota.map((k) => ({ ...k, nama: k.nama.replace(/^Kota\s+/i, "") }));
     }
     return [
-      { id: "surabaya", nama: "Surabaya", provinsi: "Jawa Timur", umr: 4725000 },
-      { id: "jakarta", nama: "DKI Jakarta", provinsi: "DKI Jakarta", umr: 5729876 },
-      { id: "bandung", nama: "Bandung", provinsi: "Jawa Barat", umr: 4209389 },
-      { id: "yogyakarta", nama: "Yogyakarta", provinsi: "DI Yogyakarta", umr: 2417495 },
-      { id: "medan", nama: "Medan", provinsi: "Sumatera Utara", umr: 3228949 },
-      { id: "denpasar", nama: "Denpasar (Bali)", provinsi: "Bali", umr: 3207459 },
-      { id: "makassar", nama: "Makassar", provinsi: "Sulawesi Selatan", umr: 3921088 },
-      { id: "semarang", nama: "Semarang", provinsi: "Jawa Tengah", umr: 3243969 },
+      { id: "dki-jakarta",       nama: "DKI Jakarta",          provinsi: "DKI Jakarta",          umr: 5067381 },
+      { id: "jawa-barat",        nama: "Jawa Barat",           provinsi: "Jawa Barat",            umr: 2101000 },
+      { id: "jawa-tengah",       nama: "Jawa Tengah",          provinsi: "Jawa Tengah",           umr: 2036947 },
+      { id: "diy",               nama: "DI Yogyakarta",        provinsi: "DI Yogyakarta",         umr: 2159000 },
+      { id: "jawa-timur",        nama: "Jawa Timur",           provinsi: "Jawa Timur",            umr: 2165244 },
+      { id: "banten",            nama: "Banten",               provinsi: "Banten",                umr: 2727812 },
+      { id: "bali",              nama: "Bali",                 provinsi: "Bali",                  umr: 2713672 },
+      { id: "aceh",              nama: "Aceh",                 provinsi: "Aceh",                  umr: 3460672 },
+      { id: "sumatera-utara",    nama: "Sumatera Utara",       provinsi: "Sumatera Utara",        umr: 2809915 },
+      { id: "sumatera-barat",    nama: "Sumatera Barat",       provinsi: "Sumatera Barat",        umr: 2811000 },
+      { id: "riau",              nama: "Riau",                 provinsi: "Riau",                  umr: 3294625 },
+      { id: "kepulauan-riau",    nama: "Kepulauan Riau",       provinsi: "Kepulauan Riau",        umr: 3402492 },
+      { id: "jambi",             nama: "Jambi",                provinsi: "Jambi",                 umr: 3037121 },
+      { id: "sumatera-selatan",  nama: "Sumatera Selatan",     provinsi: "Sumatera Selatan",      umr: 3456874 },
+      { id: "bangka-belitung",   nama: "Bangka Belitung",      provinsi: "Bangka Belitung",       umr: 3640000 },
+      { id: "bengkulu",          nama: "Bengkulu",             provinsi: "Bengkulu",              umr: 2507079 },
+      { id: "lampung",           nama: "Lampung",              provinsi: "Lampung",               umr: 2716497 },
+      { id: "kalimantan-barat",  nama: "Kalimantan Barat",     provinsi: "Kalimantan Barat",      umr: 2702616 },
+      { id: "kalimantan-tengah", nama: "Kalimantan Tengah",    provinsi: "Kalimantan Tengah",     umr: 3261616 },
+      { id: "kalimantan-selatan",nama: "Kalimantan Selatan",   provinsi: "Kalimantan Selatan",    umr: 3149977 },
+      { id: "kalimantan-timur",  nama: "Kalimantan Timur",     provinsi: "Kalimantan Timur",      umr: 3360067 },
+      { id: "kalimantan-utara",  nama: "Kalimantan Utara",     provinsi: "Kalimantan Utara",      umr: 3361653 },
+      { id: "sulawesi-utara",    nama: "Sulawesi Utara",       provinsi: "Sulawesi Utara",        umr: 3545000 },
+      { id: "sulawesi-tengah",   nama: "Sulawesi Tengah",      provinsi: "Sulawesi Tengah",       umr: 2914583 },
+      { id: "sulawesi-selatan",  nama: "Sulawesi Selatan",     provinsi: "Sulawesi Selatan",      umr: 3434298 },
+      { id: "sulawesi-tenggara", nama: "Sulawesi Tenggara",    provinsi: "Sulawesi Tenggara",     umr: 2885964 },
+      { id: "sulawesi-barat",    nama: "Sulawesi Barat",       provinsi: "Sulawesi Barat",        umr: 2914583 },
+      { id: "gorontalo",         nama: "Gorontalo",            provinsi: "Gorontalo",             umr: 3025100 },
+      { id: "ntb",               nama: "Nusa Tenggara Barat",  provinsi: "Nusa Tenggara Barat",   umr: 2371407 },
+      { id: "ntt",               nama: "Nusa Tenggara Timur",  provinsi: "Nusa Tenggara Timur",   umr: 2186826 },
+      { id: "maluku",            nama: "Maluku",               provinsi: "Maluku",                umr: 3141700 },
+      { id: "maluku-utara",      nama: "Maluku Utara",         provinsi: "Maluku Utara",          umr: 3200000 },
+      { id: "papua-barat",       nama: "Papua Barat",          provinsi: "Papua Barat",           umr: 3600000 },
+      { id: "papua",             nama: "Papua",                provinsi: "Papua",                 umr: 4024270 },
     ];
   }, [daftarKota]);
 
@@ -71,13 +93,34 @@ export default function UMRComparison({
     ];
   }, [daftarUsaha]);
 
-  // Selected state: default Surabaya & Warung Kopi
-  const [selectedKotaId, setSelectedKotaId] = useState<string>("surabaya");
+  // Selected state — restored from localStorage
+  const [selectedKotaId, setSelectedKotaId] = useState<string>("dki-jakarta");
   const [selectedUsahaId, setSelectedUsahaId] = useState<string>(
     daftarUsaha.find((u) => u.id === "kopi" || u.nama.toLowerCase().includes("kopi"))?.id || "kopi"
   );
   const [isCitySelectorOpen, setIsCitySelectorOpen] = useState<boolean>(false);
   const [isUsahaModalOpen, setIsUsahaModalOpen] = useState<boolean>(false);
+
+  const LS_PERB_KEY = "petakarier_perbandingan_form";
+
+  // Restore from localStorage on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(LS_PERB_KEY);
+      if (saved) {
+        const data = JSON.parse(saved);
+        if (data.selectedKotaId)  setSelectedKotaId(data.selectedKotaId);
+        if (data.selectedUsahaId) setSelectedUsahaId(data.selectedUsahaId);
+      }
+    } catch {}
+  }, []);
+
+  // Persist on every change
+  useEffect(() => {
+    try {
+      localStorage.setItem(LS_PERB_KEY, JSON.stringify({ selectedKotaId, selectedUsahaId }));
+    } catch {}
+  }, [selectedKotaId, selectedUsahaId]);
 
   const selectedKota = useMemo(
     () => kotaList.find((k) => k.id === selectedKotaId) || kotaList[0],
@@ -89,34 +132,18 @@ export default function UMRComparison({
     [usahaList, selectedUsahaId]
   );
 
-  // Exact calculations matching the reference design
   const stats = useMemo(() => {
-    const umr = selectedKota.id === "surabaya" ? 4725000 : selectedKota.umr;
-    
-    // Profit matching default 7.200.000 for Warung Kopi in Surabaya
-    let profit = 7200000;
-    if (selectedUsaha.id !== "kopi") {
-      const base = selectedUsaha.labaEstimasi || 6400000;
-      const factor = umr / 4725000;
-      profit = Math.round(base * factor);
-    } else if (selectedKota.id !== "surabaya") {
-      const factor = umr / 4725000;
-      profit = Math.round(7200000 * factor);
-    }
+    const umr = selectedKota.umr;
+    const base = selectedUsaha.labaEstimasi || 6400000;
+    const factor = umr / 3000000; // normalise around mid-range province
+    const profit = Math.round(base * factor * 0.7); // realistic scale
 
     const ratio = Number((profit / umr).toFixed(2));
     const selisihPct = Math.round(((profit - umr) / umr) * 100);
     const umrBarPct = 38;
     const profitBarPct = Math.min(95, Math.round(umrBarPct * (profit / umr)));
 
-    return {
-      umr,
-      profit,
-      ratio,
-      selisihPct,
-      umrBarPct,
-      profitBarPct,
-    };
+    return { umr, profit, ratio, selisihPct, umrBarPct, profitBarPct };
   }, [selectedKota, selectedUsaha]);
 
   return (
@@ -250,7 +277,7 @@ export default function UMRComparison({
                 <button
                   type="button"
                   onClick={() => setIsUsahaModalOpen(!isUsahaModalOpen)}
-                  className="group inline-flex items-center gap-1.5 rounded-full bg-[#051d14] border border-[#00df82]/40 px-3 py-1 text-[11px] font-bold text-[#00df82] hover:border-[#00df82] transition shadow-sm cursor-pointer"
+                  className="group inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-400/50 px-3 py-1 text-[11px] font-bold text-emerald-700 hover:border-emerald-500 transition shadow-sm cursor-pointer dark:bg-[#051d14] dark:border-[#00df82]/40 dark:text-[#00df82] dark:hover:border-[#00df82]"
                 >
                   <span>{selectedUsaha.nama}</span>
                   <ChevronDown className={`h-3 w-3 text-[#00df82] transition-transform duration-200 ${isUsahaModalOpen ? "rotate-180" : ""}`} />
