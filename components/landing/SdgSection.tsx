@@ -15,60 +15,60 @@ import Reveal from "@/components/ui/Reveal";
 
 const SDG_TARGETS = [
   {
-    code: "Target 8.3",
-    title: "Formalisasi & Pertumbuhan UMKM",
-    desc: "Mendorong formalisasi usaha mikro dan kecil melalui fasilitasi legalitas OSS NIB, pencatatan keuangan transparan, dan akses permodalan.",
-    icon: "solar:shop-2-bold",
+    code: "Target 8.1",
+    title: "Pertumbuhan Ekonomi Per Kapita",
+    desc: "Mempertahankan pertumbuhan ekonomi per kapita sesuai dengan kondisi nasional dan mendorong pertumbuhan produk domestik bruto secara berkelanjutan.",
+    icon: "solar:chart-2-bold-duotone",
     color: "text-emerald-600",
-    impact: "14 Jenis Usaha Terstandar",
+    impact: "Simulasi Pertumbuhan Usaha",
+  },
+  {
+    code: "Target 8.3",
+    title: "Kewirausahaan & Formalisasi Usaha",
+    desc: "Menggalakkan kebijakan yang mendukung kegiatan produktif, penciptaan lapangan kerja layak, kewirausahaan, kreativitas, dan inovasi, serta formalisasi dan pertumbuhan usaha mikro, kecil, dan menengah.",
+    icon: "solar:shop-2-bold",
+    color: "text-green-600",
+    impact: "Rencana Usaha & Legalitas",
   },
   {
     code: "Target 8.5",
-    title: "Pekerjaan Layak & Inklusif",
-    desc: "Membuka peluang kerja produktif yang memberikan pendapatan layak di atas standar UMR bagi pemuda dan perempuan di seluruh daerah.",
+    title: "Pekerjaan Layak & Pendapatan Produktif",
+    desc: "Mencapai pekerjaan tetap dan produktif serta pekerjaan yang layak bagi semua perempuan dan laki-laki, termasuk pemuda dan penyandang disabilitas, dengan pendapatan yang setara.",
     icon: "solar:users-group-two-rounded-bold",
-    color: "text-green-600",
-    impact: "Benchmark UMR 18 Kota",
+    color: "text-orange-500",
+    impact: "Benchmark UMR Daerah",
   },
   {
     code: "Target 8.6",
-    title: "Pengurangan Angka Pengangguran Muda",
-    desc: "Menurunkan persentase generasi muda tanpa kerja atau pelatihan (NEET) dengan menyediakan roadmap kewirausahaan siap pakai.",
-    icon: "solar:chart-2-bold-duotone",
-    color: "text-orange-500",
-    impact: "Roadmap 90 Hari Aksi",
-  },
-  {
-    code: "Target 8.2",
-    title: "Inovasi & Peningkatan Produktivitas",
-    desc: "Mendorong transformasi digital UMKM melalui pemanfaatan teknologi, otomatisasi rencana bisnis, dan strategi pemasaran modern.",
-    icon: "solar:cpu-bolt-bold",
+    title: "Pengurangan Pengangguran Pemuda",
+    desc: "Mengurangi secara signifikan proporsi pemuda yang tidak bekerja, tidak menempuh pendidikan, atau tidak mengikuti pelatihan (NEET).",
+    icon: "solar:rocket-2-bold",
     color: "text-amber-500",
-    impact: "Validasi Finansial Terpadu",
+    impact: "Roadmap Wirausaha 90 Hari",
   },
 ];
 
 const MATRIKS_PILLARS = [
   {
-    title: "Pemberdayaan Pelaku Usaha (Matriks 4)",
-    desc: "Fasilitasi inkubasi mandiri dan literasi finansial digital agar pelaku usaha rintisan mampu bertahan dan bertumbuh melampaui fase break-even.",
-    badge: "Pilar Ekonomi",
+    title: "Pertumbuhan Ekonomi Inklusif",
+    desc: "Mendorong kegiatan produktif, kewirausahaan, kreativitas, dan inovasi melalui penguatan serta formalisasi usaha mikro, kecil, dan menengah.",
+    badge: "Target 8.3",
     imageSrc:
       "https://images.unsplash.com/photo-1452860606245-08befc0ff44b?auto=format&fit=crop&w=600&q=80",
     imageAlt: "Pengrajin tangan UMKM Indonesia",
   },
   {
-    title: "Kemitraan Inklusif & Rantai Pasok Lokal",
-    desc: "Mengintegrasikan UMKM lokal dengan ekosistem pemasok bahan baku dan pasar kota untuk memperkuat sirkulasi ekonomi daerah.",
-    badge: "Pilar Pembangunan",
+    title: "Pekerjaan Layak dan Produktif",
+    desc: "Mendukung kesempatan kerja penuh dan produktif serta pekerjaan yang layak dengan pendapatan yang sesuai bagi setiap orang.",
+    badge: "Target 8.5",
     imageSrc:
       "https://images.unsplash.com/photo-1533900298318-6b8da08a523e?auto=format&fit=crop&w=600&q=80",
     imageAlt: "Pasar tradisional Indonesia",
   },
   {
-    title: "Transparansi & Akuntabilitas Finansial",
-    desc: "Memberikan model kalkulasi biaya investasi dan proyeksi arus kas riil sehingga UMKM bankable untuk akses KUR & modal ventura.",
-    badge: "Pilar Tata Kelola",
+    title: "Kesempatan bagi Pemuda",
+    desc: "Membantu mengurangi proporsi pemuda yang tidak bekerja, tidak menempuh pendidikan, atau tidak mengikuti pelatihan melalui rute usaha yang terarah.",
+    badge: "Target 8.6",
     imageSrc:
       "https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=600&q=80",
     imageAlt: "Wirausaha startup kecil bekerja di laptop",
@@ -133,16 +133,16 @@ export default function SdgSection() {
                   <div>
                     <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 dark:border-emerald-500/40 bg-emerald-100/90 dark:bg-emerald-950/60 px-3.5 py-1 text-xs font-extrabold text-emerald-800 dark:text-emerald-300 shadow-sm">
                       <Building2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
-                      <span>Dokumen Bappenas RI</span>
+                      <span>Buku Capaian SDGs Indonesia 2025</span>
                     </span>
                   </div>
 
                   <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white leading-tight">
-                    <span className="text-[#16a34a] dark:text-emerald-400">Matriks 4:</span> Pelaku Usaha & Startup Berkelanjutan
+                    <span className="text-[#16a34a] dark:text-emerald-400">SDG 8:</span> Pekerjaan Layak dan Pertumbuhan Ekonomi
                   </h3>
 
                   <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-300 font-medium">
-                    Sesuai Lampiran III RAN TPB Indonesia, pelaku usaha didorong menciptakan model bisnis sirkular, inklusif, dan membuka kesempatan kerja berbasis digitalisasi.
+                    Mendorong pertumbuhan ekonomi yang inklusif dan berkelanjutan, kesempatan kerja yang produktif dan menyeluruh, serta pekerjaan yang layak untuk semua.
                   </p>
                 </div>
 
@@ -155,7 +155,7 @@ export default function SdgSection() {
                     className="btn-shine group inline-flex items-center gap-2.5 rounded-2xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-green-500 px-6 py-3.5 text-xs font-extrabold text-white shadow-md shadow-emerald-600/20 transition-all duration-300 hover:scale-105 hover:shadow-lg"
                   >
                     <FileText className="h-4 w-4 shrink-0 text-white transition-transform duration-300 group-hover:scale-110" />
-                    <span className="text-white font-extrabold">Unduh PDF Resmi Buku Capaian SDGs Indonesia 2025</span>
+                    <span className="text-white font-extrabold">Unduh Buku Capaian SDGs Indonesia 2025</span>
                     <ExternalLink className="h-3.5 w-3.5 shrink-0 text-white/90 transition-transform duration-300 group-hover:translate-x-0.5" />
                   </a>
                 </div>
@@ -199,7 +199,7 @@ export default function SdgSection() {
             <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 border-t-2 border-slate-200 dark:border-slate-800 pt-6">
               <div className="flex items-center gap-3 text-sm text-slate-600 dark:text-slate-400">
                 <BookCheck className="h-5 w-5 text-emerald-700 dark:text-emerald-400 shrink-0" />
-                <span>Simulasi rencana bisnis otomatis kami telah mengintegrasikan metrik kepatuhan SDG 8.</span>
+                <span>PetaKarier menerjemahkan fokus SDG 8 menjadi langkah usaha yang lebih terarah dan terukur.</span>
               </div>
               <Link
                 href="/sdg-impact"

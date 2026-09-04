@@ -291,10 +291,8 @@ export default function InteractiveUMRMap() {
       y: 0, 
       scale: 1, 
       transition: { 
-        type: "spring", 
-        stiffness: 200, 
-        damping: 30,
-        mass: 0.8
+        duration: 0.25,
+        ease: "easeOut"
       } 
     });
   };
@@ -305,10 +303,8 @@ export default function InteractiveUMRMap() {
     mapControls.start({ 
       scale: nextZoom, 
       transition: { 
-        type: "spring", 
-        stiffness: 200, 
-        damping: 30,
-        mass: 0.8
+        duration: 0.25,
+        ease: "easeOut"
       } 
     });
   };
@@ -322,20 +318,16 @@ export default function InteractiveUMRMap() {
         y: 0, 
         scale: 1, 
         transition: { 
-          type: "spring", 
-          stiffness: 200, 
-          damping: 30,
-          mass: 0.8
+            duration: 0.25,
+            ease: "easeOut"
         } 
       });
     } else {
       mapControls.start({ 
         scale: nextZoom, 
         transition: { 
-          type: "spring", 
-          stiffness: 200, 
-          damping: 30,
-          mass: 0.8
+            duration: 0.25,
+            ease: "easeOut"
         } 
       });
     }
@@ -453,10 +445,10 @@ export default function InteractiveUMRMap() {
               alt="Peta Satelit Indonesia Interaktif PetaKarier"
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
-              quality={85}
+              quality={60}
               className="object-cover object-center brightness-95 contrast-105 pointer-events-none"
               style={{ transform: "translate3d(0,0,0)" }}
-              priority
+              loading="lazy"
             />
 
             {/* Subtle Gradient Vignette for Depth */}
@@ -479,7 +471,7 @@ export default function InteractiveUMRMap() {
                     className="absolute -translate-x-1/2 -translate-y-1/2 z-20 cursor-pointer group select-none"
                   >
                     {/* Radar Pulse Rings */}
-                    {!isDragging && (
+                    {!isDragging && isSelected && (
                       <span
                         className={`absolute -inset-3 rounded-full animate-ping opacity-75 ${
                           isSelected ? "bg-[#00df82]" : "bg-emerald-400/40"

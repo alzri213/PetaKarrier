@@ -11,6 +11,16 @@ export function toggleThemeSmoothly(
   const isDark = currentResolvedTheme === "dark";
   const nextTheme = isDark ? "light" : "dark";
 
+  // A full-root clip-path transition is expensive on mobile, especially over
+  // pages containing maps, images, and backdrop filters.
+  const isMobile =
+    typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches;
+
+  if (isMobile) {
+    window.requestAnimationFrame(() => setTheme(nextTheme));
+    return;
+  }
+
   // Check if browser supports the View Transitions API and user does not prefer reduced motion
   const isViewTransitionSupported =
     typeof document !== "undefined" &&

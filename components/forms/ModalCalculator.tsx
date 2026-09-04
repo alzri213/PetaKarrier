@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import {
@@ -10,10 +10,9 @@ import {
   Search,
   ChevronDown,
   AlertTriangle,
-  Coins,
   Loader2,
-  CheckCircle2,
   BarChart3,
+  RotateCcw,
 } from "lucide-react";
 import type { JenisUsaha, KotaData } from "@/types";
 import { formatRupiah } from "@/lib/utils/formatCurrency";
@@ -85,29 +84,50 @@ export default function ModalCalculator({
     ];
   }, [daftarKota]);
 
-  // Determine initial matched usaha & kota
+  const getDefaultModal = (usaha?: { modalMin?: number; modalMax?: number }) => {
+    if (!usaha) return 20000000;
+    return Math.round(((usaha.modalMin ?? 20000000) + (usaha.modalMax ?? 30000000)) / 2);
+  };
+
+  const getDefaultOperasional = (usaha?: { bahanBakuBulanan?: number; gajiKaryawan?: number; promosiBulanan?: number }, kota?: { utilitas?: number }) => {
+    if (!usaha) return 6500000;
+    return (usaha.bahanBakuBulanan || 1000000) + (usaha.gajiKaryawan || 0) + (usaha.promosiBulanan || 500000) + (kota?.utilitas || 600000);
+  };
+
+  const getUsahaById = (id?: string | null) => {
+    if (!id) return undefined;
+    return usahaList.find((u) => u.id === id || u.id.toLowerCase() === id.toLowerCase());
+  };
+
+  const getKotaById = (id?: string | null) => {
+    if (!id) return undefined;
+    return kotaList.find((k) => k.id === id || k.id.toLowerCase() === id.toLowerCase());
+  };
+
   const initialUsaha = useMemo(() => {
-    if (queryUsahaId) {
-      const found = usahaList.find((u) => u.id === queryUsahaId || u.id.toLowerCase() === queryUsahaId.toLowerCase());
-      if (found) return found;
-    }
-    return usahaList[0];
-  }, [queryUsahaId, usahaList]);
+    return getUsahaById(queryUsahaId) ?? usahaList[0];
+  }, [queryUsahaId, usahaList, getUsahaById]);
 
   const initialKota = useMemo(() => {
-    if (queryKotaId) {
-      const found = kotaList.find((k) => k.id === queryKotaId || k.id.toLowerCase() === queryKotaId.toLowerCase());
-      if (found) return found;
+    return getKotaById(queryKotaId) ?? kotaList[0];
+  }, [queryKotaId, kotaList, getKotaById]);
+
+  const initialModalVal = useMemo(() => {
+    if (queryUsahaId) {
+      return getDefaultModal(getUsahaById(queryUsahaId));
     }
-    return kotaList[0];
-  }, [queryKotaId, kotaList]);
+    return getDefaultModal(initialUsaha);
+  }, [queryUsahaId, initialUsaha, getUsahaById, getDefaultModal]);
+
+  const initialOpsVal = useMemo(() => {
+    if (queryUsahaId || queryKotaId) {
+      return getDefaultOperasional(getUsahaById(queryUsahaId), getKotaById(queryKotaId) ?? initialKota);
+    }
+    return getDefaultOperasional(initialUsaha, initialKota);
+  }, [queryUsahaId, queryKotaId, initialUsaha, initialKota, getUsahaById, getKotaById, getDefaultOperasional]);
 
   const [selectedUsahaId, setSelectedUsahaId] = useState<string>(initialUsaha?.id || usahaList[0]?.id || "jasa-web-digital");
   const [selectedKotaId, setSelectedKotaId] = useState<string>(initialKota?.id || kotaList[0]?.id || "dki-jakarta");
-
-  // Calculate default numbers based on selected business & city
-  const initialModalVal = initialUsaha?.modalMin ? Math.round((initialUsaha.modalMin + initialUsaha.modalMax) / 2) : 20000000;
-  const initialOpsVal = initialUsaha?.bahanBakuBulanan ? (initialUsaha.bahanBakuBulanan + initialUsaha.gajiKaryawan + initialUsaha.promosiBulanan + (initialKota?.utilitas || 600000)) : 6500000;
 
   const [modalAwal, setModalAwal] = useState<number>(initialModalVal);
   const [modalAwalStr, setModalAwalStr] = useState<string>(initialModalVal.toLocaleString("id-ID"));
@@ -120,6 +140,7 @@ export default function ModalCalculator({
   const [activeOperasional, setActiveOperasional] = useState<number>(initialOpsVal);
   const [activeUsahaId, setActiveUsahaId] = useState<string>(initialUsaha?.id || "jasa-web-digital");
   const [activeKotaId, setActiveKotaId] = useState<string>(initialKota?.id || "dki-jakarta");
+  const hasSkippedInitialPersist = useRef(false);
 
   // Restore from unified local storage & PostgreSQL database on mount
   useEffect(() => {
@@ -188,6 +209,11 @@ export default function ModalCalculator({
 
   // Persist to unified local session on every change
   useEffect(() => {
+    if (!hasSkippedInitialPersist.current) {
+      hasSkippedInitialPersist.current = true;
+      return;
+    }
+
     setLocalSessionState({
       selectedUsahaId,
       selectedKotaId,
@@ -196,28 +222,6 @@ export default function ModalCalculator({
       hasCalculated,
     });
   }, [selectedUsahaId, selectedKotaId, modalAwal, operasional, hasCalculated]);
-
-  // Synchronize input fields when query params change, keeping calculation uncomputed until user clicks
-  useEffect(() => {
-    if (queryUsahaId) {
-      const matchedUsaha = usahaList.find((u) => u.id === queryUsahaId || u.id.toLowerCase() === queryUsahaId.toLowerCase());
-      if (matchedUsaha) {
-        setSelectedUsahaId(matchedUsaha.id);
-        const avgModal = Math.round((matchedUsaha.modalMin + matchedUsaha.modalMax) / 2);
-        const ops = (matchedUsaha.bahanBakuBulanan || 1000000) + (matchedUsaha.gajiKaryawan || 0) + (matchedUsaha.promosiBulanan || 500000) + 600000;
-        setModalAwal(avgModal);
-        setModalAwalStr(avgModal.toLocaleString("id-ID"));
-        setOperasional(ops);
-        setOperasionalStr(ops.toLocaleString("id-ID"));
-      }
-    }
-    if (queryKotaId) {
-      const matchedKota = kotaList.find((k) => k.id === queryKotaId || k.id.toLowerCase() === queryKotaId.toLowerCase());
-      if (matchedKota) {
-        setSelectedKotaId(matchedKota.id);
-      }
-    }
-  }, [queryUsahaId, queryKotaId, usahaList, kotaList]);
 
   // Handler when user selects a different usaha from the select dropdown
   const handleSelectUsaha = (usahaId: string) => {
@@ -241,7 +245,7 @@ export default function ModalCalculator({
 
   // Selected entities
   const selectedKota = useMemo(
-    () => kotaList.find((k) => k.id === (hasCalculated ? activeKotaId : selectedKotaId)) || kotaList[0],
+    () => kotaList.find((k) => k.id === (hasCalculated ? activeKotaId : selectedKotaId)),
     [kotaList, hasCalculated, activeKotaId, selectedKotaId]
   );
 
@@ -376,6 +380,27 @@ export default function ModalCalculator({
     }, 400);
   };
 
+  const handleReset = () => {
+    setSelectedUsahaId("");
+    setSelectedKotaId("");
+    setModalAwal(0);
+    setModalAwalStr("");
+    setOperasional(0);
+    setOperasionalStr("");
+    setActiveUsahaId("");
+    setActiveKotaId("");
+    setActiveModalAwal(0);
+    setActiveOperasional(0);
+    setHasCalculated(false);
+    setLocalSessionState({
+      selectedUsahaId: "",
+      selectedKotaId: "",
+      modalAwal: 0,
+      operasional: 0,
+      hasCalculated: false,
+    });
+  };
+
   const handleModalChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value.replace(/\D/g, "");
     const num = Number(raw) || 0;
@@ -401,7 +426,7 @@ export default function ModalCalculator({
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 items-start">
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:items-stretch">
         {/* ══════════════════════════════════════════════════════════════════
             LEFT COLUMN: KALKULATOR MODAL & BEP FORM CARD
         ══════════════════════════════════════════════════════════════════ */}
@@ -409,7 +434,7 @@ export default function ModalCalculator({
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
-          className="lg:col-span-5 rounded-[2rem] border border-slate-200 bg-white p-7 shadow-xl dark:border-slate-800 dark:bg-[#0a0f1d] dark:shadow-2xl sm:p-8"
+          className="lg:col-span-5 lg:h-full rounded-[2rem] border border-slate-200 bg-white p-7 shadow-xl dark:border-slate-800 dark:bg-[#0a0f1d] dark:shadow-2xl sm:p-8"
         >
           {/* Header text with proper wrap protection */}
           <div className="mb-6 space-y-2">
@@ -433,6 +458,9 @@ export default function ModalCalculator({
                   onChange={(e) => handleSelectUsaha(e.target.value)}
                   className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 py-3.5 pl-4 pr-10 text-sm font-semibold text-slate-900 outline-none transition focus:border-[#00df82] focus:ring-1 focus:ring-[#00df82]/30 dark:border-slate-800 dark:bg-[#0f172a] dark:text-white"
                 >
+                  <option value="" disabled>
+                    Pilih jenis usaha
+                  </option>
                   {usahaList.map((u) => (
                     <option key={u.id} value={u.id} className="bg-white dark:bg-slate-900">
                       {u.nama}
@@ -454,6 +482,9 @@ export default function ModalCalculator({
                   onChange={(e) => setSelectedKotaId(e.target.value)}
                   className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 py-3.5 pl-4 pr-10 text-sm font-semibold text-slate-900 outline-none transition focus:border-[#00df82] focus:ring-1 focus:ring-[#00df82]/30 dark:border-slate-800 dark:bg-[#0f172a] dark:text-white"
                 >
+                  <option value="" disabled>
+                    Pilih kota domisili
+                  </option>
                   {kotaList.map((k) => (
                     <option key={k.id} value={k.id} className="bg-white dark:bg-slate-900">
                       {k.nama}
@@ -500,24 +531,37 @@ export default function ModalCalculator({
 
             {/* Submit Action Button */}
             <div className="space-y-2 pt-2">
-              <button
-                type="submit"
-                disabled={isCalculating}
-                className={`flex w-full items-center justify-center gap-2 rounded-full py-4 text-sm font-extrabold text-slate-950 shadow-lg transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] ${
-                  hasChanges
-                    ? "bg-[#00df82] shadow-emerald-500/30 ring-2 ring-[#00df82]/50 hover:bg-[#00c975]"
-                    : "bg-[#00df82] shadow-emerald-500/20 hover:bg-[#00c975]"
-                }`}
-              >
-                {isCalculating ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin text-slate-950" />
-                    <span>Menghitung Ulang...</span>
-                  </>
-                ) : (
-                  <span>Hitung Sekarang</span>
-                )}
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="submit"
+                  disabled={isCalculating || !selectedUsahaId || !selectedKotaId}
+                  className={`flex min-w-0 flex-1 items-center justify-center gap-2 rounded-full py-4 text-sm font-extrabold text-slate-950 shadow-lg transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] ${
+                    hasChanges
+                      ? "bg-[#00df82] shadow-emerald-500/30 ring-2 ring-[#00df82]/50 hover:bg-[#00c975]"
+                      : "bg-[#00df82] shadow-emerald-500/20 hover:bg-[#00c975]"
+                  }`}
+                >
+                  {isCalculating ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin text-slate-950" />
+                      <span>Menghitung Ulang...</span>
+                    </>
+                  ) : (
+                    <span>Hitung Sekarang</span>
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleReset}
+                  disabled={isCalculating}
+                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-slate-300 bg-white text-slate-600 shadow-md transition hover:border-emerald-400 hover:bg-emerald-50 hover:text-emerald-700 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-emerald-500 dark:hover:bg-emerald-950/40 dark:hover:text-emerald-400"
+                  aria-label="Reset kalkulator"
+                  title="Reset kalkulator"
+                >
+                  <RotateCcw className="h-4 w-4" />
+                </button>
+              </div>
 
               {hasChanges && (
                 <p className="text-center text-[11px] font-semibold text-emerald-600 dark:text-[#00df82] animate-pulse">
@@ -535,7 +579,7 @@ export default function ModalCalculator({
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
-          className="lg:col-span-7 space-y-6"
+          className="lg:col-span-7 lg:flex lg:h-full lg:flex-col space-y-6"
         >
           {/* Top 3 Summary Metric Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -586,14 +630,14 @@ export default function ModalCalculator({
           </div>
 
           {/* Bottom Card: Proyeksi Akumulasi Arus Kas Menuju BEP Bar Chart */}
-          <div className="rounded-[2rem] border border-slate-200 bg-white p-6 sm:p-8 shadow-xl dark:border-slate-800 dark:bg-[#0a0f1d] dark:shadow-2xl transition-colors">
+          <div className="lg:flex-1 flex flex-col rounded-[2rem] border border-slate-200 bg-white p-6 sm:p-8 shadow-xl dark:border-slate-800 dark:bg-[#0a0f1d] dark:shadow-2xl transition-colors">
             <h3 className="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-white mb-8">
               Proyeksi Akumulasi Arus Kas Menuju BEP
             </h3>
 
             {/* Empty state prompt when not yet calculated */}
             {!hasCalculated && (
-              <div className="flex flex-col items-center justify-center min-h-[220px] text-center px-4">
+              <div className="flex flex-1 flex-col items-center justify-center min-h-[220px] text-center px-4">
                 <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 border border-slate-200 dark:bg-slate-800/50 dark:border-slate-700 mb-4">
                   <BarChart3 className="h-8 w-8 text-slate-300 dark:text-slate-600" />
                 </div>
@@ -601,7 +645,7 @@ export default function ModalCalculator({
                   Belum ada data kalkulasi
                 </p>
                 <p className="text-xs text-slate-400 dark:text-slate-600 mt-1 max-w-xs">
-                  Isi parameter di sebelah kiri, lalu klik <span className="font-bold text-[#00df82]">"Hitung Sekarang"</span> untuk melihat proyeksi BEP.
+                  Isi parameter di sebelah kiri, lalu klik Hitung Sekarang untuk melihat proyeksi BEP di {selectedKota?.nama || "kota Anda"}.
                 </p>
               </div>
             )}
@@ -658,7 +702,7 @@ export default function ModalCalculator({
             )}
 
             {/* Bottom Info Note with Warning Icon */}
-            <div className="mt-8 pt-5 border-t border-slate-100 dark:border-slate-800/80 flex items-center gap-2.5 text-xs text-slate-500 dark:text-slate-400">
+            <div className="mt-auto pt-5 border-t border-slate-100 dark:border-slate-800/80 flex items-center gap-2.5 text-xs text-slate-500 dark:text-slate-400">
               <AlertTriangle className="h-4 w-4 shrink-0 text-amber-500" />
               <span className="leading-relaxed">
                 {hasCalculated

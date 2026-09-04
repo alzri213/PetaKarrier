@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
@@ -15,8 +15,13 @@ import { useTheme } from "next-themes";
 export default function Hero() {
   const [isHovered, setIsHovered] = useState(false);
   const [mousePos, setMousePos] = useState({ x: 50, y: 45 });
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
   const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === "dark";
+  const isDark = mounted && resolvedTheme === "dark";
 
   const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -153,12 +158,12 @@ export default function Hero() {
 
             <Link
               href="/kalkulator"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 sm:gap-3 rounded-2xl
+              className="group w-full sm:w-auto inline-flex items-center justify-center gap-2 sm:gap-3 rounded-2xl
                 border border-slate-300 bg-white/80 backdrop-blur-sm px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base font-bold text-slate-800 shadow-md
                 transition-all duration-300 hover:bg-emerald-50 hover:border-emerald-400 hover:text-emerald-700
-                dark:border-emerald-400/60 dark:bg-slate-900/70 dark:text-white dark:hover:bg-emerald-600 dark:hover:border-emerald-400"
+                dark:border-emerald-400/60 dark:bg-slate-900/70 dark:text-white dark:hover:bg-emerald-600 dark:hover:border-emerald-400 dark:hover:text-white"
             >
-              <LineChart className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-600 dark:text-emerald-400" />
+              <LineChart className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-600 dark:text-emerald-400 dark:group-hover:text-white" />
               <span>Kalkulator Modal & UMR</span>
             </Link>
           </motion.div>
