@@ -12,16 +12,18 @@ export interface AppUser {
 // In-memory fallback users for development/demo when database is unreachable
 const fallbackUsers: Map<string, AppUser> = new Map();
 
-// Initialize default demo account
-(async () => {
-  const defaultHash = await hashPassword("password123");
-  fallbackUsers.set("admin@example.com", {
-    id: "demo-user-1",
-    name: "Wirausaha Muda",
-    email: "admin@example.com",
-    hashedPassword: defaultHash,
-  });
-})();
+// Initialize default demo account ONLY in development mode
+if (process.env.NODE_ENV !== "production") {
+  (async () => {
+    const defaultHash = await hashPassword("password123");
+    fallbackUsers.set("admin@example.com", {
+      id: "demo-user-1",
+      name: "Wirausaha Muda",
+      email: "admin@example.com",
+      hashedPassword: defaultHash,
+    });
+  })();
+}
 
 export async function findUserByEmail(email: string): Promise<AppUser | null> {
   try {

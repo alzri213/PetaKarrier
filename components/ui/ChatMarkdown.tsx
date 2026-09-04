@@ -196,10 +196,22 @@ function renderFormattedText(text: string): React.ReactNode[] {
     // Link: [title](href)
     const linkMatch = part.match(/^\[(.*?)\]\((.*?)\)$/);
     if (linkMatch) {
+      const rawHref = linkMatch[2].trim();
+      // Only allow safe HTTP/HTTPS, mailto, or relative root paths (disallows javascript:, data:, etc.)
+      const isSafeProtocol = /^https?:\/\//i.test(rawHref) || /^\/(?!\/)/.test(rawHref) || /^mailto:/i.test(rawHref);
+
+      if (!isSafeProtocol) {
+        return (
+          <span key={index} className="font-semibold text-slate-700 dark:text-slate-300">
+            {linkMatch[1]}
+          </span>
+        );
+      }
+
       return (
         <a
           key={index}
-          href={linkMatch[2]}
+          href={rawHref}
           target="_blank"
           rel="noopener noreferrer"
           className="font-bold text-emerald-600 underline decoration-emerald-400/60 transition hover:text-emerald-700 dark:text-[#00df82] dark:hover:text-emerald-300 cursor-pointer"

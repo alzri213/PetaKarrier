@@ -21,24 +21,77 @@ function getErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : "Network error";
 }
 
+// In-memory rate limiter: max 15 requests per minute per client IP
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+const RATE_LIMIT_WINDOW_MS = 60 * 1000;
+const MAX_REQUESTS_PER_WINDOW = 15;
+const MAX_MESSAGE_LENGTH = 1500;
+const MAX_HISTORY_LENGTH = 10;
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const clientData = rateLimitMap.get(ip);
+
+  if (!clientData || now > clientData.resetTime) {
+    rateLimitMap.set(ip, { count: 1, resetTime: now + RATE_LIMIT_WINDOW_MS });
+    return false;
+  }
+
+  if (clientData.count >= MAX_REQUESTS_PER_WINDOW) {
+    return true;
+  }
+
+  clientData.count++;
+  return false;
+}
+
 export async function POST(request: NextRequest) {
+  const forwardedFor = request.headers.get("x-forwarded-for");
+  const clientIp = forwardedFor ? forwardedFor.split(",")[0].trim() : "127.0.0.1";
+
+  if (isRateLimited(clientIp)) {
+    return Response.json(
+      { error: "Terlalu banyak permintaan. Silakan tunggu sebentar sebelum mengirim pesan lagi." },
+      { status: 429 }
+    );
+  }
+
   const apiKey =
     process.env.GEMINI_API_KEY ||
     process.env.GOOGLE_API_KEY ||
     process.env.GOOGLE_GENERATIVE_AI_API_KEY;
 
   try {
-    const { messages } = (await request.json()) as {
+    const body = await request.json();
+    if (!body || !Array.isArray(body.messages)) {
+      return Response.json(
+        { error: "Format request tidak valid." },
+        { status: 400 }
+      );
+    }
+
+    const { messages } = body as {
       messages: { role: string; content: string }[];
     };
 
-    const chatMessages = messages.filter((m) => m.role === "user" || m.role === "assistant");
+    const chatMessages = messages
+      .filter((m) => m && (m.role === "user" || m.role === "assistant") && typeof m.content === "string")
+      .map((m) => ({ role: m.role, content: m.content.trim() }));
+
     const startIndex = chatMessages.length > 0 && chatMessages[0].role === "assistant" ? 1 : 0;
-    const filtered = chatMessages.slice(startIndex);
+    const filtered = chatMessages.slice(startIndex).slice(-MAX_HISTORY_LENGTH);
 
     if (filtered.length === 0) {
       return Response.json(
         { error: "Kirim pesan terlebih dahulu." },
+        { status: 400 }
+      );
+    }
+
+    const latestMessage = filtered[filtered.length - 1];
+    if (latestMessage.role === "user" && latestMessage.content.length > MAX_MESSAGE_LENGTH) {
+      return Response.json(
+        { error: `Pesan terlalu panjang (maksimal ${MAX_MESSAGE_LENGTH} karakter).` },
         { status: 400 }
       );
     }

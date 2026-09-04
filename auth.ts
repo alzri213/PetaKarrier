@@ -5,12 +5,16 @@ import GitHub from "next-auth/providers/github";
 import { verifyPassword } from "@/lib/auth/hash";
 import { findUserByEmail } from "@/lib/auth/userStore";
 
+const isProduction = process.env.NODE_ENV === "production";
+const authSecret = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET;
+
+if (isProduction && !authSecret) {
+  throw new Error("CRITICAL SECURITY: AUTH_SECRET or NEXTAUTH_SECRET must be configured in production!");
+}
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true,
-  secret:
-    process.env.AUTH_SECRET ||
-    process.env.NEXTAUTH_SECRET ||
-    "petakarier_super_secret_auth_key_2026_itechnocup_sdg8",
+  secret: authSecret || "petakarier_dev_fallback_secret_key_not_for_production",
   session: {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60,    // 30 days — stay logged in for a month
