@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence, useAnimationControls } from "framer-motion";
@@ -266,79 +266,61 @@ export default function InteractiveUMRMap() {
   const [selectedKota, setSelectedKota] = useState<KotaPin | null>(null);
   const [zoom, setZoom] = useState<number>(1);
   const [isDragging, setIsDragging] = useState(false);
+  const [mapSize, setMapSize] = useState({ width: 0, height: 0 });
   const mapControls = useAnimationControls();
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Compute drag constraints dynamically from container size
-  const getDragConstraints = (z: number) => {
-    const el = containerRef.current;
-    if (!el || z <= 1) return { left: 0, right: 0, top: 0, bottom: 0 };
-    const w = el.offsetWidth;
-    const h = el.offsetHeight;
-    const extra = z - 1;
-    return {
-      left:   -(w * extra * 0.5),
-      right:   (w * extra * 0.5),
-      top:    -(h * extra * 0.5),
-      bottom:  (h * extra * 0.5),
+  useEffect(() => {
+    const element = containerRef.current;
+    if (!element) return;
+
+    const updateSize = () => {
+      setMapSize({ width: element.clientWidth, height: element.clientHeight });
     };
+
+    updateSize();
+    const observer = new ResizeObserver(updateSize);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+
+  const dragConstraints = useMemo(() => {
+    if (zoom <= 1 || mapSize.width === 0 || mapSize.height === 0) {
+      return { left: 0, right: 0, top: 0, bottom: 0 };
+    }
+
+    const extra = zoom - 1;
+    return {
+      left: -(mapSize.width * extra * 0.5),
+      right: mapSize.width * extra * 0.5,
+      top: -(mapSize.height * extra * 0.5),
+      bottom: mapSize.height * extra * 0.5,
+    };
+  }, [mapSize, zoom]);
+
+  const animateMap = (nextZoom: number) => {
+    setZoom(nextZoom);
+    mapControls.start({
+      x: 0,
+      y: 0,
+      scale: nextZoom,
+      transition: {
+        duration: 0.18,
+        ease: "easeOut",
+      },
+    });
   };
 
   const handleResetView = () => {
-    setZoom(1);
-    mapControls.start({ 
-      x: 0, 
-      y: 0, 
-      scale: 1, 
-      transition: { 
-        type: "spring", 
-        stiffness: 200, 
-        damping: 30,
-        mass: 0.8
-      } 
-    });
+    animateMap(1);
   };
 
   const handleZoomIn = () => {
-    const nextZoom = Math.min(zoom + 0.3, 1.8);
-    setZoom(nextZoom);
-    mapControls.start({ 
-      scale: nextZoom, 
-      transition: { 
-        type: "spring", 
-        stiffness: 200, 
-        damping: 30,
-        mass: 0.8
-      } 
-    });
+    animateMap(Math.min(zoom + 0.3, 1.8));
   };
 
   const handleZoomOut = () => {
-    const nextZoom = Math.max(zoom - 0.3, 1.0);
-    setZoom(nextZoom);
-    if (nextZoom <= 1) {
-      mapControls.start({ 
-        x: 0, 
-        y: 0, 
-        scale: 1, 
-        transition: { 
-          type: "spring", 
-          stiffness: 200, 
-          damping: 30,
-          mass: 0.8
-        } 
-      });
-    } else {
-      mapControls.start({ 
-        scale: nextZoom, 
-        transition: { 
-          type: "spring", 
-          stiffness: 200, 
-          damping: 30,
-          mass: 0.8
-        } 
-      });
-    }
+    animateMap(Math.max(zoom - 0.3, 1));
   };
 
   const filteredPins = useMemo(() => {
@@ -431,8 +413,8 @@ export default function InteractiveUMRMap() {
           {/* Framer Motion Draggable & Zoomable Canvas */}
           <motion.div
             drag={zoom > 1}
-            dragConstraints={getDragConstraints(zoom)}
-            dragElastic={0.02}
+            dragConstraints={dragConstraints}
+            dragElastic={0}
             dragMomentum={false}
             dragTransition={{ bounceStiffness: 300, bounceDamping: 25, power: 0.2 }}
             animate={mapControls}
@@ -444,6 +426,7 @@ export default function InteractiveUMRMap() {
             }`}
             style={{ 
               willChange: zoom > 1 ? "transform" : "auto",
+              contain: "layout paint",
               touchAction: zoom > 1 ? "none" : "auto"
             }}
           >
@@ -453,10 +436,10 @@ export default function InteractiveUMRMap() {
               alt="Peta Satelit Indonesia Interaktif PetaKarier"
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
-              quality={85}
+              quality={60}
               className="object-cover object-center brightness-95 contrast-105 pointer-events-none"
               style={{ transform: "translate3d(0,0,0)" }}
-              priority
+              loading="lazy"
             />
 
             {/* Subtle Gradient Vignette for Depth */}
@@ -479,7 +462,7 @@ export default function InteractiveUMRMap() {
                     className="absolute -translate-x-1/2 -translate-y-1/2 z-20 cursor-pointer group select-none"
                   >
                     {/* Radar Pulse Rings */}
-                    {!isDragging && (
+                    {!isDragging && isSelected && (
                       <span
                         className={`absolute -inset-3 rounded-full animate-ping opacity-75 ${
                           isSelected ? "bg-[#00df82]" : "bg-emerald-400/40"

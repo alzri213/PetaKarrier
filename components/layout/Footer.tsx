@@ -89,13 +89,13 @@ export default function Footer() {
               <li>
                 <Link
                   href="/komunitas"
-                  className={`transition font-semibold ${
+                  className={`flex items-center gap-1 transition font-semibold ${
                     pathname === "/komunitas"
                       ? "text-emerald-600 dark:text-emerald-400"
                       : "text-slate-600 hover:text-emerald-600 dark:text-slate-400 dark:hover:text-emerald-400"
                   }`}
                 >
-                  Resource Hub & Panduan UMKM
+                  Resource Hub & Panduan UMKM <ArrowUpRight className="h-3.5 w-3.5" />
                 </Link>
               </li>
               <li>

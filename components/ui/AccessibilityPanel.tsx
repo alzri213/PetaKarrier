@@ -320,14 +320,14 @@ export default function AccessibilityPanel() {
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
         onClick={() => setIsOpen((v) => !v)}
-        className="fixed bottom-20 right-4 sm:right-6 z-[45] flex h-11 w-11 sm:h-13 sm:w-13 items-center justify-center
+        className="fixed bottom-[88px] right-4 sm:right-6 z-[45] flex h-14 w-14 items-center justify-center
                    rounded-full bg-[#00df82] text-slate-950 shadow-xl
                    shadow-emerald-500/30 transition-shadow duration-300 hover:bg-[#00c975]
                    border-2 border-emerald-300/60 group cursor-grab active:cursor-grabbing touch-none select-none"
         aria-label="Buka Menu Aksesibilitas (Bisa digeser)"
         title="Menu Aksesibilitas (Pintasan: CTRL+U — Tahan & Geser untuk memindahkan)"
       >
-        <Accessibility className="h-5 w-5 sm:h-6 sm:w-6 select-none pointer-events-none" strokeWidth={2.5} />
+        <Accessibility className="h-6 w-6 select-none pointer-events-none" strokeWidth={2.5} />
         <span className="sr-only">Menu Aksesibilitas (CTRL+U)</span>
       </motion.button>
 
@@ -391,7 +391,7 @@ export default function AccessibilityPanel() {
         <>
           {/* Backdrop */}
           <div
-            className="fixed inset-0 z-[70] bg-black/60 backdrop-blur-sm transition-opacity"
+            className="fixed inset-0 z-[70] bg-black/60 transition-opacity"
             onClick={() => setIsOpen(false)}
             aria-hidden="true"
           />

@@ -31,7 +31,7 @@ export default function ChatMarkdown({ content }: ChatMarkdownProps) {
             <span className="shrink-0 font-extrabold text-[#00df82] select-none text-[13px] min-w-[18px] text-right">
               {item.num}.
             </span>
-            <div className="flex-1 leading-relaxed text-slate-100">
+            <div className="flex-1 leading-relaxed !text-slate-800 dark:!text-slate-100">
               {renderFormattedText(item.text)}
             </div>
           </div>
@@ -51,7 +51,7 @@ export default function ChatMarkdown({ content }: ChatMarkdownProps) {
             <span className="shrink-0 text-[#00df82] mt-1 text-[11px] select-none font-bold">
               •
             </span>
-            <div className="flex-1 leading-relaxed text-slate-100">
+            <div className="flex-1 leading-relaxed !text-slate-800 dark:!text-slate-100">
               {renderFormattedText(item)}
             </div>
           </div>
@@ -105,7 +105,7 @@ export default function ChatMarkdown({ content }: ChatMarkdownProps) {
     if (trimmed.startsWith("### ")) {
       flushAllLists();
       elements.push(
-        <h4 key={`h4-${i}`} className="mt-3.5 mb-1.5 text-sm font-extrabold text-white">
+          <h4 key={`h4-${i}`} className="mt-3.5 mb-1.5 text-sm font-extrabold !text-slate-900 dark:!text-white">
           {renderFormattedText(trimmed.slice(4))}
         </h4>
       );
@@ -115,7 +115,7 @@ export default function ChatMarkdown({ content }: ChatMarkdownProps) {
     if (trimmed.startsWith("## ")) {
       flushAllLists();
       elements.push(
-        <h3 key={`h3-${i}`} className="mt-4 mb-2 text-base font-extrabold text-white">
+        <h3 key={`h3-${i}`} className="mt-4 mb-2 text-base font-extrabold !text-slate-900 dark:!text-white">
           {renderFormattedText(trimmed.slice(3))}
         </h3>
       );
@@ -166,7 +166,7 @@ function renderFormattedText(text: string): React.ReactNode[] {
     // Bold: **text**
     if (part.startsWith("**") && part.endsWith("**") && part.length >= 4) {
       return (
-        <strong key={index} className="font-extrabold text-white tracking-tight">
+        <strong key={index} className="font-extrabold !text-slate-900 tracking-tight dark:!text-white">
           {part.slice(2, -2)}
         </strong>
       );
@@ -175,7 +175,7 @@ function renderFormattedText(text: string): React.ReactNode[] {
     // Italic: *text*
     if (part.startsWith("*") && part.endsWith("*") && part.length >= 2) {
       return (
-        <em key={index} className="italic text-slate-200">
+        <em key={index} className="italic !text-slate-700 dark:!text-slate-200">
           {part.slice(1, -1)}
         </em>
       );
@@ -186,7 +186,7 @@ function renderFormattedText(text: string): React.ReactNode[] {
       return (
         <code
           key={index}
-          className="rounded-md border border-white/15 bg-white/10 px-1.5 py-0.5 font-mono text-[11.5px] text-emerald-300"
+          className="rounded-md border border-slate-300 bg-slate-200 px-1.5 py-0.5 font-mono text-[11.5px] text-emerald-700 dark:border-white/15 dark:bg-white/10 dark:text-emerald-300"
         >
           {part.slice(1, -1)}
         </code>
@@ -202,7 +202,7 @@ function renderFormattedText(text: string): React.ReactNode[] {
           href={linkMatch[2]}
           target="_blank"
           rel="noopener noreferrer"
-          className="font-bold text-[#00df82] underline decoration-emerald-400/60 transition hover:text-emerald-300 cursor-pointer"
+          className="font-bold text-emerald-600 underline decoration-emerald-400/60 transition hover:text-emerald-700 dark:text-[#00df82] dark:hover:text-emerald-300 cursor-pointer"
         >
           {linkMatch[1]}
         </a>

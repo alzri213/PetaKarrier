@@ -61,7 +61,8 @@ function ArrowButton({ isActive, href, label, cardRef, onActivate }: ArrowButton
     if (!cardRef.current) return;
 
     const compute = () => {
-      const { width, height } = cardRef.current!.getBoundingClientRect();
+      if (!cardRef.current) return; // Double check for safety
+      const { width, height } = cardRef.current.getBoundingClientRect();
       const isMobile = window.innerWidth < 768;
       const overhang = isMobile ? 12 : 24;
       const targetX = -(width - REST_RIGHT - BTN_ACTIVE + overhang);
@@ -71,7 +72,9 @@ function ArrowButton({ isActive, href, label, cardRef, onActivate }: ArrowButton
 
     compute();
     const ro = new ResizeObserver(compute);
-    ro.observe(cardRef.current);
+    if (cardRef.current) {
+      ro.observe(cardRef.current);
+    }
     return () => ro.disconnect();
   }, [cardRef]);
 

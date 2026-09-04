@@ -7,7 +7,6 @@ import {
   CheckCircle2,
   ArrowRight,
   ArrowLeft,
-  ChevronDown,
   Loader2,
   Compass,
   Calculator,
@@ -18,6 +17,7 @@ import type { KategoriUsaha, ProfilUser, Rekomendasi } from "@/types";
 import { submitAnalisisAction, getUserActiveAnalisis } from "@/lib/actions/analisis";
 import { formatRupiah } from "@/lib/utils/formatCurrency";
 import { getLocalSessionState, setLocalSessionState } from "@/lib/utils/sessionSync";
+import { SearchableSelect } from "@/components/ui/SearchableSelect";
 
 interface KategoriItem {
   key: KategoriUsaha;
@@ -436,10 +436,13 @@ export default function QuestionnaireForm() {
 
                     {/* Field 1: Pilih Bidang Usaha yang Diminati */}
                     <div className="space-y-3">
-                      <label className="text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300">
+                      <label className="text-sm sm:text-base font-bold text-slate-800 dark:text-slate-200">
                         Pilih Bidang Usaha yang Anda Minati
                       </label>
-                      <div className="flex flex-wrap gap-2.5">
+                      <p className="text-xs text-slate-500 dark:text-slate-400 -mt-1">
+                        Pilih satu atau lebih bidang yang sesuai dengan minat Anda
+                      </p>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
                         {KATEGORI_LIST.map((k) => {
                           const isSelected = minat.includes(k.key);
                           return (
@@ -447,10 +450,10 @@ export default function QuestionnaireForm() {
                               key={k.key}
                               type="button"
                               onClick={() => toggleMinat(k.key)}
-                              className={`rounded-full px-4 py-2 text-xs sm:text-sm font-semibold transition-all duration-200 ${
+                              className={`rounded-xl px-3 py-2.5 text-xs sm:text-sm font-semibold transition-all duration-200 text-center ${
                                 isSelected
-                                  ? "bg-[#00df82] text-slate-950 shadow-md shadow-emerald-500/25 ring-2 ring-emerald-400/50 font-bold"
-                                  : "border border-slate-200 bg-slate-100 text-slate-700 hover:border-emerald-400 hover:text-slate-950 dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-300 dark:hover:border-slate-500 dark:hover:text-white"
+                                  ? "bg-[#00df82] text-slate-950 shadow-lg shadow-emerald-500/30 ring-2 ring-emerald-400/60 font-bold scale-[0.98]"
+                                  : "border border-slate-200 bg-white text-slate-700 hover:border-emerald-400 hover:bg-emerald-50 hover:text-slate-950 active:scale-95 dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-300 dark:hover:border-emerald-500/50 dark:hover:bg-slate-800 dark:hover:text-white"
                               }`}
                             >
                               {k.label}
@@ -462,26 +465,15 @@ export default function QuestionnaireForm() {
 
                     {/* Field 2: Tingkat Keahlian Teknis */}
                     <div className="space-y-3">
-                      <label className="text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300">
+                      <label className="text-sm sm:text-base font-bold text-slate-800 dark:text-slate-200">
                         Bagaimana Tingkat Keahlian Teknis Anda?
                       </label>
-                      <div className="relative">
-                        <select
-                          value={keahlian}
-                          onChange={(e) => setKeahlian(e.target.value)}
-                          className={`w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs sm:text-sm font-medium outline-none transition focus:border-[#00df82] dark:border-slate-700 dark:bg-slate-900/90 ${keahlian ? 'text-slate-900 dark:text-white' : 'text-slate-400 dark:text-slate-500'}`}
-                        >
-                          <option value="" disabled className="bg-white text-slate-400 dark:bg-slate-950 dark:text-slate-500">
-                            — Pilih Tingkat Keahlian —
-                          </option>
-                          {KEAHLIAN_OPTIONS.map((opt) => (
-                            <option key={opt.value} value={opt.value} className="bg-white text-slate-900 dark:bg-slate-950 dark:text-white">
-                              {opt.label}
-                            </option>
-                          ))}
-                        </select>
-                        <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 dark:text-slate-400" />
-                      </div>
+                      <SearchableSelect
+                        value={keahlian}
+                        onChange={setKeahlian}
+                        placeholder="Pilih tingkat keahlian"
+                        options={KEAHLIAN_OPTIONS}
+                      />
                     </div>
 
                     {/* Field 3: Estimasi Modal Maksimal (Smooth Manual Draggable Slider) */}
@@ -568,31 +560,20 @@ export default function QuestionnaireForm() {
 
                     {/* Field 1: Provinsi Domisili Target */}
                     <div className="space-y-3">
-                      <label className="text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300">
+                      <label className="text-sm sm:text-base font-bold text-slate-800 dark:text-slate-200">
                         Pilih Provinsi Domisili / Target Operasional
                       </label>
-                      <div className="relative">
-                        <select
-                          value={selectedProvinsi}
-                          onChange={(e) => setSelectedProvinsi(e.target.value)}
-                          className={`w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs sm:text-sm font-medium outline-none transition focus:border-[#00df82] dark:border-slate-700 dark:bg-slate-900/90 ${selectedProvinsi ? 'text-slate-900 dark:text-white' : 'text-slate-400 dark:text-slate-500'}`}
-                        >
-                          <option value="" disabled className="bg-white text-slate-400 dark:bg-slate-950 dark:text-slate-500">
-                            — Pilih Provinsi —
-                          </option>
-                          {DAFTAR_PROVINSI.map((k) => (
-                            <option key={k.id} value={k.id} className="bg-white text-slate-900 dark:bg-slate-950 dark:text-white">
-                              {k.nama}
-                            </option>
-                          ))}
-                        </select>
-                        <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 dark:text-slate-400" />
-                      </div>
+                      <SearchableSelect
+                        value={selectedProvinsi}
+                        onChange={setSelectedProvinsi}
+                        placeholder="Pilih provinsi"
+                        options={DAFTAR_PROVINSI.map((provinsi) => ({ value: provinsi.id, label: provinsi.nama }))}
+                      />
                     </div>
 
                     {/* Field 2: Komitmen Waktu */}
                     <div className="space-y-3">
-                      <label className="text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300">
+                      <label className="text-sm sm:text-base font-bold text-slate-800 dark:text-slate-200">
                         Komitmen Waktu Operasional Usaha
                       </label>
                       <div className="grid grid-cols-3 gap-2.5">
@@ -620,10 +601,10 @@ export default function QuestionnaireForm() {
 
                     {/* Field 3: Keahlian Spesifik */}
                     <div className="space-y-3">
-                      <label className="text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300">
+                      <label className="text-sm sm:text-base font-bold text-slate-800 dark:text-slate-200">
                         Keahlian Spesifik yang Dimiliki
                       </label>
-                      <div className="flex flex-wrap gap-2">
+                      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                         {SKILL_TAGS.map((s) => {
                           const isSkillActive = selectedSkills.includes(s.label);
                           return (
@@ -631,7 +612,7 @@ export default function QuestionnaireForm() {
                               key={s.label}
                               type="button"
                               onClick={() => toggleSkill(s.label)}
-                              className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${
+                              className={`min-h-10 rounded-lg px-2.5 py-2 text-center text-[11px] font-semibold leading-tight transition sm:text-xs ${
                                 isSkillActive
                                   ? "bg-[#00df82] text-slate-950 font-bold"
                                   : "border border-slate-200 bg-slate-100 text-slate-700 hover:border-emerald-400 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-slate-600"
@@ -645,11 +626,11 @@ export default function QuestionnaireForm() {
                     </div>
 
                     {/* Navigation Buttons */}
-                    <div className="flex items-center gap-3 pt-3">
+                    <div className="grid grid-cols-[auto_minmax(0,1fr)] items-stretch gap-2.5 pt-3 sm:gap-3">
                       <button
                         type="button"
                         onClick={() => setStep(0)}
-                        className="flex items-center justify-center gap-2 rounded-full border border-slate-200 bg-slate-100 px-6 py-3.5 text-sm font-bold text-slate-700 transition hover:bg-slate-200 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+                        className="flex min-h-12 items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-slate-100 px-3.5 text-xs font-bold text-slate-700 transition hover:bg-slate-200 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white sm:gap-2 sm:px-5 sm:text-sm"
                       >
                         <ArrowLeft className="h-4 w-4" />
                         <span>Kembali</span>
@@ -658,7 +639,7 @@ export default function QuestionnaireForm() {
                       <button
                         type="button"
                         onClick={handleProcessAnalysis}
-                        className="group flex flex-1 items-center justify-center gap-2 rounded-full bg-[#00df82] py-3.5 text-sm font-bold text-slate-950 shadow-lg shadow-emerald-500/20 transition hover:bg-[#00c975] active:scale-[0.99]"
+                        className="group flex min-h-12 min-w-0 items-center justify-center gap-1.5 rounded-xl bg-[#00df82] px-3 py-2.5 text-center text-xs font-bold leading-snug text-slate-950 shadow-lg shadow-emerald-500/20 transition hover:bg-[#00c975] active:scale-[0.99] sm:gap-2 sm:px-4 sm:text-sm"
                       >
                         <Compass className="h-4 w-4" />
                         <span>Analisis & Cocokkan Usaha</span>

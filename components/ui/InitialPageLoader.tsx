@@ -15,6 +15,7 @@ export default function InitialPageLoader() {
   const [phase, setPhase] = useState<1 | 2>(1);
   const [tipIndex, setTipIndex] = useState(0);
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     // Check if session has already loaded
     const hasLoaded = sessionStorage.getItem("petakarier_loaded");
@@ -45,6 +46,7 @@ export default function InitialPageLoader() {
       clearInterval(tipInterval);
     };
   }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   return (
     <AnimatePresence>
@@ -54,11 +56,11 @@ export default function InitialPageLoader() {
           initial={{ opacity: 1 }}
           exit={{ opacity: 0, scale: 1.03, filter: "blur(10px)" }}
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          className="fixed inset-0 z-[99999] flex flex-col items-center justify-center bg-[#050914] text-white select-none px-4"
+          className="fixed inset-0 z-[99999] flex flex-col items-center justify-center bg-slate-50 text-slate-900 select-none px-4 dark:bg-[#050914] dark:text-white"
         >
           {/* Subtle Ambient Background Glow */}
           <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-            <div className="absolute left-1/2 top-1/2 h-[500px] w-[700px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#00df82]/[0.06] blur-[150px]" />
+            <div className="absolute left-1/2 top-1/2 h-[500px] w-[700px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-emerald-400/[0.08] blur-[150px] dark:bg-[#00df82]/[0.06]" />
           </div>
 
           <div className="relative z-10 flex w-full max-w-xl flex-col items-center justify-center text-center">
@@ -81,7 +83,7 @@ export default function InitialPageLoader() {
                   transition={{ duration: 0.5 }}
                   className="text-2xl sm:text-3xl font-extrabold tracking-tight"
                 >
-                  <span className="text-white">Peta </span>
+                  <span className="text-slate-900 dark:text-white">Peta </span>
                   <span className="text-[#00df82] font-black drop-shadow-[0_0_20px_rgba(0,223,130,0.4)]">
                     Karier
                   </span>
@@ -98,9 +100,10 @@ export default function InitialPageLoader() {
                       cx="50"
                       cy="50"
                       r="38"
-                      stroke="#0d2222"
+                      stroke="currentColor"
                       strokeWidth="4.5"
                       fill="transparent"
+                      className="text-slate-200 dark:text-[#0d2222]"
                     />
                   </svg>
 
@@ -135,10 +138,10 @@ export default function InitialPageLoader() {
                 </div>
 
                 {/* Subtitle Headlines */}
-                <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">
+                <h2 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight dark:text-white">
                   Menyiapkan rekomendasi usaha untuk kamu...
                 </h2>
-                <p className="mt-1.5 text-xs sm:text-[13px] text-slate-400 max-w-md leading-relaxed">
+                <p className="mt-1.5 text-xs sm:text-[13px] text-slate-600 max-w-md leading-relaxed dark:text-slate-400">
                   Menganalisis potensi regional, tren pasar, dan kesesuaian modal
                 </p>
 
@@ -147,7 +150,7 @@ export default function InitialPageLoader() {
                   initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2, duration: 0.4 }}
-                  className="mt-10 flex items-center gap-3 rounded-2xl border border-slate-800/80 bg-[#0a1120]/80 px-5 py-3.5 shadow-xl backdrop-blur-md max-w-lg text-left"
+                  className="mt-10 flex items-center gap-3 rounded-2xl border border-slate-200 bg-white/80 px-5 py-3.5 shadow-xl backdrop-blur-md max-w-lg text-left dark:border-slate-800/80 dark:bg-[#0a1120]/80"
                 >
                   <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-[#00df82]/10 border border-[#00df82]/20 text-[#00df82]">
                     <Lightbulb className="h-4 w-4" />
@@ -158,7 +161,7 @@ export default function InitialPageLoader() {
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -5 }}
                     transition={{ duration: 0.3 }}
-                    className="text-xs text-slate-300 leading-snug"
+                    className="text-xs text-slate-700 leading-snug dark:text-slate-300"
                   >
                     {LOADING_TIPS[tipIndex]}
                   </motion.p>
@@ -176,29 +179,29 @@ export default function InitialPageLoader() {
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 1.05, y: -10 }}
                 transition={{ duration: 0.45 }}
-                className="w-full max-w-lg rounded-3xl border border-slate-800/80 bg-[#070e1c]/90 p-6 sm:p-7 shadow-2xl backdrop-blur-xl"
+                className="w-full max-w-lg rounded-3xl border border-slate-200 bg-white/90 p-6 sm:p-7 shadow-2xl backdrop-blur-xl dark:border-slate-800/80 dark:bg-[#070e1c]/90"
               >
                 {/* Header Skeleton Mockup */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="h-9 w-9 rounded-xl bg-slate-800/80 animate-pulse" />
+                    <div className="h-9 w-9 rounded-xl bg-slate-200 animate-pulse dark:bg-slate-800/80" />
                     <div className="space-y-1.5">
-                      <div className="h-3.5 w-32 rounded-full bg-slate-800 animate-pulse" />
-                      <div className="h-2.5 w-20 rounded-full bg-slate-800/60 animate-pulse" />
+                      <div className="h-3.5 w-32 rounded-full bg-slate-200 animate-pulse dark:bg-slate-800" />
+                      <div className="h-2.5 w-20 rounded-full bg-slate-200/70 animate-pulse dark:bg-slate-800/60" />
                     </div>
                   </div>
-                  <div className="h-6 w-16 rounded-full bg-emerald-950/80 border border-emerald-500/30" />
+                  <div className="h-6 w-16 rounded-full bg-emerald-100 border border-emerald-300/60 dark:bg-emerald-950/80 dark:border-emerald-500/30" />
                 </div>
 
                 {/* Subtitle Placeholder Lines */}
                 <div className="mt-5 space-y-2">
-                  <div className="h-2.5 w-full rounded-full bg-slate-800/60 animate-pulse" />
-                  <div className="h-2.5 w-4/5 rounded-full bg-slate-800/50 animate-pulse" />
-                  <div className="h-2.5 w-2/3 rounded-full bg-slate-800/40 animate-pulse" />
+                  <div className="h-2.5 w-full rounded-full bg-slate-200/80 animate-pulse dark:bg-slate-800/60" />
+                  <div className="h-2.5 w-4/5 rounded-full bg-slate-200/70 animate-pulse dark:bg-slate-800/50" />
+                  <div className="h-2.5 w-2/3 rounded-full bg-slate-200/60 animate-pulse dark:bg-slate-800/40" />
                 </div>
 
                 {/* Bar Graph Skeleton Container */}
-                <div className="mt-6 flex h-36 w-full items-end justify-center gap-3 rounded-2xl border border-slate-800/60 bg-[#050a14]/90 p-4 pb-3">
+                <div className="mt-6 flex h-36 w-full items-end justify-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 pb-3 dark:border-slate-800/60 dark:bg-[#050a14]/90">
                   {[28, 45, 62, 90, 100, 75, 40].map((height, i) => (
                     <motion.div
                       key={i}
@@ -212,7 +215,7 @@ export default function InitialPageLoader() {
                       className={`w-7 rounded-t-lg transition-colors ${
                         height >= 90
                           ? "bg-gradient-to-t from-emerald-600 to-[#00df82] shadow-lg shadow-emerald-500/30"
-                          : "bg-slate-800/70"
+                          : "bg-slate-200 dark:bg-slate-800/70"
                       }`}
                     />
                   ))}
@@ -221,8 +224,8 @@ export default function InitialPageLoader() {
                 {/* Bottom Actions Skeleton + Spinner Indicator */}
                 <div className="mt-5 flex items-center justify-between pt-1">
                   <div className="flex items-center gap-2">
-                    <div className="h-7 w-16 rounded-xl bg-slate-800/70 animate-pulse" />
-                    <div className="h-7 w-16 rounded-xl bg-slate-800/50 animate-pulse" />
+                    <div className="h-7 w-16 rounded-xl bg-slate-200 animate-pulse dark:bg-slate-800/70" />
+                    <div className="h-7 w-16 rounded-xl bg-slate-200/70 animate-pulse dark:bg-slate-800/50" />
                   </div>
 
                   {/* Star Spinner + Text */}
@@ -233,7 +236,7 @@ export default function InitialPageLoader() {
                     >
                       <Loader2 className="h-3.5 w-3.5 text-[#00df82]" />
                     </motion.div>
-                    <span className="text-[11px] text-slate-300">Memuat platform...</span>
+                    <span className="text-[11px] text-slate-600 dark:text-slate-300">Memuat platform...</span>
                   </div>
                 </div>
               </motion.div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
@@ -15,8 +15,13 @@ import { useTheme } from "next-themes";
 export default function Hero() {
   const [isHovered, setIsHovered] = useState(false);
   const [mousePos, setMousePos] = useState({ x: 50, y: 45 });
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
   const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === "dark";
+  const isDark = mounted && resolvedTheme === "dark";
 
   const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -64,7 +69,7 @@ export default function Hero() {
         dark:via-slate-950/80 dark:to-[#030712]" />
 
       {/* ── Background: satellite map + interactive spotlight ── */}
-      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+      <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
         {/* Satellite map image — dimmer in light mode */}
         <Image
           src="/indonesia-map-satellite.jpg"
@@ -76,10 +81,10 @@ export default function Hero() {
             isHovered
               ? isDark
                 ? "brightness-100 contrast-110 opacity-90 scale-100"
-                : "brightness-110 contrast-105 opacity-30 scale-100"
+                : "brightness-105 contrast-115 opacity-55 scale-100"
               : isDark
-              ? "brightness-75 contrast-100 opacity-40 scale-[1.02]"
-              : "brightness-90 contrast-100 opacity-20 scale-[1.02]"
+              ? "brightness-80 contrast-105 opacity-52 scale-[1.02]"
+              : "brightness-95 contrast-110 opacity-45 scale-[1.02]"
           }`}
           priority
         />
@@ -99,6 +104,9 @@ export default function Hero() {
             background: `radial-gradient(circle 380px at ${mousePos.x}% ${mousePos.y}%, ${cursorGlowColor} 0%, ${cursorGlowFade} 55%, transparent 75%)`,
           }}
         />
+
+        {/* Lightweight circular spotlight for touch devices without cursor tracking */}
+        <div className="mobile-light-spotlight pointer-events-none absolute left-0 top-0 z-[2] h-[95vw] w-[95vw] max-h-[34rem] max-w-[34rem] rounded-full md:hidden" />
       </div>
 
       {/* Decorative glow blob — dark mode only */}
@@ -153,12 +161,12 @@ export default function Hero() {
 
             <Link
               href="/kalkulator"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 sm:gap-3 rounded-2xl
+              className="group w-full sm:w-auto inline-flex items-center justify-center gap-2 sm:gap-3 rounded-2xl
                 border border-slate-300 bg-white/80 backdrop-blur-sm px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base font-bold text-slate-800 shadow-md
                 transition-all duration-300 hover:bg-emerald-50 hover:border-emerald-400 hover:text-emerald-700
-                dark:border-emerald-400/60 dark:bg-slate-900/70 dark:text-white dark:hover:bg-emerald-600 dark:hover:border-emerald-400"
+                dark:border-emerald-400/60 dark:bg-slate-900/70 dark:text-white dark:hover:bg-emerald-600 dark:hover:border-emerald-400 dark:hover:text-white"
             >
-              <LineChart className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-600 dark:text-emerald-400" />
+              <LineChart className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-600 dark:text-emerald-400 dark:group-hover:text-white" />
               <span>Kalkulator Modal & UMR</span>
             </Link>
           </motion.div>

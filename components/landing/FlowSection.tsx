@@ -1,9 +1,9 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { motion, useScroll, useSpring } from "framer-motion";
+import { motion, useMotionValueEvent, useScroll, useSpring } from "framer-motion";
 import { Icon } from "@iconify/react";
 import Reveal from "@/components/ui/Reveal";
 
@@ -101,6 +101,13 @@ export default function FlowSection({
     restDelta: 0.001,
   });
 
+  const [activeStep, setActiveStep] = useState(0);
+
+  useMotionValueEvent(scrollYProgress, "change", (latest) => {
+    const nextStep = Math.min(steps.length - 1, Math.floor(latest * steps.length));
+    setActiveStep((currentStep) => (currentStep === nextStep ? currentStep : nextStep));
+  });
+
   return (
     <section
       id="cara-kerja"
@@ -141,6 +148,7 @@ export default function FlowSection({
           <div className="space-y-8 sm:space-y-16">
             {steps.map((step, index) => {
               const isEven = index % 2 === 0;
+              const isActive = index <= activeStep;
 
               return (
                 <div
@@ -161,9 +169,13 @@ export default function FlowSection({
                       stiffness: 350,
                       damping: 20,
                     }}
-                    className="relative z-20 flex h-11 w-11 sm:h-14 sm:w-14 shrink-0 items-center justify-center rounded-full bg-[#16a34a] text-white shadow-lg shadow-[#16a34a]/30 border-[3px] sm:border-4 border-white dark:border-slate-900 sm:absolute sm:left-1/2 sm:-translate-x-1/2 mt-2 sm:mt-0"
+                    className={`relative z-20 flex h-11 w-11 sm:h-14 sm:w-14 shrink-0 items-center justify-center rounded-full border-[3px] sm:border-4 border-white dark:border-slate-900 sm:absolute sm:left-1/2 sm:-translate-x-1/2 mt-2 sm:mt-0 transition-colors duration-300 ${
+                      isActive
+                        ? "bg-[#16a34a] text-white shadow-lg shadow-[#16a34a]/30"
+                        : "bg-slate-200 text-slate-500 shadow-md shadow-slate-300/30 dark:bg-slate-800 dark:text-slate-500 dark:shadow-black/20"
+                    }`}
                   >
-                    <Icon icon={step.icon} className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+                    <Icon icon={step.icon} className="h-5 w-5 sm:h-6 sm:w-6" />
                   </motion.div>
 
                   {/* Reactive Step Card with Image */}

@@ -206,6 +206,68 @@ body {
   color-scheme: dark;
 }
 
+@keyframes mobile-light-orbit {
+  0%, 100% {
+    left: -18%;
+    top: -12%;
+    transform: scale(0.82);
+    opacity: 0.62;
+  }
+  25% {
+    left: 18%;
+    top: -12%;
+    transform: scale(1.02);
+    opacity: 0.9;
+  }
+  50% {
+    left: 18%;
+    top: 68%;
+    transform: scale(0.9);
+    opacity: 0.68;
+  }
+  75% {
+    left: -18%;
+    top: 68%;
+    transform: scale(1.06);
+    opacity: 0.84;
+  }
+}
+
+.mobile-light-spotlight {
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.62) 0%,
+    rgba(16, 185, 129, 0.38) 26%,
+    rgba(16, 185, 129, 0.14) 54%,
+    transparent 72%
+  );
+  filter: blur(10px);
+  mix-blend-mode: normal;
+  animation: mobile-light-orbit 11s ease-in-out infinite;
+  will-change: left, top, transform, opacity;
+}
+
+.dark .mobile-light-spotlight {
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.45) 0%,
+    rgba(0, 223, 130, 0.42) 28%,
+    rgba(0, 223, 130, 0.16) 55%,
+    transparent 74%
+  );
+  mix-blend-mode: screen;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mobile-light-spotlight {
+    animation: none;
+    opacity: 0.4;
+    left: 2%;
+    top: 35%;
+    transform: scale(1);
+  }
+}
+
 /* ══════════════════════════════════════════════════════════════════
    VIEW TRANSITIONS API FOR ULTRA-SMOOTH THEME SWITCHING (60/120 FPS)
    ══════════════════════════════════════════════════════════════════ */

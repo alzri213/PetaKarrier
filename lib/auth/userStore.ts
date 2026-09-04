@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { hashPassword, verifyPassword } from "@/lib/auth/hash";
+import { hashPassword } from "@/lib/auth/hash";
 
 export interface AppUser {
   id: string;
