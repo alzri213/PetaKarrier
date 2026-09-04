@@ -69,7 +69,7 @@ export default function Hero() {
         dark:via-slate-950/80 dark:to-[#030712]" />
 
       {/* ── Background: satellite map + interactive spotlight ── */}
-      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+      <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
         {/* Satellite map image — dimmer in light mode */}
         <Image
           src="/indonesia-map-satellite.jpg"
@@ -81,10 +81,10 @@ export default function Hero() {
             isHovered
               ? isDark
                 ? "brightness-100 contrast-110 opacity-90 scale-100"
-                : "brightness-110 contrast-105 opacity-30 scale-100"
+                : "brightness-105 contrast-115 opacity-55 scale-100"
               : isDark
-              ? "brightness-75 contrast-100 opacity-40 scale-[1.02]"
-              : "brightness-90 contrast-100 opacity-20 scale-[1.02]"
+              ? "brightness-80 contrast-105 opacity-52 scale-[1.02]"
+              : "brightness-95 contrast-110 opacity-45 scale-[1.02]"
           }`}
           priority
         />
@@ -104,6 +104,9 @@ export default function Hero() {
             background: `radial-gradient(circle 380px at ${mousePos.x}% ${mousePos.y}%, ${cursorGlowColor} 0%, ${cursorGlowFade} 55%, transparent 75%)`,
           }}
         />
+
+        {/* Lightweight circular spotlight for touch devices without cursor tracking */}
+        <div className="mobile-light-spotlight pointer-events-none absolute left-0 top-0 z-[2] h-[95vw] w-[95vw] max-h-[34rem] max-w-[34rem] rounded-full md:hidden" />
       </div>
 
       {/* Decorative glow blob — dark mode only */}

@@ -2,16 +2,16 @@ import { Lightbulb } from "lucide-react";
 
 export default function GlobalLoading() {
   return (
-    <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#050914] text-white px-4">
+    <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-slate-50 text-slate-900 px-4 dark:bg-[#050914] dark:text-white">
       {/* Ambient background glow */}
       <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-        <div className="absolute left-1/2 top-1/2 h-[500px] w-[700px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#00df82]/[0.06] blur-[150px]" />
+        <div className="absolute left-1/2 top-1/2 h-[500px] w-[700px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-emerald-400/[0.08] blur-[150px] dark:bg-[#00df82]/[0.06]" />
       </div>
 
       <div className="flex flex-col items-center text-center">
         {/* Brand Text Logo */}
         <div className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-          <span className="text-white">Peta </span>
+          <span className="text-slate-900 dark:text-white">Peta </span>
           <span className="text-[#00df82] font-black drop-shadow-[0_0_20px_rgba(0,223,130,0.4)]">
             Karier
           </span>
@@ -28,9 +28,10 @@ export default function GlobalLoading() {
               cx="50"
               cy="50"
               r="38"
-              stroke="#0d2222"
+              stroke="currentColor"
               strokeWidth="4.5"
               fill="transparent"
+              className="text-slate-200 dark:text-[#0d2222]"
             />
           </svg>
 
@@ -51,19 +52,19 @@ export default function GlobalLoading() {
         </div>
 
         {/* Subtitle */}
-        <h2 className="text-base font-bold text-white tracking-tight">
+        <h2 className="text-base font-bold text-slate-900 tracking-tight dark:text-white">
           Menyiapkan data platform untuk kamu...
         </h2>
-        <p className="mt-1 text-xs text-slate-400">
+        <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
           Menganalisis potensi regional, tren pasar, dan kesesuaian modal
         </p>
 
         {/* Tips Banner */}
-        <div className="mt-8 flex items-center gap-3 rounded-2xl border border-slate-800/80 bg-[#0a1120]/80 px-5 py-3 shadow-xl backdrop-blur-md max-w-md text-left">
+        <div className="mt-8 flex items-center gap-3 rounded-2xl border border-slate-200 bg-white/80 px-5 py-3 shadow-xl backdrop-blur-md max-w-md text-left dark:border-slate-800/80 dark:bg-[#0a1120]/80">
           <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-[#00df82]/10 border border-[#00df82]/20 text-[#00df82]">
             <Lightbulb className="h-4 w-4" />
           </div>
-          <p className="text-xs text-slate-300 leading-snug">
+          <p className="text-xs text-slate-700 leading-snug dark:text-slate-300">
             Tips: Siapkan data estimasi modal awal usahamu sebelum melanjutkan ke kalkulator BEP.
           </p>
         </div>

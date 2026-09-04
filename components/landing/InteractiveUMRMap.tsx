@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence, useAnimationControls } from "framer-motion";
@@ -266,71 +266,61 @@ export default function InteractiveUMRMap() {
   const [selectedKota, setSelectedKota] = useState<KotaPin | null>(null);
   const [zoom, setZoom] = useState<number>(1);
   const [isDragging, setIsDragging] = useState(false);
+  const [mapSize, setMapSize] = useState({ width: 0, height: 0 });
   const mapControls = useAnimationControls();
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Compute drag constraints dynamically from container size
-  const getDragConstraints = (z: number) => {
-    const el = containerRef.current;
-    if (!el || z <= 1) return { left: 0, right: 0, top: 0, bottom: 0 };
-    const w = el.offsetWidth;
-    const h = el.offsetHeight;
-    const extra = z - 1;
-    return {
-      left:   -(w * extra * 0.5),
-      right:   (w * extra * 0.5),
-      top:    -(h * extra * 0.5),
-      bottom:  (h * extra * 0.5),
+  useEffect(() => {
+    const element = containerRef.current;
+    if (!element) return;
+
+    const updateSize = () => {
+      setMapSize({ width: element.clientWidth, height: element.clientHeight });
     };
+
+    updateSize();
+    const observer = new ResizeObserver(updateSize);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+
+  const dragConstraints = useMemo(() => {
+    if (zoom <= 1 || mapSize.width === 0 || mapSize.height === 0) {
+      return { left: 0, right: 0, top: 0, bottom: 0 };
+    }
+
+    const extra = zoom - 1;
+    return {
+      left: -(mapSize.width * extra * 0.5),
+      right: mapSize.width * extra * 0.5,
+      top: -(mapSize.height * extra * 0.5),
+      bottom: mapSize.height * extra * 0.5,
+    };
+  }, [mapSize, zoom]);
+
+  const animateMap = (nextZoom: number) => {
+    setZoom(nextZoom);
+    mapControls.start({
+      x: 0,
+      y: 0,
+      scale: nextZoom,
+      transition: {
+        duration: 0.18,
+        ease: "easeOut",
+      },
+    });
   };
 
   const handleResetView = () => {
-    setZoom(1);
-    mapControls.start({ 
-      x: 0, 
-      y: 0, 
-      scale: 1, 
-      transition: { 
-        duration: 0.25,
-        ease: "easeOut"
-      } 
-    });
+    animateMap(1);
   };
 
   const handleZoomIn = () => {
-    const nextZoom = Math.min(zoom + 0.3, 1.8);
-    setZoom(nextZoom);
-    mapControls.start({ 
-      scale: nextZoom, 
-      transition: { 
-        duration: 0.25,
-        ease: "easeOut"
-      } 
-    });
+    animateMap(Math.min(zoom + 0.3, 1.8));
   };
 
   const handleZoomOut = () => {
-    const nextZoom = Math.max(zoom - 0.3, 1.0);
-    setZoom(nextZoom);
-    if (nextZoom <= 1) {
-      mapControls.start({ 
-        x: 0, 
-        y: 0, 
-        scale: 1, 
-        transition: { 
-            duration: 0.25,
-            ease: "easeOut"
-        } 
-      });
-    } else {
-      mapControls.start({ 
-        scale: nextZoom, 
-        transition: { 
-            duration: 0.25,
-            ease: "easeOut"
-        } 
-      });
-    }
+    animateMap(Math.max(zoom - 0.3, 1));
   };
 
   const filteredPins = useMemo(() => {
@@ -423,8 +413,8 @@ export default function InteractiveUMRMap() {
           {/* Framer Motion Draggable & Zoomable Canvas */}
           <motion.div
             drag={zoom > 1}
-            dragConstraints={getDragConstraints(zoom)}
-            dragElastic={0.02}
+            dragConstraints={dragConstraints}
+            dragElastic={0}
             dragMomentum={false}
             dragTransition={{ bounceStiffness: 300, bounceDamping: 25, power: 0.2 }}
             animate={mapControls}
@@ -436,6 +426,7 @@ export default function InteractiveUMRMap() {
             }`}
             style={{ 
               willChange: zoom > 1 ? "transform" : "auto",
+              contain: "layout paint",
               touchAction: zoom > 1 ? "none" : "auto"
             }}
           >
