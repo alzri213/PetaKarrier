@@ -7,8 +7,6 @@ import {
   DollarSign,
   TrendingUp,
   Clock,
-  Search,
-  ChevronDown,
   AlertTriangle,
   Loader2,
   BarChart3,
@@ -18,6 +16,7 @@ import type { JenisUsaha, KotaData } from "@/types";
 import { formatRupiah } from "@/lib/utils/formatCurrency";
 import { getLocalSessionState, setLocalSessionState } from "@/lib/utils/sessionSync";
 import { getUserActiveAnalisis, updateKalkulatorAction } from "@/lib/actions/analisis";
+import { SearchableSelect } from "@/components/ui/SearchableSelect";
 
 interface ModalCalculatorProps {
   daftarUsaha?: JenisUsaha[];
@@ -453,55 +452,33 @@ export default function ModalCalculator({
           <form onSubmit={handleHitung} className="space-y-5">
             {/* Field 1: Jenis Rencana Usaha */}
             <div className="space-y-2">
-              <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+              <label className="text-sm font-extrabold text-slate-800 dark:text-slate-200">
                 Jenis Rencana Usaha
               </label>
-              <div className="relative">
-                <select
-                  value={selectedUsahaId}
-                  onChange={(e) => handleSelectUsaha(e.target.value)}
-                  className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 py-3.5 pl-4 pr-10 text-sm font-semibold text-slate-900 outline-none transition focus:border-[#00df82] focus:ring-1 focus:ring-[#00df82]/30 dark:border-slate-800 dark:bg-[#0f172a] dark:text-white"
-                >
-                  <option value="" disabled>
-                    Pilih jenis usaha
-                  </option>
-                  {usahaList.map((u) => (
-                    <option key={u.id} value={u.id} className="bg-white dark:bg-slate-900">
-                      {u.nama}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-              </div>
+              <SearchableSelect
+                value={selectedUsahaId}
+                onChange={handleSelectUsaha}
+                placeholder="Pilih jenis usaha"
+                options={usahaList.map((usaha) => ({ value: usaha.id, label: usaha.nama }))}
+              />
             </div>
 
             {/* Field 2: Kota Domisili */}
             <div className="space-y-2">
-              <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+              <label className="text-sm font-extrabold text-slate-800 dark:text-slate-200">
                 Kota Domisili
               </label>
-              <div className="relative">
-                <select
-                  value={selectedKotaId}
-                  onChange={(e) => setSelectedKotaId(e.target.value)}
-                  className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 py-3.5 pl-4 pr-10 text-sm font-semibold text-slate-900 outline-none transition focus:border-[#00df82] focus:ring-1 focus:ring-[#00df82]/30 dark:border-slate-800 dark:bg-[#0f172a] dark:text-white"
-                >
-                  <option value="" disabled>
-                    Pilih kota domisili
-                  </option>
-                  {kotaList.map((k) => (
-                    <option key={k.id} value={k.id} className="bg-white dark:bg-slate-900">
-                      {k.nama}
-                    </option>
-                  ))}
-                </select>
-                <Search className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-              </div>
+              <SearchableSelect
+                value={selectedKotaId}
+                onChange={setSelectedKotaId}
+                placeholder="Pilih kota domisili"
+                options={kotaList.map((kota) => ({ value: kota.id, label: kota.nama }))}
+              />
             </div>
 
             {/* Field 3: Target Modal Awal (Green Border Highlight) */}
             <div className="space-y-2">
-              <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+              <label className="text-sm font-extrabold text-slate-800 dark:text-slate-200">
                 Target Modal Awal
               </label>
               <div className="flex items-center rounded-xl border-2 border-[#00df82] bg-slate-50 px-4 py-3 shadow-sm transition dark:bg-[#0f172a]">
