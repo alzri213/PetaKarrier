@@ -135,7 +135,7 @@ export default function ChatAI() {
       const savedAvatar = localStorage.getItem(`petakarier_avatar_${email}`);
       if (savedAvatar) {
         setUserAvatar(savedAvatar);
-      } else if (session.user.image) {
+      } else if (session?.user?.image) {
         setUserAvatar(session.user.image);
       } else {
         setUserAvatar(null);
@@ -314,11 +314,12 @@ export default function ChatAI() {
                   <div>
                     <h3 className="flex items-center gap-1 text-sm font-extrabold text-slate-900 leading-tight dark:text-white">
                       Asisten PetaKarier
-                      <BadgeCheck
-                        className="h-4 w-4 shrink-0 fill-sky-400/20 text-sky-400"
-                        aria-label="Akun terverifikasi"
-                        title="Akun terverifikasi"
-                      />
+                      <span title="Akun terverifikasi">
+                        <BadgeCheck
+                          className="h-4 w-4 shrink-0 fill-sky-400/20 text-sky-400"
+                          aria-label="Akun terverifikasi"
+                        />
+                      </span>
                     </h3>
                     <p className="text-[11px] font-semibold text-[#00df82] flex items-center gap-1.5 mt-0.5">
                       <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />

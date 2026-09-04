@@ -104,6 +104,7 @@ export default function UMRComparison({
   const [isUsahaModalOpen, setIsUsahaModalOpen] = useState<boolean>(false);
 
   // Restore from unified local storage & PostgreSQL database on mount
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     // 1. Unified local storage
     const unified = getLocalSessionState();
@@ -135,6 +136,7 @@ export default function UMRComparison({
     }).catch(() => {});
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   // Persist on every change
   useEffect(() => {

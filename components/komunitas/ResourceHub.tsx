@@ -140,6 +140,7 @@ function useResponsive() {
 export default function ResourceHub() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [dragOffset, setDragOffset] = useState(0);
+  const [isDraggingState, setIsDraggingState] = useState(false);
   const total = RESOURCES.length;
   const resp = useResponsive();
 
@@ -169,6 +170,7 @@ export default function ResourceHub() {
 
     (e.currentTarget as HTMLDivElement).setPointerCapture(e.pointerId);
     isDragging.current = true;
+    setIsDraggingState(true);
     didDrag.current = false;
     startX.current = e.clientX;
     setDragOffset(0);
@@ -186,6 +188,7 @@ export default function ResourceHub() {
   const handlePointerUp = () => {
     if (!isDragging.current) return;
     isDragging.current = false;
+    setIsDraggingState(false);
 
     const steps = Math.round(dragOffset);
     const target = (((activeIndex - steps) % total) + total) % total;
@@ -215,7 +218,7 @@ export default function ResourceHub() {
             perspective: 1800,
             perspectiveOrigin: "50% 50%",
             overflow: "visible",
-            cursor: isDragging.current ? "grabbing" : "grab",
+            cursor: isDraggingState ? "grabbing" : "grab",
             touchAction: "pan-y",
           }}
           onPointerDown={handlePointerDown}
@@ -238,7 +241,7 @@ export default function ResourceHub() {
                 item={item}
                 index={idx}
                 liveOffset={liveOffset}
-                isDragging={isDragging.current}
+                isDragging={isDraggingState}
                 didDrag={didDrag}
                 onSelectCard={() => goTo(idx)}
                 resp={resp}

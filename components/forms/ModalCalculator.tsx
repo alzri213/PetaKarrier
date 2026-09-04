@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import {
@@ -84,25 +84,25 @@ export default function ModalCalculator({
     ];
   }, [daftarKota]);
 
-  const getDefaultModal = (usaha?: { modalMin?: number; modalMax?: number }) => {
+  const getDefaultModal = useCallback((usaha?: { modalMin?: number; modalMax?: number }) => {
     if (!usaha) return 20000000;
     return Math.round(((usaha.modalMin ?? 20000000) + (usaha.modalMax ?? 30000000)) / 2);
-  };
+  }, []);
 
-  const getDefaultOperasional = (usaha?: { bahanBakuBulanan?: number; gajiKaryawan?: number; promosiBulanan?: number }, kota?: { utilitas?: number }) => {
+  const getDefaultOperasional = useCallback((usaha?: { bahanBakuBulanan?: number; gajiKaryawan?: number; promosiBulanan?: number }, kota?: { utilitas?: number }) => {
     if (!usaha) return 6500000;
     return (usaha.bahanBakuBulanan || 1000000) + (usaha.gajiKaryawan || 0) + (usaha.promosiBulanan || 500000) + (kota?.utilitas || 600000);
-  };
+  }, []);
 
-  const getUsahaById = (id?: string | null) => {
+  const getUsahaById = useCallback((id?: string | null) => {
     if (!id) return undefined;
     return usahaList.find((u) => u.id === id || u.id.toLowerCase() === id.toLowerCase());
-  };
+  }, [usahaList]);
 
-  const getKotaById = (id?: string | null) => {
+  const getKotaById = useCallback((id?: string | null) => {
     if (!id) return undefined;
     return kotaList.find((k) => k.id === id || k.id.toLowerCase() === id.toLowerCase());
-  };
+  }, [kotaList]);
 
   const initialUsaha = useMemo(() => {
     return getUsahaById(queryUsahaId) ?? usahaList[0];
@@ -143,6 +143,7 @@ export default function ModalCalculator({
   const hasSkippedInitialPersist = useRef(false);
 
   // Restore from unified local storage & PostgreSQL database on mount
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     // 1. Try restoring from unified session state first
     const unified = getLocalSessionState();
@@ -182,16 +183,18 @@ export default function ModalCalculator({
           setActiveKotaId(dbData.kotaId);
         }
         if (dbData.hasilModal && typeof dbData.hasilModal === "object") {
-          const hm = dbData.hasilModal as any;
-          if (hm.modalAwal) {
-            setModalAwal(hm.modalAwal);
-            setModalAwalStr(hm.modalAwal.toLocaleString("id-ID"));
-            setActiveModalAwal(hm.modalAwal);
+          const hm = dbData.hasilModal as Record<string, unknown>;
+          const savedModalAwal = typeof hm.modalAwal === "number" ? hm.modalAwal : null;
+          const savedOperasional = typeof hm.operasional === "number" ? hm.operasional : null;
+          if (savedModalAwal !== null) {
+            setModalAwal(savedModalAwal);
+            setModalAwalStr(savedModalAwal.toLocaleString("id-ID"));
+            setActiveModalAwal(savedModalAwal);
           }
-          if (hm.operasional) {
-            setOperasional(hm.operasional);
-            setOperasionalStr(hm.operasional.toLocaleString("id-ID"));
-            setActiveOperasional(hm.operasional);
+          if (savedOperasional !== null) {
+            setOperasional(savedOperasional);
+            setOperasionalStr(savedOperasional.toLocaleString("id-ID"));
+            setActiveOperasional(savedOperasional);
           }
           setHasCalculated(true);
         }
@@ -206,6 +209,7 @@ export default function ModalCalculator({
     }).catch(() => {});
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   // Persist to unified local session on every change
   useEffect(() => {

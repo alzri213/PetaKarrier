@@ -17,6 +17,10 @@ Karakter & Gaya Komunikasi:
 - Jawab pertanyaan apa pun yang diajukan pengguna secara langsung, relevan, dan kontekstual. Jika ditanya siapa yang membuatmu atau identitasmu, jelaskan dengan ramah bahwa kamu adalah Asisten Cerdas PetaKarier.
 - Selalu format jawaban secara terstruktur dan rapi menggunakan Markdown (gunakan **Teks Tebal** untuk poin penting, penomoran urut 1., 2., 3., atau bullet points jika relevan).`;
 
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : "Network error";
+}
+
 export async function POST(request: NextRequest) {
   const apiKey =
     process.env.GEMINI_API_KEY ||
@@ -79,15 +83,15 @@ export async function POST(request: NextRequest) {
           const errData = await res.json();
           lastError = errData?.error?.message || `HTTP ${res.status}`;
         }
-      } catch (err: any) {
-        lastError = err?.message || "Network error";
+      } catch (err: unknown) {
+        lastError = getErrorMessage(err);
       }
     }
 
     return Response.json({
       text: `⚠️ **Gagal Menghubungi Google Gemini LLM**\n\n${lastError ? `*Detail kendala: ${lastError}*` : ""}\n\nPastikan kuota API Key aktif atau periksa koneksi internet Anda.`,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Chat API error:", error);
     return Response.json({
       text: "Terjadi kesalahan saat memproses pesan. Silakan coba lagi beberapa saat lagi.",
