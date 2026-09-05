@@ -203,9 +203,10 @@ export default function SdgSection() {
               </div>
               <Link
                 href="/sdg-impact"
-                className="btn-shine inline-flex items-center gap-3 rounded-full bg-gradient-to-r from-emerald-500 to-green-500 px-8 py-3 text-sm font-extrabold text-white shadow-lg shadow-emerald-500/30 transition hover:scale-105 shrink-0 border-2 border-white/30"
+                className="btn-shine inline-flex w-full shrink-0 items-center justify-between gap-3 rounded-full border-2 border-white/30 bg-gradient-to-r from-emerald-500 to-green-500 px-5 py-3 text-[13px] font-extrabold leading-tight text-white shadow-lg shadow-emerald-500/30 transition hover:scale-105 sm:w-auto sm:justify-center sm:px-8 sm:text-sm"
               >
-                Eksplor Dashboard Dampak <ArrowRight className="h-4 w-4" />
+                <span className="whitespace-nowrap">Eksplor Dashboard Dampak</span>
+                <ArrowRight className="h-4 w-4 shrink-0" />
               </Link>
             </div>
           </div>

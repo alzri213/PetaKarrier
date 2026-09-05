@@ -97,14 +97,14 @@ export default function EvidenceSection() {
                   ))}
                 </div>
 
-                <div className="flex items-center justify-between border-t border-slate-200 pt-4 dark:border-slate-800">
-                  <span className="font-mono text-xs text-slate-500 dark:text-slate-400">Sumber: Data Kemenkop UKM & BPS RI</span>
+                <div className="flex flex-col items-start gap-3 border-t border-slate-200 pt-4 dark:border-slate-800 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+                  <span className="font-mono text-xs leading-relaxed text-slate-500 dark:text-slate-400">Sumber: Data Kemenkop UKM & BPS RI</span>
                   <Link
                     href="/sdg-impact"
-                    className="inline-flex items-center gap-1.5 text-xs font-extrabold text-emerald-700 hover:text-emerald-800 transition"
+                    className="inline-flex w-full items-center justify-between gap-2 text-xs font-extrabold text-emerald-700 transition hover:text-emerald-800 sm:w-auto sm:justify-start"
                   >
-                    <span>Lihat Rincian Dampak</span>
-                    <ArrowRight className="h-3.5 w-3.5" />
+                    <span className="whitespace-nowrap">Lihat Rincian Dampak</span>
+                    <ArrowRight className="h-3.5 w-3.5 shrink-0" />
                   </Link>
                 </div>
               </div>

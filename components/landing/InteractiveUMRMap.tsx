@@ -521,7 +521,7 @@ export default function InteractiveUMRMap() {
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
           onTouchCancel={handleTouchEnd}
-          className="relative w-full h-[280px] sm:h-[400px] lg:h-[460px] rounded-2xl overflow-hidden select-none cursor-grab active:cursor-grabbing"
+          className="relative w-full h-[220px] sm:h-[400px] lg:h-[460px] rounded-2xl overflow-hidden select-none cursor-grab active:cursor-grabbing"
           style={{ touchAction: "none" }}
         >
           {/* ── TOOLTIP HOVER KECIL: HANYA MENAMPILKAN NAMA PROVINSI DI ATAS KURSOR ── */}

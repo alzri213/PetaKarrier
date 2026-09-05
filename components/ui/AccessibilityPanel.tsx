@@ -214,11 +214,23 @@ export default function AccessibilityPanel() {
         highlightedElRef.current = elementToHighlight;
       }
 
+      const indonesianVoice = window.speechSynthesis
+        .getVoices()
+        .find((voice) => voice.lang.toLowerCase() === "id-id" || voice.lang.toLowerCase().startsWith("id-"));
+
+      if (!indonesianVoice) {
+        setIsSpeaking(false);
+        setCurrentSpokenText("");
+        clearSpeechHighlight();
+        return;
+      }
+
       setCurrentSpokenText(cleaned);
       setIsSpeaking(true);
 
       const utterance = new SpeechSynthesisUtterance(cleaned);
       utterance.lang = "id-ID";
+      utterance.voice = indonesianVoice;
       utterance.rate = 1.0;
       utterance.pitch = 1.0;
 
@@ -461,7 +473,7 @@ export default function AccessibilityPanel() {
 
           {/* Drawer Container */}
           <div
-            className="fixed right-0 top-0 z-[80] flex h-full w-full sm:max-w-[420px] flex-col
+            className="a11y-drawer fixed right-0 top-0 z-[80] flex h-full w-full sm:max-w-[420px] flex-col
                        border-l border-slate-200 bg-[#060a14] text-slate-100 shadow-2xl
                        dark:border-slate-800 dark:bg-[#060a14] dark:text-slate-100
                        animate-slide-in-right overflow-hidden"
@@ -618,6 +630,7 @@ export default function AccessibilityPanel() {
                     </button>
                   </div>
                 </div>
+
               </div>
 
               {/* ════════════════════════════════════════════════════════

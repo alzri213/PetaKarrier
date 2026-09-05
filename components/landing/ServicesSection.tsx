@@ -112,10 +112,10 @@ export default function ServicesSection() {
   const currentService = SERVICES[activeIndex];
 
   return (
-    <section className="relative overflow-hidden bg-white dark:bg-slate-950 px-4 py-20 sm:px-6 lg:px-8 transition-colors duration-300">
+    <section className="relative overflow-hidden bg-white px-4 py-14 transition-colors duration-300 dark:bg-slate-950 sm:px-6 sm:py-20 lg:px-8">
       <div className="mx-auto max-w-7xl">
         {/* Header Section matching Gambar 2 layout */}
-        <div className="mb-12 flex flex-col items-start justify-between gap-4 md:flex-row md:items-end">
+        <div className="mb-8 flex flex-col items-start justify-between gap-4 md:mb-12 md:flex-row md:items-end">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.25em] text-[#16a34a] dark:text-emerald-400">
               LAYANAN KAMI
@@ -131,7 +131,7 @@ export default function ServicesSection() {
 
         {/* Mobile: Single Card Carousel with absolute positioning */}
         <div 
-          className="md:hidden relative h-[580px] overflow-hidden"
+          className="relative h-[530px] overflow-hidden md:hidden"
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
@@ -143,7 +143,7 @@ export default function ServicesSection() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -300 }}
               transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-              className="absolute inset-0 w-full h-full flex flex-col justify-between rounded-[1.5rem] p-6 bg-gradient-to-b from-[#16a34a] to-[#15803d] text-white shadow-2xl shadow-[#16a34a]/30"
+              className="absolute inset-0 flex h-full w-full flex-col justify-between rounded-[1.5rem] bg-gradient-to-b from-[#16a34a] to-[#15803d] p-5 text-white shadow-2xl shadow-[#16a34a]/30 sm:p-6"
             >
             {/* Top Section */}
             <div>
@@ -155,7 +155,7 @@ export default function ServicesSection() {
               )}
 
               {/* Title */}
-              <h3 className="text-xl font-bold tracking-tight leading-snug text-white mb-3">
+              <h3 className="mb-3 text-xl font-bold leading-snug tracking-tight text-white sm:text-2xl">
                 {currentService.title}
               </h3>
 
@@ -166,8 +166,8 @@ export default function ServicesSection() {
             </div>
 
             {/* Bottom Illustration Container */}
-            <div className="relative mt-6">
-              <div className="relative h-40 w-full overflow-hidden rounded-[1.2rem] bg-[#14532d]/40 border border-white/20 shadow-inner flex items-center justify-center p-3">
+            <div className="relative mt-5 sm:mt-6">
+              <div className="relative flex h-36 w-full items-center justify-center overflow-hidden rounded-[1.2rem] border border-white/20 bg-[#14532d]/40 p-3 shadow-inner sm:h-40">
                 {/* Render Graphics (same as desktop) */}
                 {currentService.graphic === "analisis" && (
                   <div className="relative flex h-full w-full items-center justify-center gap-3">
@@ -286,7 +286,7 @@ export default function ServicesSection() {
               <div className="mt-4">
                 <Link
                   href={currentService.link}
-                  className="flex items-center justify-center gap-2 w-full rounded-xl bg-white text-[#16a34a] py-3.5 px-4 text-sm font-bold shadow-lg transition-transform duration-300 hover:scale-[1.02] active:scale-95"
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-bold text-[#16a34a] shadow-lg transition-transform duration-300 hover:scale-[1.02] active:scale-95"
                 >
                   <span>Akses Layanan Resmi</span>
                   <Icon icon="solar:arrow-right-up-linear" className="h-4 w-4" />
@@ -519,7 +519,7 @@ export default function ServicesSection() {
         </div>
 
         {/* Bottom Controls matching Gambar 2 */}
-        <div className="mt-8 flex items-center justify-between px-1 sm:px-2">
+        <div className="mt-6 flex items-center justify-between px-1 sm:mt-8 sm:px-2">
           {/* Left / Right Navigation Buttons */}
           <div className="flex items-center gap-2 sm:gap-3">
             <button

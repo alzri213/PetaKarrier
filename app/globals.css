@@ -185,6 +185,60 @@ html.a11y-lh-2 main li {
   display: flex !important;
 }
 
+@media (max-width: 767px) {
+  #a11y-trigger.mobile-widget-disabled,
+  #chat-ai-trigger.mobile-widget-disabled {
+    opacity: 0 !important;
+    pointer-events: none !important;
+    visibility: hidden !important;
+  }
+
+  #a11y-trigger,
+  #chat-ai-trigger {
+    transition: opacity 220ms ease, visibility 220ms ease, box-shadow 300ms ease !important;
+  }
+}
+
+/* Accessibility drawer follows the active theme instead of forcing dark surfaces. */
+html:not(.dark) .a11y-drawer {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #e2e8f0 !important;
+}
+
+html:not(.dark) .a11y-drawer [class*="bg-[#060a14]"],
+html:not(.dark) .a11y-drawer [class*="bg-[#0d1424]"],
+html:not(.dark) .a11y-drawer [class*="bg-[#0a101f]"] {
+  background-color: #f8fafc !important;
+}
+
+html:not(.dark) .a11y-drawer [class*="bg-[#141e34]"] {
+  background-color: #e2e8f0 !important;
+}
+
+html:not(.dark) .a11y-drawer [class*="bg-[#0b332b]"],
+html:not(.dark) .a11y-drawer [class*="bg-[#052e25]"] {
+  background-color: #d1fae5 !important;
+}
+
+html:not(.dark) .a11y-drawer [class*="bg-[#161208]"] {
+  background-color: #fffbeb !important;
+}
+
+html:not(.dark) .a11y-drawer [class*="border-slate-800"] {
+  border-color: #e2e8f0 !important;
+}
+
+html:not(.dark) .a11y-drawer .text-white {
+  color: #0f172a !important;
+}
+
+html:not(.dark) .a11y-drawer .text-slate-100,
+html:not(.dark) .a11y-drawer .text-slate-200,
+html:not(.dark) .a11y-drawer .text-slate-300 {
+  color: #334155 !important;
+}
+
 /* 9. Kurangi Animasi (Reduced Motion) */
 html.a11y-reduced-motion,
 html.a11y-reduced-motion * {

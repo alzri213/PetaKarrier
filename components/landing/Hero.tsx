@@ -176,21 +176,22 @@ export default function Hero() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className="flex flex-wrap items-center justify-center gap-3 pt-5"
+            className="grid w-full grid-cols-2 items-stretch gap-2 pt-5 pb-1 sm:flex sm:flex-wrap sm:items-center sm:justify-center sm:gap-3"
           >
             {[
               "Data UMR 38 Provinsi 2026",
               "Upah Per Jam Kerja Bappenas",
               "Standar RAN TPB Matriks 4",
-            ].map((label) => (
+            ].map((label, index) => (
               <div
                 key={label}
-                className="inline-flex items-center gap-2 rounded-full
-                  border border-slate-200 bg-white/95 px-4 py-1.5 text-xs font-bold text-slate-800 shadow-md backdrop-blur-md
-                  dark:border-emerald-500/30 dark:bg-slate-900/85 dark:text-slate-100"
+                className={`inline-flex min-w-0 items-center justify-center gap-1.5 rounded-full
+                  border border-slate-200 bg-white/95 px-2 py-2 text-center text-[10px] font-bold leading-tight text-slate-800 shadow-md backdrop-blur-md
+                  sm:gap-2 sm:px-4 sm:py-1.5 sm:text-xs ${index === 2 ? "col-span-2" : ""}
+                  dark:border-emerald-500/30 dark:bg-slate-900/85 dark:text-slate-100`}
               >
-                <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-[#00df82]" />
-                <span>{label}</span>
+                <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-600 dark:text-[#00df82] sm:h-4 sm:w-4" />
+                <span className="min-w-0">{label}</span>
               </div>
             ))}
           </motion.div>

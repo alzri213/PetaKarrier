@@ -9,6 +9,7 @@ import { Menu, X, LogOut, Camera, Trash2, Upload, User as UserIcon } from "lucid
 import { useSession, signOut } from "next-auth/react";
 import { toast } from "sonner";
 import ThemeToggle from "@/components/ui/ThemeToggle";
+import MobileWidgetControls from "@/components/ui/MobileWidgetControls";
 
 const NAV_LINKS = [
   { href: "/analisis", label: "Analisis Potensi" },
@@ -377,7 +378,7 @@ export default function Navbar() {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              className="absolute inset-y-0 right-0 flex w-full max-w-[300px] flex-col bg-white dark:bg-[#030712] p-6 text-slate-900 dark:text-white shadow-2xl justify-between border-l border-slate-200 dark:border-slate-800"
+              className="absolute inset-y-0 right-0 flex w-full max-w-[300px] flex-col overflow-y-auto bg-white p-6 text-slate-900 shadow-2xl dark:bg-[#030712] dark:text-white border-l border-slate-200 dark:border-slate-800"
             >
               <div>
                 <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
@@ -463,6 +464,8 @@ export default function Navbar() {
                     );
                   })}
                 </div>
+
+                <MobileWidgetControls />
               </div>
 
               <div className="border-t border-slate-200 dark:border-slate-800 pt-6 space-y-3">
