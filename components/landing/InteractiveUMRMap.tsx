@@ -483,8 +483,8 @@ export default function InteractiveUMRMap() {
         />
 
         {/* Top Status Banner */}
-        <div className="relative z-20 mb-3 flex flex-nowrap items-center gap-2 overflow-x-auto pb-1 sm:justify-between sm:gap-3 sm:overflow-visible">
-          <div className="flex shrink-0 items-center gap-2">
+        <div className="relative z-20 mb-3 flex flex-wrap items-center gap-2 sm:justify-between sm:gap-3">
+          <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
             <span className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-slate-200 bg-white/95 px-3 py-1 text-[11px] font-bold leading-none text-slate-800 shadow-sm backdrop-blur-md dark:border-slate-800 dark:bg-[#0c1424]/90 dark:text-white sm:px-3.5 sm:py-1 sm:text-xs">
               <Globe2 className="h-3.5 w-3.5 text-emerald-600 dark:text-[#00df82]" />
               <span>Data Kemnaker 2026</span>
@@ -500,7 +500,7 @@ export default function InteractiveUMRMap() {
             )}
           </div>
 
-          <div className="flex shrink-0 items-center gap-2">
+          <div className="flex w-full items-center gap-2 sm:w-auto sm:justify-end">
             <span className="text-[11px] text-slate-600 font-semibold hidden sm:inline dark:text-slate-400 dark:font-medium">
               Hover untuk nama provinsi • Klik untuk rincian insight
             </span>
