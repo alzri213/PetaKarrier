@@ -32,8 +32,18 @@ export default function SignupPage() {
   const passwordsMatch = password.length > 0 && password === confirmPassword;
   const passwordLongEnough = password.length >= 6;
 
-  const handleGoogleSignIn = () => {
-    signIn("google", { callbackUrl: "/" });
+  const handleGoogleSignIn = async () => {
+    setError("");
+    setIsLoading(true);
+    const result = await signIn("google", { callbackUrl: "/", redirect: false });
+
+    if (result?.error) {
+      setError("Login Google gagal. Pastikan akun OAuth dan URL callback Google sudah dikonfigurasi.");
+      setIsLoading(false);
+      return;
+    }
+
+    if (result?.url) window.location.assign(result.url);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -339,7 +349,8 @@ export default function SignupPage() {
                 {/* Google Sign-Up */}
                 <button
                   type="button"
-                  onClick={() => handleGoogleSignIn()}
+                  onClick={handleGoogleSignIn}
+                  disabled={isLoading}
                   className="flex w-full items-center justify-center gap-3 rounded-full border border-slate-200 bg-white py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 hover:shadow-md active:scale-[0.99] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
                 >
                   <svg className="h-4.5 w-4.5" viewBox="0 0 24 24">

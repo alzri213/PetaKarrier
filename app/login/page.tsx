@@ -35,6 +35,21 @@ function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [showOTPModal, setShowOTPModal] = useState(false);
   const [otpVerified, setOtpVerified] = useState(false);
+  const [isSocialLoading, setIsSocialLoading] = useState(false);
+
+  const handleGoogleSignIn = async () => {
+    setError("");
+    setIsSocialLoading(true);
+    const result = await signIn("google", { callbackUrl, redirect: false });
+
+    if (result?.error) {
+      setError("Login Google gagal. Pastikan akun OAuth dan URL callback Google sudah dikonfigurasi.");
+      setIsSocialLoading(false);
+      return;
+    }
+
+    if (result?.url) window.location.assign(result.url);
+  };
 
   // Helper check status perangkat terpercaya (30 hari)
   const isDeviceTrusted = (userEmail: string): boolean => {
@@ -368,7 +383,8 @@ function LoginForm() {
         {/* Google Sign-In */}
         <button
           type="button"
-          onClick={() => signIn("google", { callbackUrl })}
+          onClick={handleGoogleSignIn}
+          disabled={isSocialLoading}
           className="flex w-full items-center justify-center gap-3 rounded-full border border-slate-200 bg-white py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 hover:shadow-md active:scale-[0.99] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
         >
           <svg className="h-4.5 w-4.5" viewBox="0 0 24 24">

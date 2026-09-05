@@ -106,13 +106,31 @@ html.a11y-high-contrast textarea {
   border-color: currentColor !important;
 }
 
-/* 2. Color Saturation & Monochrome (Apply to the complete application shell) */
-html.a11y-saturate body {
+/* 2. Color Saturation & Monochrome (Apply to main content only, excluding widgets) */
+html.a11y-saturate main,
+html.a11y-saturate header,
+html.a11y-saturate footer,
+html.a11y-saturate section:not(:has(#a11y-trigger)):not(:has(#chat-ai-trigger)) {
   filter: saturate(180%) !important;
 }
 
-html.a11y-monochrome body {
+html.a11y-monochrome main,
+html.a11y-monochrome header,
+html.a11y-monochrome footer,
+html.a11y-monochrome section:not(:has(#a11y-trigger)):not(:has(#chat-ai-trigger)) {
   filter: grayscale(100%) !important;
+}
+
+/* Explicitly protect accessibility widgets and panel from saturation/monochrome filters */
+html.a11y-saturate #a11y-trigger,
+html.a11y-saturate #chat-ai-trigger,
+html.a11y-saturate .a11y-drawer,
+html.a11y-saturate [aria-label*="Pembaca Suara"],
+html.a11y-monochrome #a11y-trigger,
+html.a11y-monochrome #chat-ai-trigger,
+html.a11y-monochrome .a11y-drawer,
+html.a11y-monochrome [aria-label*="Pembaca Suara"] {
+  filter: none !important;
 }
 
 /* 3. Hide Images (Preserves Card and Grid Heights cleanly) */
@@ -183,6 +201,21 @@ html.a11y-lh-2 main li {
   opacity: 1 !important;
   visibility: visible !important;
   display: flex !important;
+  transform: none !important;
+}
+
+/* Ensure accessibility panel and voice player are never affected by filters */
+.a11y-drawer,
+aside[aria-label*="Pembaca Suara"] {
+  filter: none !important;
+  transform: none !important;
+}
+
+html.a11y-panel-open #a11y-trigger,
+html.a11y-panel-open #chat-ai-trigger {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
 }
 
 @media (max-width: 767px) {
@@ -301,6 +334,12 @@ html.a11y-ls-2 main a {
 /* 14. Tooltip Diperluas */
 html.a11y-expanded-tooltips [title] {
   cursor: help !important;
+}
+
+/* 15. Protect Reading Ruler from Saturation/Monochrome Filters */
+html.a11y-saturate .pointer-events-none.fixed[style*="top"],
+html.a11y-monochrome .pointer-events-none.fixed[style*="top"] {
+  filter: none !important;
 }
 
 html {

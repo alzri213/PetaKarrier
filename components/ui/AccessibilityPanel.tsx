@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Accessibility,
   Volume2,
@@ -325,6 +325,11 @@ export default function AccessibilityPanel() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen]);
 
+  useEffect(() => {
+    document.documentElement.classList.toggle("a11y-panel-open", isOpen);
+    return () => document.documentElement.classList.remove("a11y-panel-open");
+  }, [isOpen]);
+
   /* ── 6. State Modification Handlers ── */
   const adjustFontSize = (delta: number) => {
     setSettings((prev) => ({
@@ -352,13 +357,24 @@ export default function AccessibilityPanel() {
   };
 
   const cycleSaturation = () => {
-    // Keep this control focused on saturation; legacy monochrome state is restored to Jenuh+.
-    const next: SaturationMode = settings.saturationMode === "saturated" ? "normal" : "saturated";
+    // Cycle through all three saturation modes: normal → saturated → monochrome
+    let next: SaturationMode;
+    if (settings.saturationMode === "normal") {
+      next = "saturated";
+    } else if (settings.saturationMode === "saturated") {
+      next = "monochrome";
+    } else {
+      next = "normal";
+    }
 
     // Clear the previous visual mode immediately so filters cannot overlap.
     if (typeof document !== "undefined") {
       document.documentElement.classList.remove("a11y-saturate", "a11y-monochrome");
-      if (next === "saturated") document.documentElement.classList.add("a11y-saturate");
+      if (next === "saturated") {
+        document.documentElement.classList.add("a11y-saturate");
+      } else if (next === "monochrome") {
+        document.documentElement.classList.add("a11y-monochrome");
+      }
     }
 
     setSettings((prev) => ({ ...prev, saturationMode: next }));
@@ -435,13 +451,23 @@ export default function AccessibilityPanel() {
       {/* ══════════════════════════════════════════════════════════════════
           2. FLOATING VOICE MODE LIVE PLAYER (Visible when Voice is ON)
           ══════════════════════════════════════════════════════════════════ */}
-      {settings.isVoiceActive && (
-        <aside
-          aria-label="Panel Pembaca Suara Aktif"
-          className="fixed bottom-4 left-4 right-4 sm:right-auto sm:max-w-sm z-[60] rounded-2xl border border-emerald-500/40
-                     bg-white/95 p-3.5 text-slate-900 shadow-2xl backdrop-blur-xl dark:border-emerald-500/30
-                     dark:bg-slate-900/95 dark:text-white transition-all animate-fade-in"
-        >
+      <AnimatePresence mode="wait">
+        {settings.isVoiceActive && (
+          <motion.aside
+            key="voice-player"
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            transition={{
+              type: "spring",
+              damping: 25,
+              stiffness: 300,
+            }}
+            aria-label="Panel Pembaca Suara Aktif"
+            className="fixed bottom-4 left-4 right-4 sm:right-auto sm:max-w-sm z-[60] rounded-2xl border border-emerald-500/40
+                       bg-white/95 p-3.5 text-slate-900 shadow-2xl backdrop-blur-xl dark:border-emerald-500/30
+                       dark:bg-slate-900/95 dark:text-white"
+          >
           <div className="flex items-center justify-between gap-3 border-b border-slate-200/80 pb-2 dark:border-slate-800">
             <div className="flex items-center gap-2">
               <span className="relative flex h-3 w-3">
@@ -467,9 +493,20 @@ export default function AccessibilityPanel() {
           </p>
 
           {isSpeaking && (
-            <div className="mt-2 flex items-center justify-between gap-2 pt-2 border-t border-slate-100 dark:border-slate-800/80">
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.2 }}
+              className="mt-2 flex items-center justify-between gap-2 pt-2 border-t border-slate-100 dark:border-slate-800/80"
+            >
               <span className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
-                <Volume2 className="h-3.5 w-3.5 animate-pulse" />
+                <motion.div
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+                >
+                  <Volume2 className="h-3.5 w-3.5" />
+                </motion.div>
                 Sedang Membaca...
               </span>
               <button
@@ -480,35 +517,56 @@ export default function AccessibilityPanel() {
                 <Square className="h-2.5 w-2.5" />
                 Hentikan
               </button>
-            </div>
+            </motion.div>
           )}
-        </aside>
-      )}
+        </motion.aside>
+        )}
+      </AnimatePresence>
 
       {/* ══════════════════════════════════════════════════════════════════
           3. MAIN ACCESSIBILITY DRAWER PANEL
           ══════════════════════════════════════════════════════════════════ */}
-      {isOpen && (
-        <>
-          {/* Backdrop */}
-          <div
-            className="fixed inset-0 z-[70] bg-black/60 backdrop-blur-xs transition-opacity"
+      <AnimatePresence mode="wait">
+        {isOpen && (
+          <>
+          {/* Backdrop with Fade Animation */}
+          <motion.div
+            key="backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+            className="fixed inset-0 z-[70] bg-black/60"
             onClick={() => setIsOpen(false)}
             aria-hidden="true"
           />
 
-          {/* Drawer Container */}
-          <div
+          {/* Drawer Container with Slide Animation */}
+          <motion.div
+            key="drawer"
+            initial={{ x: "100%", opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: "100%", opacity: 0 }}
+            transition={{
+              type: "spring",
+              damping: 30,
+              stiffness: 300,
+              mass: 0.8,
+            }}
             className="a11y-drawer fixed right-0 top-0 z-[80] flex h-full w-full sm:max-w-[420px] flex-col
                        border-l border-slate-200 bg-[#060a14] text-slate-100 shadow-2xl
-                       dark:border-slate-800 dark:bg-[#060a14] dark:text-slate-100
-                       animate-slide-in-right overflow-hidden"
+                       dark:border-slate-800 dark:bg-[#060a14] dark:text-slate-100 overflow-hidden"
             role="dialog"
             aria-modal="true"
             aria-label="Menu Aksesibilitas"
           >
             {/* ── Top Header ── */}
-            <div className="shrink-0 border-b border-slate-800/80 bg-[#0a101f]/90 px-6 py-4.5 backdrop-blur-xl">
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1, duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="shrink-0 border-b border-slate-800/80 bg-[#0a101f]/90 px-6 py-4.5 backdrop-blur-xl"
+            >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-500/15 text-[#00df82] border border-emerald-500/30">
@@ -524,25 +582,36 @@ export default function AccessibilityPanel() {
                   </div>
                 </div>
 
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.05, rotate: 90 }}
+                  whileTap={{ scale: 0.95 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 17 }}
                   type="button"
                   onClick={() => setIsOpen(false)}
                   className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-800
-                             bg-slate-900 text-slate-400 shadow-sm transition hover:bg-slate-800 hover:text-white
-                             active:scale-95 cursor-pointer"
+                             bg-slate-900 text-slate-400 shadow-sm transition hover:bg-slate-800 hover:text-white cursor-pointer"
                   aria-label="Tutup menu aksesibilitas"
                 >
                   <X className="h-4 w-4" />
-                </button>
+                </motion.button>
               </div>
-            </div>
+            </motion.div>
 
             {/* ── Scrollable Feature Sections ── */}
-            <div className="flex-1 overflow-y-auto overscroll-contain px-5 sm:px-6 py-5 space-y-6 scrollbar-thin scrollbar-thumb-slate-800">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              className="flex-1 overflow-y-auto overscroll-contain px-5 sm:px-6 py-5 space-y-6 scrollbar-thin scrollbar-thumb-slate-800"
+            >
               {/* ════════════════════════════════════════════════════════
                   SECTION 1: KETERBACAAN TEKS
                   ════════════════════════════════════════════════════════ */}
-              <div>
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.25, duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              >
                 <span className="text-[11px] font-black uppercase tracking-wider text-[#00df82]">
                   KETERBACAAN TEKS
                 </span>
@@ -599,7 +668,9 @@ export default function AccessibilityPanel() {
                   {/* 3 Text Helper Buttons Grid: Tinggi Garis | Rata Paragraf | Disleksia */}
                   <div className="grid grid-cols-3 gap-2.5">
                     {/* Tinggi Garis */}
-                    <button
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
                       type="button"
                       onClick={cycleLineHeight}
                       className={`flex flex-col items-center justify-between gap-2.5 rounded-2xl border p-3.5 text-center transition-all cursor-pointer ${
@@ -615,10 +686,12 @@ export default function AccessibilityPanel() {
                       <span className="rounded-full bg-[#141e34] px-2.5 py-0.5 text-[9px] font-extrabold text-slate-300">
                         {LINE_HEIGHT_LABELS[settings.lineHeightLevel]}
                       </span>
-                    </button>
+                    </motion.button>
 
                     {/* Rata Paragraf */}
-                    <button
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
                       type="button"
                       onClick={() => toggle("isJustified")}
                       className={`flex flex-col items-center justify-between gap-2.5 rounded-2xl border p-3.5 text-center transition-all cursor-pointer ${
@@ -634,10 +707,12 @@ export default function AccessibilityPanel() {
                       <span className={`rounded-full px-2.5 py-0.5 text-[9px] font-extrabold ${settings.isJustified ? "bg-[#00df82] text-slate-950" : "bg-[#141e34] text-slate-400"}`}>
                         {settings.isJustified ? "ON" : "OFF"}
                       </span>
-                    </button>
+                    </motion.button>
 
                     {/* Disleksia */}
-                    <button
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
                       type="button"
                       onClick={() => toggle("isDyslexia")}
                       className={`flex flex-col items-center justify-between gap-2.5 rounded-2xl border p-3.5 text-center transition-all cursor-pointer ${
@@ -653,16 +728,20 @@ export default function AccessibilityPanel() {
                       <span className={`rounded-full px-2.5 py-0.5 text-[9px] font-extrabold ${settings.isDyslexia ? "bg-[#00df82] text-slate-950" : "bg-[#141e34] text-slate-400"}`}>
                         {settings.isDyslexia ? "ON" : "OFF"}
                       </span>
-                    </button>
+                    </motion.button>
                   </div>
                 </div>
 
-              </div>
+              </motion.div>
 
               {/* ════════════════════════════════════════════════════════
                   SECTION 2: TAMPILAN & WARNA
                   ════════════════════════════════════════════════════════ */}
-              <div>
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3, duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              >
                 <span className="text-[11px] font-black uppercase tracking-wider text-[#00df82]">
                   TAMPILAN & WARNA
                 </span>
@@ -721,12 +800,16 @@ export default function AccessibilityPanel() {
                     </span>
                   </button>
                 </div>
-              </div>
+              </motion.div>
 
               {/* ════════════════════════════════════════════════════════
                   SECTION 3: BANTUAN INTERAKTIF
                   ════════════════════════════════════════════════════════ */}
-              <div>
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.35, duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              >
                 <span className="text-[11px] font-black uppercase tracking-wider text-[#00df82]">
                   BANTUAN INTERAKTIF
                 </span>
@@ -818,12 +901,16 @@ export default function AccessibilityPanel() {
                     </button>
                   </div>
                 </div>
-              </div>
+              </motion.div>
 
               {/* ════════════════════════════════════════════════════════
                   SECTION 4: BANTUAN NAVIGASI & FOKUS
                   ════════════════════════════════════════════════════════ */}
-              <div>
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4, duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              >
                 <span className="text-[11px] font-black uppercase tracking-wider text-[#00df82]">
                   BANTUAN NAVIGASI & FOKUS
                 </span>
@@ -944,12 +1031,16 @@ export default function AccessibilityPanel() {
                     </button>
                   </div>
                 </div>
-              </div>
+              </motion.div>
 
               {/* ════════════════════════════════════════════════════════
                   SECTION 5: BANTUAN TAMBAHAN
                   ════════════════════════════════════════════════════════ */}
-              <div>
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.45, duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              >
                 <span className="text-[11px] font-black uppercase tracking-wider text-[#00df82]">
                   BANTUAN TAMBAHAN
                 </span>
@@ -983,26 +1074,35 @@ export default function AccessibilityPanel() {
                     </span>
                   </button>
                 </div>
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
 
             {/* ── Footer ── */}
-            <div className="shrink-0 border-t border-slate-800/80 bg-[#0a101f]/90 px-6 py-4">
-              <p className="text-center text-[10px] font-medium text-slate-400">
-                Pengaturan disimpan otomatis di peramban kamu.
-              </p>
-              <button
-                type="button"
-                onClick={resetAll}
-                className="mx-auto mt-2 flex items-center justify-center gap-1.5 rounded-xl border border-slate-800 bg-[#0d1424] px-4 py-2 text-xs font-bold text-slate-300 transition hover:border-red-500/50 hover:bg-red-950/30 hover:text-red-400 active:scale-95 cursor-pointer"
-              >
-                <RotateCcw className="h-3.5 w-3.5" />
-                <span>Reset Semua Pengaturan</span>
-              </button>
-            </div>
-          </div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15, duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="shrink-0 border-t border-slate-800/80 bg-[#0a101f]/95 backdrop-blur-xl px-6 py-4 shadow-[0_-4px_20px_rgba(0,0,0,0.3)]"
+            >
+              <div className="flex flex-col gap-3">
+                <p className="text-center text-[10px] font-medium text-slate-400 leading-relaxed">
+                  Pengaturan disimpan otomatis di peramban kamu.
+                </p>
+                <button
+                  type="button"
+                  onClick={resetAll}
+                  className="mx-auto w-full max-w-xs flex items-center justify-center gap-1.5 rounded-xl border border-slate-800 bg-[#0d1424] px-4 py-2.5 text-xs font-bold text-slate-300 transition hover:border-red-500/50 hover:bg-red-950/30 hover:text-red-400 active:scale-95 cursor-pointer shadow-sm"
+                  aria-label="Reset semua pengaturan aksesibilitas ke default"
+                >
+                  <RotateCcw className="h-3.5 w-3.5" />
+                  <span>Reset Semua Pengaturan</span>
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
         </>
-      )}
+        )}
+      </AnimatePresence>
     </>
   );
 }

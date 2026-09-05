@@ -161,6 +161,15 @@ export default function InteractiveUMRMap() {
 
   const containerRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    if (!isLoggedIn) setSelectedProvince(null);
+  }, [isLoggedIn]);
+
+  const selectProvince = (province: ProvinceMapItem) => {
+    if (!isLoggedIn) return;
+    setSelectedProvince((prev) => (prev?.id === province.id ? null : province));
+  };
+
   // Kalkulasi skala jarak dinamis (Cartographic Scale Bar)
   const scaleKm = useMemo(() => {
     const raw = 500 / zoom;
@@ -529,8 +538,11 @@ export default function InteractiveUMRMap() {
             <div
               className="pointer-events-none absolute z-40 -translate-x-1/2 -translate-y-[calc(100%+14px)] rounded-xl border border-emerald-500/50 bg-white/95 px-3 py-1.5 shadow-2xl backdrop-blur-md flex items-center gap-2 select-none dark:bg-[#060a14]/95"
               style={{
-                left: `${mousePos.x}px`,
-                top: `${mousePos.y}px`,
+                left: `${Math.min(
+                  Math.max(mousePos.x, 110),
+                  Math.max((containerRef.current?.clientWidth ?? 220) - 110, 110)
+                )}px`,
+                top: `${Math.max(mousePos.y, 52)}px`,
               }}
             >
               <span className="h-2 w-2 rounded-full bg-[#00df82] animate-pulse" />
@@ -674,7 +686,7 @@ export default function InteractiveUMRMap() {
                     onClick={(e) => {
                       e.stopPropagation();
                       if (isDraggingRef.current) return;
-                      setSelectedProvince((prev) => (prev?.id === prov.id ? null : prov));
+                      selectProvince(prov);
                     }}
                     className="transition-all duration-150 cursor-pointer ease-out"
                   >
@@ -708,9 +720,7 @@ export default function InteractiveUMRMap() {
                               const prov = provinces.find((p) =>
                                 p.name.toLowerCase().includes(city.provinsi.toLowerCase())
                               );
-                              if (prov) {
-                                setSelectedProvince((prev) => (prev?.id === prov.id ? null : prov));
-                              }
+                              if (prov) selectProvince(prov);
                             }}
                           >
                             <title>{`${city.name} (${city.provinsi}) - Pusat Kegiatan Ekonomi`}</title>
@@ -758,7 +768,7 @@ export default function InteractiveUMRMap() {
 
           {/* ── CARD DETAIL DESKTOP (HANYA MUNCUL DI DESKTOP: sm:block) ── */}
           <AnimatePresence>
-            {selectedProvince && (
+            {isLoggedIn && selectedProvince && (
               <motion.div
                 key={`desktop-${selectedProvince.id}`}
                 initial={{ opacity: 0, y: 15, scale: 0.96 }}
@@ -890,41 +900,40 @@ export default function InteractiveUMRMap() {
             </div>
           </div>
         </div>
-      </div>
 
-      {/* ── CARD DETAIL MOBILE: SEPENUHNYA DI LUAR CONTAINER PETA ── */}
+      {/* ── CARD DETAIL MOBILE: TETAP DI DALAM VIEWPORT PETA ── */}
       <AnimatePresence>
-        {selectedProvince && (
+        {isLoggedIn && selectedProvince && (
           <motion.div
             key={`mobile-${selectedProvince.id}`}
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.25 }}
-            className="mt-6 block sm:hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-xl dark:border-slate-800 dark:bg-[#0c1424]"
+            className="absolute bottom-3 left-3 right-3 z-30 block max-h-[calc(100%-1.5rem)] overflow-y-auto rounded-2xl border border-slate-200 bg-white/95 p-3 shadow-xl backdrop-blur-sm dark:border-slate-800 dark:bg-[#0c1424]/95 sm:hidden"
           >
             <div className="flex items-start justify-between gap-3">
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="rounded-full bg-emerald-50 border border-emerald-300 px-2.5 py-0.5 text-[10px] font-black uppercase text-emerald-700 dark:bg-[#0b2b24] dark:border-emerald-500/30 dark:text-[#00df82]">
+              <div className="min-w-0">
+                <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+                  <span className="max-w-full truncate rounded-full bg-emerald-50 border border-emerald-300 px-2 py-0.5 text-[9px] font-black uppercase text-emerald-700 dark:bg-[#0b2b24] dark:border-emerald-500/30 dark:text-[#00df82]">
                     {selectedProvince.wilayah}
                   </span>
-                  <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">
                     {selectedProvince.cityCount} Daerah Terdata
                   </span>
                 </div>
 
-                <h4 className="mt-1.5 text-lg font-extrabold text-slate-900 dark:text-white tracking-tight">
+                <h4 className="mt-1 text-base font-extrabold text-slate-900 dark:text-white tracking-tight break-words">
                   {selectedProvince.name}
                 </h4>
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex shrink-0 items-center gap-2">
                 <div className="text-right">
-                  <span className="text-[10px] font-bold uppercase text-slate-400 block">
+                  <span className="text-[9px] font-bold uppercase text-slate-400 block">
                     Rata-Rata UMR
                   </span>
-                  <span className="text-base font-black text-emerald-600 dark:text-[#00df82] block">
+                  <span className="text-sm font-black text-emerald-600 dark:text-[#00df82] block whitespace-nowrap">
                     {formatRupiah(selectedProvince.avgUmr)}
                   </span>
                 </div>
@@ -935,7 +944,7 @@ export default function InteractiveUMRMap() {
                     e.stopPropagation();
                     setSelectedProvince(null);
                   }}
-                  className="flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 bg-slate-100 text-slate-500 hover:border-slate-300 hover:bg-slate-200 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800/80 dark:text-slate-400 dark:hover:border-slate-500 dark:hover:bg-slate-700 dark:hover:text-white transition cursor-pointer"
+                  className="flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 bg-slate-100 text-slate-500 hover:border-slate-300 hover:bg-slate-200 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800/80 dark:text-slate-400 dark:hover:border-slate-500 dark:hover:bg-slate-700 dark:hover:text-white transition cursor-pointer"
                   title="Tutup Insight (X)"
                 >
                   <X className="h-4 w-4" />
@@ -943,7 +952,7 @@ export default function InteractiveUMRMap() {
               </div>
             </div>
 
-            <div className="mt-3.5 rounded-xl border border-slate-100 bg-slate-50 px-3.5 py-2.5 text-xs dark:border-slate-800 dark:bg-[#070b14]">
+            <div className="mt-2.5 rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-xs dark:border-slate-800 dark:bg-[#070b14]">
               <span className="text-[10px] text-slate-400 font-bold uppercase block">
                 Sektor Unggulan Wilayah
               </span>
@@ -954,14 +963,16 @@ export default function InteractiveUMRMap() {
 
             <Link
               href={`/perbandingan?provinsi=${encodeURIComponent(selectedProvince.name)}`}
-              className="mt-4 flex w-full items-center justify-between rounded-xl bg-[#00df82] px-4 py-3 text-xs font-black text-slate-950 shadow-md transition hover:bg-[#00c975] active:scale-[0.98]"
+              className="mt-2.5 flex w-full min-w-0 items-center justify-between gap-2 rounded-xl bg-[#00df82] px-3 py-2.5 text-[11px] font-black text-slate-950 shadow-md transition hover:bg-[#00c975] active:scale-[0.98]"
             >
-              <span>Bandingkan UMR {selectedProvince.name}</span>
+              <span className="truncate">Bandingkan UMR {selectedProvince.name}</span>
               <ChevronRight className="h-4 w-4" />
             </Link>
           </motion.div>
         )}
       </AnimatePresence>
+
+      </div>
 
       {/* ══════════════════════════════════════════════════════════════════
           BOTTOM 3 SUMMARY METRIC CARDS (INTERACTIVE CLICK FOCUS)
@@ -977,7 +988,7 @@ export default function InteractiveUMRMap() {
           transition={{ duration: 0.3 }}
           onClick={() => {
             const jkt = provinces.find((p) => p.name === "DKI Jakarta");
-            if (jkt) setSelectedProvince(jkt);
+            if (jkt) selectProvince(jkt);
           }}
           className={`cursor-pointer rounded-[2rem] border-2 bg-white p-6 sm:p-7 shadow-xl transition-all duration-300 flex flex-col justify-between select-none ${
             selectedProvince?.name === "DKI Jakarta"
@@ -1024,7 +1035,7 @@ export default function InteractiveUMRMap() {
           transition={{ duration: 0.3 }}
           onClick={() => {
             const yogya = provinces.find((p) => p.name === "DI Yogyakarta");
-            if (yogya) setSelectedProvince(yogya);
+            if (yogya) selectProvince(yogya);
           }}
           className={`cursor-pointer rounded-[2rem] border-2 bg-white p-6 sm:p-7 shadow-xl transition-all duration-300 flex flex-col justify-between select-none ${
             selectedProvince?.name === "DI Yogyakarta"
@@ -1071,7 +1082,7 @@ export default function InteractiveUMRMap() {
           transition={{ duration: 0.3 }}
           onClick={() => {
             const sulsel = provinces.find((p) => p.name === "Sulawesi Selatan");
-            if (sulsel) setSelectedProvince(sulsel);
+            if (sulsel) selectProvince(sulsel);
           }}
           className={`cursor-pointer rounded-[2rem] border-2 bg-white p-6 sm:p-7 shadow-xl transition-all duration-300 flex flex-col justify-between select-none ${
             selectedProvince?.name === "Sulawesi Selatan"
