@@ -283,11 +283,6 @@ export default function AccessibilityPanel() {
       return;
     }
 
-    // Voice mode enabled announcement
-    speakText(
-      "Moda suara aktif. Klik atau arahkan kursor ke teks mana pun di layar untuk mendengarkan bacaan."
-    );
-
     // Attach click-to-speak on readable blocks
     const handleElementClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement | null;
@@ -359,10 +354,25 @@ export default function AccessibilityPanel() {
   const cycleSaturation = () => {
     const modes: SaturationMode[] = ["normal", "saturated", "monochrome"];
     const next = modes[(modes.indexOf(settings.saturationMode) + 1) % modes.length];
+
+    // Clear the previous visual mode immediately so filters cannot overlap.
+    if (typeof document !== "undefined") {
+      document.documentElement.classList.remove("a11y-saturate", "a11y-monochrome");
+      if (next === "saturated") document.documentElement.classList.add("a11y-saturate");
+      if (next === "monochrome") document.documentElement.classList.add("a11y-monochrome");
+    }
+
     setSettings((prev) => ({ ...prev, saturationMode: next }));
   };
 
   const toggle = (key: keyof A11ySettings) => {
+    if (key === "isVoiceActive") {
+      if (settings.isVoiceActive) {
+        stopSpeech();
+      } else {
+        speakText("Moda suara aktif. Klik atau arahkan kursor ke teks mana pun di layar untuk mendengarkan bacaan.");
+      }
+    }
     setSettings((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 

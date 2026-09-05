@@ -108,11 +108,11 @@ html.a11y-high-contrast textarea {
 
 /* 2. Color Saturation & Monochrome (Apply to the complete application shell) */
 html.a11y-saturate body {
-  filter: saturate(180%);
+  filter: saturate(180%) !important;
 }
 
 html.a11y-monochrome body {
-  filter: grayscale(100%);
+  filter: grayscale(100%) !important;
 }
 
 /* 3. Hide Images (Preserves Card and Grid Heights cleanly) */
