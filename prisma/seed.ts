@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { jenisUsahaSeedList, kotaSeedList } from "./seed-data";
+import { provinsiSeedList } from "./seed-provinsi";
 
 const prisma = new PrismaClient();
 
@@ -102,6 +103,39 @@ async function main() {
       totalEstimasiKerja: 1680,
     },
   });
+
+  // Seed Provinsi (38 Provinsi Nusantara Vector & UMR)
+  console.log("[Seed] Seeding Provinsi data (38 Provinsi)...");
+  for (const p of provinsiSeedList) {
+    await prisma.provinsi.upsert({
+      where: { id: p.id },
+      update: {
+        nama: p.nama,
+        wilayah: p.wilayah,
+        avgUmr: p.avgUmr,
+        minUmr: p.minUmr,
+        maxUmr: p.maxUmr,
+        cityCount: p.cityCount,
+        topSector: p.topSector,
+        svgPath: p.svgPath,
+        centroidX: p.centroidX,
+        centroidY: p.centroidY,
+      },
+      create: {
+        id: p.id,
+        nama: p.nama,
+        wilayah: p.wilayah,
+        avgUmr: p.avgUmr,
+        minUmr: p.minUmr,
+        maxUmr: p.maxUmr,
+        cityCount: p.cityCount,
+        topSector: p.topSector,
+        svgPath: p.svgPath,
+        centroidX: p.centroidX,
+        centroidY: p.centroidY,
+      },
+    });
+  }
 
   console.log("[Seed] Seed completed successfully!");
 }
