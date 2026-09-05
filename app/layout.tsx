@@ -96,7 +96,7 @@ export default function RootLayout({
             <InitialPageLoader />
             <main className="flex-1">{children}</main>
             <Footer />
-            <Toaster position="top-right" richColors />
+            <Toaster position="top-right" richColors closeButton />
             <AccessibilityPanel />
             <ChatAI />
           </ThemeProvider>

@@ -112,6 +112,7 @@ export default function AccessibilityPanel() {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [readingRulerY, setReadingRulerY] = useState(300);
   const highlightedElRef = useRef<HTMLElement | null>(null);
+  const speechRetryTimeoutRef = useRef<number | null>(null);
   const isDraggingRef = useRef(false);
 
   const { setTheme, resolvedTheme } = useTheme();
@@ -201,6 +202,10 @@ export default function AccessibilityPanel() {
 
       window.speechSynthesis.cancel();
       clearSpeechHighlight();
+      if (speechRetryTimeoutRef.current !== null) {
+        window.clearTimeout(speechRetryTimeoutRef.current);
+        speechRetryTimeoutRef.current = null;
+      }
 
       const cleaned = text.replace(/\s+/g, " ").trim();
       if (!cleaned) {
@@ -209,42 +214,50 @@ export default function AccessibilityPanel() {
         return;
       }
 
-      if (elementToHighlight) {
-        elementToHighlight.classList.add("a11y-speech-highlight");
-        highlightedElRef.current = elementToHighlight;
-      }
+      let attempts = 0;
+      const speakWhenVoiceReady = () => {
+        const indonesianVoice = window.speechSynthesis
+          .getVoices()
+          .find((voice) => voice.lang.toLowerCase() === "id-id" || voice.lang.toLowerCase().startsWith("id-"));
 
-      const indonesianVoice = window.speechSynthesis
-        .getVoices()
-        .find((voice) => voice.lang.toLowerCase() === "id-id" || voice.lang.toLowerCase().startsWith("id-"));
+        if (!indonesianVoice) {
+          if (attempts < 40) {
+            attempts += 1;
+            speechRetryTimeoutRef.current = window.setTimeout(speakWhenVoiceReady, 150);
+          }
+          return;
+        }
 
-      if (!indonesianVoice) {
-        setIsSpeaking(false);
-        setCurrentSpokenText("");
-        clearSpeechHighlight();
-        return;
-      }
+        speechRetryTimeoutRef.current = null;
+        if (elementToHighlight) {
+          elementToHighlight.classList.add("a11y-speech-highlight");
+          highlightedElRef.current = elementToHighlight;
+        }
 
-      setCurrentSpokenText(cleaned);
-      setIsSpeaking(true);
+        setCurrentSpokenText(cleaned);
+        setIsSpeaking(true);
 
-      const utterance = new SpeechSynthesisUtterance(cleaned);
-      utterance.lang = "id-ID";
-      utterance.voice = indonesianVoice;
-      utterance.rate = 1.0;
-      utterance.pitch = 1.0;
+        const utterance = new SpeechSynthesisUtterance(cleaned);
+        utterance.lang = "id-ID";
+        utterance.voice = indonesianVoice;
+        utterance.rate = 1.0;
+        utterance.pitch = 1.0;
 
-      utterance.onend = () => {
-        setIsSpeaking(false);
-        clearSpeechHighlight();
+        utterance.onend = () => {
+          setIsSpeaking(false);
+          clearSpeechHighlight();
+        };
+
+        utterance.onerror = () => {
+          setIsSpeaking(false);
+          clearSpeechHighlight();
+        };
+
+        window.speechSynthesis.resume();
+        window.speechSynthesis.speak(utterance);
       };
 
-      utterance.onerror = () => {
-        setIsSpeaking(false);
-        clearSpeechHighlight();
-      };
-
-      window.speechSynthesis.speak(utterance);
+      speakWhenVoiceReady();
     },
     [clearSpeechHighlight]
   );
@@ -252,6 +265,10 @@ export default function AccessibilityPanel() {
   const stopSpeech = useCallback(() => {
     if (typeof window !== "undefined" && "speechSynthesis" in window) {
       window.speechSynthesis.cancel();
+      if (speechRetryTimeoutRef.current !== null) {
+        window.clearTimeout(speechRetryTimeoutRef.current);
+        speechRetryTimeoutRef.current = null;
+      }
     }
     setIsSpeaking(false);
     clearSpeechHighlight();

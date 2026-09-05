@@ -211,11 +211,11 @@ export default function SdgDashboard({ stats }: SdgDashboardProps) {
         <Reveal delay={0.1}>
           <div className="rounded-3xl border-2 border-emerald-100 bg-white p-4 shadow-md h-full flex flex-col justify-between dark:border-slate-700 dark:bg-slate-800 dark:shadow-lg sm:p-7">
             <div>
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-extrabold uppercase tracking-wider text-slate-900 dark:text-white">
+              <div className="flex min-w-0 items-center gap-2 sm:justify-between sm:gap-3">
+                <h3 className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-[10px] font-extrabold uppercase leading-none tracking-wide text-slate-900 dark:text-white sm:text-sm sm:tracking-wider">
                   Indikator Kesiapan Usaha Inklusif
                 </h3>
-                <span className="text-[10px] font-extrabold text-cyan-700 bg-cyan-50 px-2.5 py-0.5 rounded-full border border-cyan-200 dark:text-cyan-300 dark:bg-cyan-500/20 dark:border-cyan-500/40">
+                <span className="shrink-0 whitespace-nowrap rounded-full border border-cyan-200 bg-cyan-50 px-2 py-1 text-[9px] font-extrabold leading-none text-cyan-700 dark:border-cyan-500/40 dark:bg-cyan-500/20 dark:text-cyan-300 sm:px-2.5 sm:py-0.5 sm:text-[10px]">
                   Indeks PetaKarier
                 </span>
               </div>

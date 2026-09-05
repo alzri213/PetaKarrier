@@ -435,14 +435,28 @@ export default function Navbar() {
                       </div>
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-[#00df82] hover:bg-emerald-100 transition"
-                      title="Upload Foto"
-                    >
-                      <Camera className="h-4 w-4" />
-                    </button>
+                    <div className="flex shrink-0 items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="rounded-lg bg-emerald-50 p-2 text-emerald-600 transition hover:bg-emerald-100 dark:bg-emerald-950/60 dark:text-[#00df82] dark:hover:bg-emerald-900/60"
+                        title={userAvatar ? "Ganti Foto Profil" : "Upload Foto"}
+                        aria-label={userAvatar ? "Ganti Foto Profil" : "Upload Foto"}
+                      >
+                        <Camera className="h-4 w-4" />
+                      </button>
+                      {userAvatar && (
+                        <button
+                          type="button"
+                          onClick={handleRemovePhoto}
+                          className="rounded-lg bg-red-50 p-2 text-red-600 transition hover:bg-red-100 dark:bg-red-950/40 dark:text-red-400 dark:hover:bg-red-900/50"
+                          title="Hapus Foto Profil"
+                          aria-label="Hapus Foto Profil"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+                    </div>
                   </div>
                 )}
 
