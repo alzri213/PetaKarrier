@@ -232,19 +232,19 @@ cat .env | grep EMAIL_
 ⚠️ **PENTING untuk Production:**
 
 1. **Ganti reCAPTCHA keys** dengan keys production (bukan test keys)
-2. **Tambahkan production domain** di reCAPTCHA admin console
-3. **Gunakan Redis** untuk OTP storage (bukan in-memory Map):
-   ```typescript
-   // app/api/auth/send-otp/route.ts
-   import { Redis } from '@upstash/redis';
-   const redis = Redis.fromEnv();
-   
-   // Simpan OTP
-   await redis.setex(`otp:${email}`, 600, hashedOtp); // 10 minutes
-   ```
-4. **Setup email service production** (bukan Gmail pribadi)
-5. **Enable rate limiting** di API level
-6. **Add monitoring** untuk OTP delivery failures
+2. **Tambahkan production domain** di reCAPTCHA Admin Console, termasuk domain `*.vercel.app` yang digunakan
+3. **Set environment variables di Vercel > Settings > Environment Variables > Production:**
+  `DATABASE_URL`, `AUTH_SECRET`, `NEXT_PUBLIC_RECAPTCHA_SITE_KEY`, `RECAPTCHA_SECRET_KEY`, `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_USER`, dan `EMAIL_PASS`
+4. **Buat tabel OTP di database production sebelum deploy:**
+  ```bash
+  npx prisma db push
+  ```
+  Jalankan command ini dengan `DATABASE_URL` production, bukan URL placeholder lokal.
+5. **Setup email service production** dan pastikan SMTP mengizinkan koneksi dari Vercel
+6. **Enable rate limiting** di API level
+7. **Add monitoring** untuk OTP delivery failures
+
+OTP disimpan di tabel `OtpVerification`, bukan memory proses, karena Vercel dapat menjalankan setiap request pada instance serverless yang berbeda.
 
 ---
 

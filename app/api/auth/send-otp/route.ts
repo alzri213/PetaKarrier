@@ -1,27 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 import bcrypt from "bcryptjs";
-
-// In-memory OTP storage (in production, use Redis or database)
-const otpStore = new Map<string, { code: string; expiresAt: number; attempts: number }>();
-
-// Cleanup expired OTPs every 5 minutes
-setInterval(() => {
-  const now = Date.now();
-  for (const [email, data] of otpStore.entries()) {
-    if (data.expiresAt < now) {
-      otpStore.delete(email);
-    }
-  }
-}, 5 * 60 * 1000);
+import { randomInt } from "node:crypto";
+import { prisma } from "@/lib/prisma";
 
 function generateOTP(): string {
-  return Math.floor(100000 + Math.random() * 900000).toString();
+  return randomInt(100000, 1000000).toString();
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, recaptchaToken } = await request.json();
+    const { email: rawEmail, recaptchaToken } = await request.json();
+    const email = typeof rawEmail === "string" ? rawEmail.trim().toLowerCase() : "";
 
     if (!email || !recaptchaToken) {
       return NextResponse.json(
@@ -58,10 +48,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check rate limiting (max 3 OTP per email per 10 minutes)
-    const existingOTP = otpStore.get(email);
-    if (existingOTP && existingOTP.attempts >= 3) {
-      const timeLeft = Math.ceil((existingOTP.expiresAt - Date.now()) / 1000 / 60);
+    const now = new Date();
+    const existingOTP = await prisma.otpVerification.findFirst({
+      where: { email, expiresAt: { gt: now }, verifiedAt: null },
+      orderBy: { createdAt: "desc" },
+    });
+
+    // Limit OTP sends per email across all serverless instances.
+    if (existingOTP && existingOTP.sendAttempts >= 3) {
+      const timeLeft = Math.max(1, Math.ceil((existingOTP.expiresAt.getTime() - Date.now()) / 1000 / 60));
       return NextResponse.json(
         { error: `Terlalu banyak percobaan. Coba lagi dalam ${timeLeft} menit.` },
         { status: 429 }
@@ -72,14 +67,14 @@ export async function POST(request: NextRequest) {
     const otp = generateOTP();
     const hashedOTP = await bcrypt.hash(otp, 10);
 
-    // Store OTP (expires in 10 minutes)
-    otpStore.set(email, {
-      code: hashedOTP,
-      expiresAt: Date.now() + 10 * 60 * 1000,
-      attempts: (existingOTP?.attempts || 0) + 1,
-    });
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+      console.error("EMAIL_USER or EMAIL_PASS tidak ditemukan di environment variables");
+      return NextResponse.json(
+        { error: "Konfigurasi email server tidak lengkap" },
+        { status: 500 }
+      );
+    }
 
-    // Send OTP via email
     const transporter = nodemailer.createTransport({
       host: process.env.EMAIL_HOST || "smtp.gmail.com",
       port: parseInt(process.env.EMAIL_PORT || "587"),
@@ -192,6 +187,15 @@ export async function POST(request: NextRequest) {
     };
 
     await transporter.sendMail(mailOptions);
+
+    await prisma.otpVerification.create({
+      data: {
+        email,
+        code: hashedOTP,
+        expiresAt: new Date(Date.now() + 10 * 60 * 1000),
+        sendAttempts: (existingOTP?.sendAttempts || 0) + 1,
+      },
+    });
 
     return NextResponse.json(
       {

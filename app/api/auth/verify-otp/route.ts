@@ -1,18 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-
-// Share the same OTP store with send-otp (in production, use Redis or database)
-// This is a workaround for the module scope
-const otpStore = new Map<string, { code: string; expiresAt: number; attempts: number; verified: boolean }>();
-
-// Export function to sync with send-otp store
-export function getOTPStore() {
-  return otpStore;
-}
+import { prisma } from "@/lib/prisma";
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, otp } = await request.json();
+    const { email: rawEmail, otp } = await request.json();
+    const email = typeof rawEmail === "string" ? rawEmail.trim().toLowerCase() : "";
 
     if (!email || !otp) {
       return NextResponse.json(
@@ -30,7 +23,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Get stored OTP data
-    const storedData = otpStore.get(email);
+    const storedData = await prisma.otpVerification.findFirst({
+      where: { email },
+      orderBy: { createdAt: "desc" },
+    });
 
     if (!storedData) {
       return NextResponse.json(
@@ -40,8 +36,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if expired
-    if (storedData.expiresAt < Date.now()) {
-      otpStore.delete(email);
+    if (storedData.expiresAt < new Date()) {
+      await prisma.otpVerification.delete({ where: { id: storedData.id } });
       return NextResponse.json(
         { error: "Kode OTP sudah expired. Silakan minta kode baru." },
         { status: 410 }
@@ -49,7 +45,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if already verified
-    if (storedData.verified) {
+    if (storedData.verifiedAt) {
       return NextResponse.json(
         { error: "Kode OTP sudah digunakan. Silakan minta kode baru." },
         { status: 400 }
@@ -61,18 +57,20 @@ export async function POST(request: NextRequest) {
 
     if (!isValid) {
       // Increment failed attempts
-      const attemptsLeft = 3 - (storedData.attempts || 0);
+      const attemptsLeft = 3 - storedData.verifyAttempts;
       
       if (attemptsLeft <= 0) {
-        otpStore.delete(email);
+        await prisma.otpVerification.delete({ where: { id: storedData.id } });
         return NextResponse.json(
           { error: "Terlalu banyak percobaan gagal. Silakan minta kode OTP baru." },
           { status: 429 }
         );
       }
 
-      storedData.attempts = (storedData.attempts || 0) + 1;
-      otpStore.set(email, storedData);
+      await prisma.otpVerification.update({
+        where: { id: storedData.id },
+        data: { verifyAttempts: { increment: 1 } },
+      });
 
       return NextResponse.json(
         { 
@@ -84,13 +82,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Mark as verified (one-time use)
-    storedData.verified = true;
-    otpStore.set(email, storedData);
-
-    // Clean up after 2 minutes
-    setTimeout(() => {
-      otpStore.delete(email);
-    }, 2 * 60 * 1000);
+    await prisma.otpVerification.update({
+      where: { id: storedData.id },
+      data: { verifiedAt: new Date() },
+    });
 
     return NextResponse.json(
       {
