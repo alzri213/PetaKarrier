@@ -3,6 +3,8 @@ import nodemailer from "nodemailer";
 import bcrypt from "bcryptjs";
 import { randomInt } from "node:crypto";
 import { prisma } from "@/lib/prisma";
+import { findUserByEmail } from "@/lib/auth/userStore";
+import { verifyPassword } from "@/lib/auth/hash";
 
 function generateOTP(): string {
   return randomInt(100000, 1000000).toString();
@@ -10,12 +12,13 @@ function generateOTP(): string {
 
 export async function POST(request: NextRequest) {
   try {
-    const { email: rawEmail, recaptchaToken } = await request.json();
+    const { email: rawEmail, password: rawPassword, recaptchaToken } = await request.json();
     const email = typeof rawEmail === "string" ? rawEmail.trim().toLowerCase() : "";
+    const password = typeof rawPassword === "string" ? rawPassword : "";
 
-    if (!email || !recaptchaToken) {
+    if (!email || !password || !recaptchaToken) {
       return NextResponse.json(
-        { error: "Email dan reCAPTCHA token diperlukan" },
+        { error: "Email, password, dan verifikasi keamanan diperlukan" },
         { status: 400 }
       );
     }
@@ -59,6 +62,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Solusi 1: Validasi Kredensial (Akun & Password) Sebelum Mengirim OTP
+    const user = await findUserByEmail(email);
+    if (!user || !user.hashedPassword) {
+      return NextResponse.json(
+        { error: "Email atau password salah. Silakan periksa kembali." },
+        { status: 401 }
+      );
+    }
+
+    const isPasswordValid = await verifyPassword(password, user.hashedPassword);
+    if (!isPasswordValid) {
+      return NextResponse.json(
+        { error: "Email atau password salah. Silakan periksa kembali." },
+        { status: 401 }
+      );
+    }
+
     const now = new Date();
     const existingOTP = await prisma.otpVerification.findFirst({
       where: { email, expiresAt: { gt: now }, verifiedAt: null },
@@ -73,6 +93,13 @@ export async function POST(request: NextRequest) {
         { status: 429 }
       );
     }
+
+    const nextAttempts = (existingOTP?.sendAttempts || 0) + 1;
+
+    // Solusi 2: Batalkan/hapus semua OTP lama yang belum diverifikasi agar tidak ada desinkronisasi kode
+    await prisma.otpVerification.deleteMany({
+      where: { email },
+    });
 
     // Generate OTP
     const otp = generateOTP();
@@ -99,7 +126,7 @@ export async function POST(request: NextRequest) {
     const mailOptions = {
       from: `"PetaKarier Security" <${process.env.EMAIL_USER}>`,
       to: email,
-      subject: "🔐 Kode OTP Login Anda - PetaKarier",
+      subject: "Kode OTP Login Anda - PetaKarier",
       html: `
         <!DOCTYPE html>
         <html>
@@ -125,7 +152,7 @@ export async function POST(request: NextRequest) {
         <body>
           <div class="container">
             <div class="header">
-              <h1>🔐 PetaKarier Security</h1>
+              <h1>PetaKarier Security</h1>
               <p style="color: #ffffff; margin: 10px 0 0 0; font-size: 16px;">Kode Verifikasi Login Anda</p>
             </div>
             
@@ -139,13 +166,13 @@ export async function POST(request: NextRequest) {
                 <p style="margin: 0; font-size: 14px; color: #059669; font-weight: 600;">KODE OTP ANDA</p>
                 <div class="otp-code">${otp}</div>
                 <p style="margin: 10px 0 0 0; font-size: 13px; color: #065f46;">
-                  ⏱️ Kode ini berlaku selama <strong>10 menit</strong>
+                  Kode ini berlaku selama <strong>10 menit</strong>
                 </p>
               </div>
 
               <div class="info-box">
                 <p style="margin: 0; font-size: 14px; color: #334155; line-height: 1.6;">
-                  <strong>⚠️ Penting untuk Keamanan Anda:</strong>
+                  <strong>Penting untuk Keamanan Anda:</strong>
                 </p>
                 <ul style="margin: 10px 0 0 0; padding-left: 20px;">
                   <li>Jangan bagikan kode ini kepada siapa pun</li>
@@ -160,7 +187,7 @@ export async function POST(request: NextRequest) {
               </p>
 
               <p class="warning" style="text-align: center;">
-                ⚠️ Jika Anda <strong>tidak</strong> mencoba login, segera amankan akun Anda dan ubah password.
+                Jika Anda <strong>tidak</strong> mencoba login, segera amankan akun Anda dan ubah password.
               </p>
             </div>
 
@@ -204,7 +231,7 @@ export async function POST(request: NextRequest) {
         email,
         code: hashedOTP,
         expiresAt: new Date(Date.now() + 10 * 60 * 1000),
-        sendAttempts: (existingOTP?.sendAttempts || 0) + 1,
+        sendAttempts: nextAttempts,
       },
     });
 

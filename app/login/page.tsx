@@ -30,10 +30,36 @@ function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberDevice, setRememberDevice] = useState(true);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showOTPModal, setShowOTPModal] = useState(false);
   const [otpVerified, setOtpVerified] = useState(false);
+
+  // Helper check status perangkat terpercaya (30 hari)
+  const isDeviceTrusted = (userEmail: string): boolean => {
+    try {
+      if (typeof window === "undefined") return false;
+      const stored = localStorage.getItem(`petakarier_trusted_${userEmail.toLowerCase()}`);
+      if (!stored) return false;
+      const data = JSON.parse(stored);
+      return Boolean(data && data.expiresAt && Date.now() < data.expiresAt);
+    } catch {
+      return false;
+    }
+  };
+
+  // Simpan status perangkat terpercaya selama 30 hari
+  const markDeviceAsTrusted = (userEmail: string) => {
+    try {
+      if (typeof window === "undefined") return;
+      const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
+      localStorage.setItem(
+        `petakarier_trusted_${userEmail.toLowerCase()}`,
+        JSON.stringify({ email: userEmail.toLowerCase(), expiresAt: Date.now() + thirtyDaysMs })
+      );
+    } catch {}
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,7 +67,35 @@ function LoginForm() {
     setIsLoading(true);
 
     try {
-      // Step 1: Verify reCAPTCHA
+      const normalizedEmail = email.trim().toLowerCase();
+
+      // Jika user tidak mencentang ingat perangkat, hapus status lama
+      if (!rememberDevice) {
+        try {
+          localStorage.removeItem(`petakarier_trusted_${normalizedEmail}`);
+        } catch {}
+      }
+
+      // STANDAR UMUM: Jika perangkat ini sudah dipercaya (30 hari), langsung login tanpa spam OTP
+      if (rememberDevice && isDeviceTrusted(normalizedEmail)) {
+        const result = await signIn("credentials", {
+          email: normalizedEmail,
+          password,
+          redirect: false,
+        });
+
+        if (result?.error) {
+          setError("Email atau password salah. Silakan periksa kembali.");
+          setIsLoading(false);
+          return;
+        }
+
+        router.push(callbackUrl);
+        router.refresh();
+        return;
+      }
+
+      // Jika perangkat baru / belum terpercaya: verifikasi reCAPTCHA & kirim OTP
       if (!executeRecaptcha) {
         setError("reCAPTCHA belum siap. Silakan refresh halaman.");
         setIsLoading(false);
@@ -50,11 +104,10 @@ function LoginForm() {
 
       const recaptchaToken = await executeRecaptcha("login");
 
-      // Step 2: Send OTP to email
       const otpResponse = await fetch("/api/auth/send-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, recaptchaToken }),
+        body: JSON.stringify({ email: normalizedEmail, password, recaptchaToken }),
       });
 
       const otpData = await otpResponse.json();
@@ -63,7 +116,6 @@ function LoginForm() {
         throw new Error(otpData.error || "Gagal mengirim kode OTP");
       }
 
-      // Step 3: Show OTP modal
       setShowOTPModal(true);
       setIsLoading(false);
     } catch (err) {
@@ -74,11 +126,11 @@ function LoginForm() {
 
   const handleVerifyOTP = async (otp: string) => {
     try {
-      // Verify OTP
+      const normalizedEmail = email.trim().toLowerCase();
       const verifyResponse = await fetch("/api/auth/verify-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, otp }),
+        body: JSON.stringify({ email: normalizedEmail, otp }),
       });
 
       const verifyData = await verifyResponse.json();
@@ -87,12 +139,16 @@ function LoginForm() {
         throw new Error(verifyData.error || "Kode OTP salah");
       }
 
-      // OTP verified, now proceed with actual login
+      // Jika user memilih ingat perangkat, simpan otorisasi perangkat 30 hari
+      if (rememberDevice) {
+        markDeviceAsTrusted(normalizedEmail);
+      }
+
       setOtpVerified(true);
       setShowOTPModal(false);
 
       const result = await signIn("credentials", {
-        email,
+        email: normalizedEmail,
         password,
         redirect: false,
       });
@@ -119,7 +175,7 @@ function LoginForm() {
       const response = await fetch("/api/auth/send-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, recaptchaToken }),
+        body: JSON.stringify({ email, password, recaptchaToken }),
       });
 
       const data = await response.json();
@@ -234,21 +290,33 @@ function LoginForm() {
           </div>
         </div>
 
+        {/* Ingat Perangkat 30 Hari (Standar Umum Keamanan & Kenyamanan) */}
+        <div className="flex items-center justify-between text-xs pt-0.5">
+          <label className="flex items-center gap-2 cursor-pointer select-none text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition">
+            <input
+              type="checkbox"
+              checked={rememberDevice}
+              onChange={(e) => setRememberDevice(e.target.checked)}
+              className="h-4 w-4 rounded border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-[#00df82] focus:ring-[#00df82]/30 accent-[#00df82] cursor-pointer"
+            />
+            <span>Ingat perangkat ini selama 30 hari</span>
+          </label>
+        </div>
+
         {/* Submit Button */}
         <button
           type="submit"
           disabled={isLoading}
-          className="group flex w-full items-center justify-center gap-2 rounded-full bg-[#00df82] py-3.5 text-sm font-bold text-slate-950 shadow-lg shadow-emerald-500/20 transition hover:bg-[#00c975] active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed"
+          className="group flex w-full items-center justify-center gap-2 rounded-full bg-[#00df82] py-3.5 text-sm font-bold text-slate-950 shadow-lg shadow-emerald-500/20 transition hover:bg-[#00c975] active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
         >
           {isLoading ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" />
-              <span>Mengirim Kode OTP...</span>
+              <span>Memproses...</span>
             </>
           ) : (
             <>
-              <Shield className="h-4 w-4" />
-              <span>Masuk dengan Verifikasi OTP</span>
+              <span>Masuk</span>
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </>
           )}

@@ -26,7 +26,7 @@ const SERVICES: ServiceItem[] = [
   {
     id: "kalkulator",
     title: "Kalkulator Modal & BEP",
-    desc: "Hitung simulasi modal berbasis UMR 18 kota dengan proyeksi arus kas 12 bulan.",
+    desc: "Hitung simulasi modal berbasis UMR 38 provinsi dengan proyeksi arus kas 12 bulan.",
     link: "/kalkulator",
     badge: "Simulasi UMR",
     graphic: "kalkulator",

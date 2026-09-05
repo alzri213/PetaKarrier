@@ -39,7 +39,7 @@ export default function Navbar() {
         } else if (session.user.image) {
           setUserAvatar(session.user.image);
         }
-      } catch {}
+      } catch { }
     }
   }, [session?.user?.email, session?.user?.image]);
 
@@ -127,7 +127,7 @@ export default function Navbar() {
         if (session?.user?.email) {
           try {
             localStorage.setItem(`petakarier_avatar_${session.user.email}`, dataUrl);
-          } catch {}
+          } catch { }
         }
 
         toast.success("Foto profil berhasil diperbarui!");
@@ -145,7 +145,7 @@ export default function Navbar() {
     if (session?.user?.email) {
       try {
         localStorage.removeItem(`petakarier_avatar_${session.user.email}`);
-      } catch {}
+      } catch { }
     }
     toast.success("Foto profil dihapus.");
   };
@@ -166,11 +166,10 @@ export default function Navbar() {
       />
 
       <header
-        className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
-          scrolled
+        className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${scrolled
             ? "bg-white/95 dark:bg-[#030712]/95 backdrop-blur-xl border-b border-slate-200/90 dark:border-slate-800/80 shadow-md dark:shadow-black/20"
             : "bg-white dark:bg-[#030712] border-b border-slate-200/60 dark:border-slate-800/50"
-        }`}
+          }`}
       >
         <nav className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-8 lg:px-12">
           {/* Brand Logo & Text: Peta Karier */}
@@ -198,11 +197,10 @@ export default function Navbar() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`text-sm font-medium transition-all duration-200 ${
-                    active
+                  className={`text-sm font-medium transition-all duration-200 ${active
                       ? "text-[#00df82] font-bold"
                       : "text-slate-600 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white"
-                  }`}
+                    }`}
                 >
                   {link.label}
                 </Link>
@@ -455,11 +453,10 @@ export default function Navbar() {
                         key={link.href}
                         href={link.href}
                         onClick={() => setOpen(false)}
-                        className={`rounded-xl px-4 py-3 text-sm font-medium transition ${
-                          active
+                        className={`rounded-xl px-4 py-3 text-sm font-medium transition ${active
                             ? "bg-emerald-50 text-[#00df82] dark:bg-emerald-950/60 dark:text-[#00df82] font-bold"
                             : "text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-900 dark:hover:text-white"
-                        }`}
+                          }`}
                       >
                         {link.label}
                       </Link>

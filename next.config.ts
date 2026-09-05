@@ -1,7 +1,14 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  allowedDevOrigins: [
+    "intermembral-dahlia-apogeotropic.ngrok-free.dev",
+    "*.ngrok-free.dev",
+    "*.ngrok-free.app",
+    "*.ngrok.io",
+  ],
   images: {
+    qualities: [60, 75],
     remotePatterns: [
       {
         protocol: "https",

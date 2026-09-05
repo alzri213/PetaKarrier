@@ -18,6 +18,7 @@ import { submitAnalisisAction, getUserActiveAnalisis } from "@/lib/actions/anali
 import { formatRupiah } from "@/lib/utils/formatCurrency";
 import { getLocalSessionState, setLocalSessionState } from "@/lib/utils/sessionSync";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
+import { kotaSeedList } from "@/prisma/seed-data";
 
 interface KategoriItem {
   key: KategoriUsaha;
@@ -48,45 +49,14 @@ const PRESET_TIERS = [
   { label: "> Rp 50 Juta", value: 65_000_000 },
 ];
 
-// Full 34 Provinsi Indonesia dengan UMR 2024/2025
-const DAFTAR_PROVINSI = [
-  { id: "aceh", nama: "Aceh" },
-  { id: "sumatera-utara", nama: "Sumatera Utara" },
-  { id: "sumatera-barat", nama: "Sumatera Barat" },
-  { id: "riau", nama: "Riau" },
-  { id: "kepulauan-riau", nama: "Kepulauan Riau" },
-  { id: "jambi", nama: "Jambi" },
-  { id: "sumatera-selatan", nama: "Sumatera Selatan" },
-  { id: "bangka-belitung", nama: "Bangka Belitung" },
-  { id: "bengkulu", nama: "Bengkulu" },
-  { id: "lampung", nama: "Lampung" },
-  { id: "banten", nama: "Banten" },
-  { id: "dki-jakarta", nama: "DKI Jakarta" },
-  { id: "jawa-barat", nama: "Jawa Barat" },
-  { id: "jawa-tengah", nama: "Jawa Tengah" },
-  { id: "diy", nama: "DI Yogyakarta" },
-  { id: "jawa-timur", nama: "Jawa Timur" },
-  { id: "bali", nama: "Bali" },
-  { id: "ntb", nama: "Nusa Tenggara Barat" },
-  { id: "ntt", nama: "Nusa Tenggara Timur" },
-  { id: "kalimantan-barat", nama: "Kalimantan Barat" },
-  { id: "kalimantan-tengah", nama: "Kalimantan Tengah" },
-  { id: "kalimantan-selatan", nama: "Kalimantan Selatan" },
-  { id: "kalimantan-timur", nama: "Kalimantan Timur" },
-  { id: "kalimantan-utara", nama: "Kalimantan Utara" },
-  { id: "sulawesi-utara", nama: "Sulawesi Utara" },
-  { id: "sulawesi-tengah", nama: "Sulawesi Tengah" },
-  { id: "sulawesi-selatan", nama: "Sulawesi Selatan" },
-  { id: "sulawesi-tenggara", nama: "Sulawesi Tenggara" },
-  { id: "sulawesi-barat", nama: "Sulawesi Barat" },
-  { id: "gorontalo", nama: "Gorontalo" },
-  { id: "maluku", nama: "Maluku" },
-  { id: "maluku-utara", nama: "Maluku Utara" },
-  { id: "papua-barat", nama: "Papua Barat" },
-  { id: "papua", nama: "Papua" },
-];
+// Fallback 38 Provinsi Indonesia (dari database Kemenaker UMR)
+const DAFTAR_PROVINSI_FALLBACK = kotaSeedList.map((k) => ({
+  id: k.id,
+  nama: k.nama,
+  wilayah: k.wilayah,
+}));
 
-// UI skill labels mapped to actual data tags used in jenisUsaha.json
+// UI skill labels mapped to actual data tags used in JenisUsaha database
 const SKILL_TAGS: { label: string; dataTags: string[] }[] = [
   { label: "Memasak & Racik Minuman", dataTags: ["memasak", "peracik-kopi", "kemasan"] },
   { label: "Desain Grafis & Branding", dataTags: ["desain", "sablon"] },
@@ -100,7 +70,7 @@ const SKILL_TAGS: { label: string; dataTags: string[] }[] = [
 
 const ANALISIS_STEPS_TEXT = [
   "Membaca profil preferensi dan kompetensi...",
-  "Mencocokkan karakteristik dengan 14 sektor usaha terkurasi...",
+  "Mencocokkan karakteristik dengan data usaha & standar upah 38 provinsi...",
   "Mengalkulasi kelayakan modal awal dan proyeksi risiko...",
   "Menyusun rekomendasi siap eksekusi...",
 ];
@@ -120,6 +90,19 @@ export default function QuestionnaireForm() {
   const [selectedProvinsi, setSelectedProvinsi] = useState<string>("");
   const [waktu, setWaktu] = useState<string>("");
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
+  const [daftarProvinsi, setDaftarProvinsi] = useState<{ id: string; nama: string; wilayah?: string }[]>(DAFTAR_PROVINSI_FALLBACK);
+
+  // Fetch 38 provinsi dari API database
+  useEffect(() => {
+    fetch("/api/kota")
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+          setDaftarProvinsi(json.data);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   // Restore form state from localStorage & database on mount
   useEffect(() => {
@@ -567,7 +550,10 @@ export default function QuestionnaireForm() {
                         value={selectedProvinsi}
                         onChange={setSelectedProvinsi}
                         placeholder="Pilih provinsi"
-                        options={DAFTAR_PROVINSI.map((provinsi) => ({ value: provinsi.id, label: provinsi.nama }))}
+                        options={daftarProvinsi.map((provinsi) => ({
+                          value: provinsi.id,
+                          label: provinsi.wilayah ? `${provinsi.nama} (${provinsi.wilayah})` : provinsi.nama,
+                        }))}
                       />
                     </div>
 

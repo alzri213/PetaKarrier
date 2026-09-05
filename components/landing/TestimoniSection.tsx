@@ -7,7 +7,7 @@ import { useSession } from "next-auth/react";
 import { Icon } from "@iconify/react";
 import {
   Star, Quote, MapPin, ChevronLeft, ChevronRight,
-  Send, CheckCircle2, Loader2, MessageSquare, UserCircle2, Trash2,
+  Send, CheckCircle2, Loader2, MessageSquare, UserCircle2, Trash2, Sparkles,
 } from "lucide-react";
 import Reveal from "@/components/ui/Reveal";
 
@@ -219,7 +219,7 @@ export default function TestimoniSection() {
         kota: kota.trim(),
         rating: `${rating} / 5 bintang`,
         pesan,
-        _subject: `Feedback PetaKarier dari ${newCard.nama} — ${rating}⭐`,
+        _subject: `Feedback PetaKarier dari ${newCard.nama} — Rating ${rating}/5`,
       }),
     }).catch(() => {});
 
@@ -427,7 +427,10 @@ export default function TestimoniSection() {
                       transition={{ type: "spring", stiffness: 260, damping: 18, delay: 0.1 }}>
                       <CheckCircle2 className="h-14 w-14 sm:h-16 sm:w-16 text-emerald-500" />
                     </motion.div>
-                    <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white">Terima kasih! 🎉</h3>
+                    <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white flex items-center justify-center gap-2">
+                      <span>Terima kasih!</span>
+                      <Sparkles className="h-5 w-5 text-emerald-500" />
+                    </h3>
                     <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-sm leading-relaxed">
                       Testimonimu sudah muncul di bagian atas. Scroll ke atas untuk melihatnya!
                     </p>

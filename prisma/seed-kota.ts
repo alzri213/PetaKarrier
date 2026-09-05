@@ -476,7 +476,7 @@ const kotaData = [
 ];
 
 async function main() {
-  console.log("🌱 Seeding Kota data...");
+  console.log("[Seed] Seeding Kota data...");
 
   // Delete all existing kota (optional - comment if you want to keep existing data)
   // await prisma.kota.deleteMany({});
@@ -490,7 +490,7 @@ async function main() {
     });
   }
 
-  console.log(`✅ Seeded ${kotaData.length} kota successfully!`);
+  console.log(`[Seed] Seeded ${kotaData.length} kota successfully!`);
 
   // Print statistics per wilayah
   const wilayahStats = await prisma.kota.groupBy({
@@ -498,7 +498,7 @@ async function main() {
     _count: true,
   });
 
-  console.log("\n📊 Statistics per wilayah:");
+  console.log("\n[Seed] Statistics per wilayah:");
   wilayahStats.forEach((stat) => {
     console.log(`  - ${stat.wilayah}: ${stat._count} provinsi`);
   });
@@ -506,7 +506,7 @@ async function main() {
 
 main()
   .catch((e) => {
-    console.error("❌ Error seeding:", e);
+    console.error("[Seed] Error seeding:", e);
     process.exit(1);
   })
   .finally(async () => {

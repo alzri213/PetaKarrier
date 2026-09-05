@@ -98,7 +98,7 @@ export async function POST(request: NextRequest) {
 
     if (!apiKey) {
       return Response.json({
-        text: `⚠️ **Kunci API Gemini Belum Dikonfigurasi**\n\nHarap masukkan \`GEMINI_API_KEY\` Anda di dalam file \`.env\` agar asisten AI dapat memproses jawaban secara live.`,
+        text: `**Kunci API Gemini Belum Dikonfigurasi**\n\nHarap masukkan \`GEMINI_API_KEY\` Anda di dalam file \`.env\` agar asisten AI dapat memproses jawaban secara live.`,
       });
     }
 
@@ -142,7 +142,7 @@ export async function POST(request: NextRequest) {
     }
 
     return Response.json({
-      text: `⚠️ **Gagal Menghubungi Google Gemini LLM**\n\n${lastError ? `*Detail kendala: ${lastError}*` : ""}\n\nPastikan kuota API Key aktif atau periksa koneksi internet Anda.`,
+      text: `**Gagal Menghubungi Google Gemini LLM**\n\n${lastError ? `*Detail kendala: ${lastError}*` : ""}\n\nPastikan kuota API Key aktif atau periksa koneksi internet Anda.`,
     });
   } catch (error: unknown) {
     console.error("Chat API error:", error);

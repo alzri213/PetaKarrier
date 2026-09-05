@@ -3,366 +3,362 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { motion, AnimatePresence, useAnimationControls } from "framer-motion";
-import Image from "next/image";
+import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import {
   Search,
   Plus,
   Minus,
-  MapPin,
   ChevronRight,
   TrendingUp,
   Building2,
   CheckCircle2,
-  Navigation,
   Globe2,
   X,
   RotateCcw,
-  Hand,
+  Sparkles,
+  MapPin,
   Lock,
+  Compass,
+  Loader2,
 } from "lucide-react";
 import { formatRupiah } from "@/lib/utils/formatCurrency";
 
-interface KotaPin {
+export interface ProvinceMapItem {
   id: string;
-  nama: string;
-  provinsi: string;
-  umr: number;
-  umkmAktif: string;
-  topUsaha: string;
-  rasioUMR: string;
-  x: number; // percentage from left
-  y: number; // percentage from top
+  name: string;
+  wilayah: string;
+  avgUmr: number;
+  minUmr: number;
+  maxUmr: number;
+  cityCount: number;
+  topSector: string;
+  path: string;
+  centroid: [number, number];
 }
 
-const KOTA_PINS: KotaPin[] = [
-  // ── JAWA & BALI ──
-  {
-    id: "jakarta",
-    nama: "DKI Jakarta",
-    provinsi: "DKI Jakarta",
-    umr: 5067381,
-    umkmAktif: "4.200+",
-    topUsaha: "Kedai Kopi & Jasa Kreatif",
-    rasioUMR: "Tertinggi Nasional",
-    x: 29.5,
-    y: 62.5,
-  },
-  {
-    id: "bandung",
-    nama: "Bandung",
-    provinsi: "Jawa Barat",
-    umr: 4209389,
-    umkmAktif: "2.850+",
-    topUsaha: "Distro & Kuliner Kekinian",
-    rasioUMR: "1.25x Rata-rata",
-    x: 30.8,
-    y: 66.5,
-  },
-  {
-    id: "semarang",
-    nama: "Semarang",
-    provinsi: "Jawa Tengah",
-    umr: 3527000,
-    umkmAktif: "2.100+",
-    topUsaha: "Manufaktur & Olahan Pangan",
-    rasioUMR: "1.10x Rata-rata",
-    x: 35.5,
-    y: 66.0,
-  },
-  {
-    id: "yogyakarta",
-    nama: "Yogyakarta",
-    provinsi: "DI Yogyakarta",
-    umr: 2159000,
-    umkmAktif: "2.400+",
-    topUsaha: "Studio Desain & Kerajinan",
-    rasioUMR: "Paling Efisien",
-    x: 35.0,
-    y: 70.0,
-  },
-  {
-    id: "surabaya",
-    nama: "Surabaya",
-    provinsi: "Jawa Timur",
-    umr: 4725479,
-    umkmAktif: "3.100+",
-    topUsaha: "Katering & Logistik Usaha",
-    rasioUMR: "1.45x Rata-rata",
-    x: 40.5,
-    y: 67.0,
-  },
-  {
-    id: "denpasar",
-    nama: "Denpasar",
-    provinsi: "Bali",
-    umr: 3200000,
-    umkmAktif: "1.600+",
-    topUsaha: "Hospitality & Souvenir",
-    rasioUMR: "Pusat Wisata Global",
-    x: 45.0,
-    y: 71.5,
-  },
-  {
-    id: "mataram",
-    nama: "Mataram",
-    provinsi: "Nusa Tenggara Barat",
-    umr: 2688000,
-    umkmAktif: "1.200+",
-    topUsaha: "Pariwisata & Agribisnis",
-    rasioUMR: "Potensi Berkembang",
-    x: 48.0,
-    y: 72.0,
-  },
-
-  // ── SUMATERA ──
-  {
-    id: "medan",
-    nama: "Medan",
-    provinsi: "Sumatera Utara",
-    umr: 3769000,
-    umkmAktif: "1.950+",
-    topUsaha: "Olahan Makanan & Perdagangan",
-    rasioUMR: "Sentra Ekonomi Barat",
-    x: 13.0,
-    y: 24.5,
-  },
-  {
-    id: "aceh",
-    nama: "Banda Aceh",
-    provinsi: "Aceh",
-    umr: 3932552,
-    umkmAktif: "980+",
-    topUsaha: "Kopi Gayo & Jasa Niaga",
-    rasioUMR: "1.18x Rata-rata",
-    x: 7.5,
-    y: 14.5,
-  },
-  {
-    id: "padang",
-    nama: "Padang",
-    provinsi: "Sumatera Barat",
-    umr: 3254580,
-    umkmAktif: "1.400+",
-    topUsaha: "Rumah Makan & Komoditas",
-    rasioUMR: "1.02x Rata-rata",
-    x: 14.5,
-    y: 42.0,
-  },
-  {
-    id: "pekanbaru",
-    nama: "Pekanbaru",
-    provinsi: "Riau",
-    umr: 3788746,
-    umkmAktif: "1.750+",
-    topUsaha: "Retail & Jasa Pendukung Sawit",
-    rasioUMR: "1.15x Rata-rata",
-    x: 18.0,
-    y: 35.0,
-  },
-  {
-    id: "palembang",
-    nama: "Palembang",
-    provinsi: "Sumatera Selatan",
-    umr: 3942963,
-    umkmAktif: "1.850+",
-    topUsaha: "Kuliner Pempek & Tekstil Songket",
-    rasioUMR: "1.20x Rata-rata",
-    x: 23.5,
-    y: 53.0,
-  },
-
-  // ── KALIMANTAN ──
-  {
-    id: "pontianak",
-    nama: "Pontianak",
-    provinsi: "Kalimantan Barat",
-    umr: 3088000,
-    umkmAktif: "1.300+",
-    topUsaha: "Olahan Lidah Buaya & Perdagangan",
-    rasioUMR: "0.96x Rata-rata",
-    x: 32.5,
-    y: 39.0,
-  },
-  {
-    id: "balikpapan",
-    nama: "Balikpapan",
-    provinsi: "Kalimantan Timur",
-    umr: 3758000,
-    umkmAktif: "2.100+",
-    topUsaha: "Jasa Logistik & Mitra IKN",
-    rasioUMR: "Koridor IKN Nusantara",
-    x: 43.5,
-    y: 42.5,
-  },
-  {
-    id: "banjarmasin",
-    nama: "Banjarmasin",
-    provinsi: "Kalimantan Selatan",
-    umr: 3682000,
-    umkmAktif: "1.450+",
-    topUsaha: "Perdagangan Sungai & Kerajinan",
-    rasioUMR: "1.12x Rata-rata",
-    x: 41.0,
-    y: 51.5,
-  },
-
-  // ── SULAWESI & MALUKU ──
-  {
-    id: "makassar",
-    nama: "Makassar",
-    provinsi: "Sulawesi Selatan",
-    umr: 3650000,
-    umkmAktif: "2.300+",
-    topUsaha: "Logistik Maritim & Boga Bahari",
-    rasioUMR: "Hub Indonesia Timur",
-    x: 54.0,
-    y: 57.5,
-  },
-  {
-    id: "manado",
-    nama: "Manado",
-    provinsi: "Sulawesi Utara",
-    umr: 4002630,
-    umkmAktif: "1.250+",
-    topUsaha: "Wisata Bahari & F&B Lokal",
-    rasioUMR: "1.24x Rata-rata",
-    x: 57.5,
-    y: 28.0,
-  },
-  {
-    id: "ambon",
-    nama: "Ambon",
-    provinsi: "Maluku",
-    umr: 3278000,
-    umkmAktif: "850+",
-    topUsaha: "Perikanan & Rempah-Rempah",
-    rasioUMR: "1.01x Rata-rata",
-    x: 69.5,
-    y: 52.0,
-  },
-
-  // ── PAPUA ──
-  {
-    id: "jayapura",
-    nama: "Jayapura",
-    provinsi: "Papua",
-    umr: 4436283,
-    umkmAktif: "950+",
-    topUsaha: "Ekraf Papua & Jasa Perdagangan",
-    rasioUMR: "1.38x Rata-rata",
-    x: 91.0,
-    y: 52.0,
-  },
+const REGION_CATEGORIES = [
+  "Semua",
+  "Jawa",
+  "Sumatera",
+  "Kalimantan",
+  "Sulawesi",
+  "Nusa Tenggara",
+  "Maluku",
+  "Papua",
 ];
 
-export default function InteractiveUMRMap() {
-  const router = useRouter();
-  const { data: session, status } = useSession();
-  const isLoggedIn = status === "authenticated" && !!session?.user;
+// Color palette by geographic island region
+const REGION_COLORS: Record<string, { base: string; border: string; label: string }> = {
+  Jawa: {
+    base: "#0f2e24",
+    border: "#195c47",
+    label: "text-emerald-400",
+  },
+  Sumatera: {
+    base: "#0e2438",
+    border: "#1d476f",
+    label: "text-sky-400",
+  },
+  Kalimantan: {
+    base: "#241e12",
+    border: "#544223",
+    label: "text-amber-400",
+  },
+  Sulawesi: {
+    base: "#1a1633",
+    border: "#3a3070",
+    label: "text-violet-400",
+  },
+  "Nusa Tenggara": {
+    base: "#27162b",
+    border: "#5c3365",
+    label: "text-fuchsia-400",
+  },
+  Maluku: {
+    base: "#112726",
+    border: "#255c5a",
+    label: "text-teal-400",
+  },
+  Papua: {
+    base: "#16233b",
+    border: "#2b4676",
+    label: "text-blue-400",
+  },
+};
 
+export default function InteractiveUMRMap() {
+  const { data: session } = useSession();
+  const isLoggedIn = !!session?.user;
+  const router = useRouter();
+
+  const [hoveredProvince, setHoveredProvince] = useState<ProvinceMapItem | null>(null);
+  const [selectedProvince, setSelectedProvince] = useState<ProvinceMapItem | null>(null);
+  const [provinces, setProvinces] = useState<ProvinceMapItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [activeRegion, setActiveRegion] = useState<string>("Semua");
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedKota, setSelectedKota] = useState<KotaPin | null>(null);
-  const [zoom, setZoom] = useState<number>(1);
-  const [isDragging, setIsDragging] = useState(false);
-  const [mapSize, setMapSize] = useState({ width: 0, height: 0 });
-  const mapControls = useAnimationControls();
+  const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [isPanning, setIsPanning] = useState(false);
+  const [panStart, setPanStart] = useState({ x: 0, y: 0 });
+
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // Ambil data peta 38 provinsi langsung dari database PostgreSQL
   useEffect(() => {
-    const element = containerRef.current;
-    if (!element) return;
-
-    const updateSize = () => {
-      setMapSize({ width: element.clientWidth, height: element.clientHeight });
+    let isMounted = true;
+    async function loadProvincesFromDB() {
+      try {
+        const res = await fetch("/api/wilayah/peta");
+        if (res.ok) {
+          const data = await res.json();
+          if (isMounted && Array.isArray(data.provinces)) {
+            setProvinces(data.provinces);
+          }
+        }
+      } catch (err) {
+        console.error("Gagal mengambil data peta dari database:", err);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    }
+    loadProvincesFromDB();
+    return () => {
+      isMounted = false;
     };
-
-    updateSize();
-    const observer = new ResizeObserver(updateSize);
-    observer.observe(element);
-    return () => observer.disconnect();
   }, []);
 
-  const dragConstraints = useMemo(() => {
-    if (zoom <= 1 || mapSize.width === 0 || mapSize.height === 0) {
-      return { left: 0, right: 0, top: 0, bottom: 0 };
-    }
-
-    const extra = zoom - 1;
-    return {
-      left: -(mapSize.width * extra * 0.5),
-      right: mapSize.width * extra * 0.5,
-      top: -(mapSize.height * extra * 0.5),
-      bottom: mapSize.height * extra * 0.5,
-    };
-  }, [mapSize, zoom]);
-
-  const animateMap = (nextZoom: number) => {
-    setZoom(nextZoom);
-    mapControls.start({
-      x: 0,
-      y: 0,
-      scale: nextZoom,
-      transition: {
-        duration: 0.18,
-        ease: "easeOut",
-      },
+  // Filter provinces based on region and search query
+  const filteredProvinces = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    return provinces.filter((p) => {
+      const matchRegion = activeRegion === "Semua" || p.wilayah === activeRegion;
+      const matchSearch =
+        !q ||
+        p.name.toLowerCase().includes(q) ||
+        p.wilayah.toLowerCase().includes(q) ||
+        p.topSector.toLowerCase().includes(q);
+      return matchRegion && matchSearch;
     });
-  };
+  }, [activeRegion, searchQuery, provinces]);
 
-  const handleResetView = () => {
-    animateMap(1);
+  // Set of matched IDs for fast lookup
+  const matchedIds = useMemo(() => {
+    return new Set(filteredProvinces.map((p) => p.id));
+  }, [filteredProvinces]);
+
+  // Zoom controls (zoom bebas hingga 30x agar provinsi kecil seperti DKI Jakarta, Bali, DIY sangat mudah disentuh)
+  const MAX_ZOOM = 30;
+  const MIN_ZOOM = 1;
+
+  // Batas geser (clamp) dinamis agar gugusan pulau Indonesia tidak bisa terlempar keluar canvas
+  const clampPan = (newX: number, newY: number, targetZoom: number) => {
+    if (!containerRef.current) return { x: newX, y: newY };
+    const w = containerRef.current.clientWidth || 800;
+    const h = containerRef.current.clientHeight || 400;
+
+    // Rasio viewBox SVG adalah 1000 : 380 (~2.63)
+    const SVG_RATIO = 1000 / 380;
+    const isWider = w / h > SVG_RATIO;
+    const svgW = (isWider ? h * SVG_RATIO : w) * targetZoom;
+    const svgH = (isWider ? h : w / SVG_RATIO) * targetZoom;
+
+    // Buffer margin agar pulau terluar (Sabang, Merauke, Talaud, Rote) tetap dapat digeser ke tengah layar
+    const bufferX = w * 0.12;
+    const bufferY = h * 0.15;
+
+    const maxX = Math.max(bufferX, (svgW - w) / 2 + bufferX);
+    const maxY = Math.max(bufferY, (svgH - h) / 2 + bufferY);
+
+    return {
+      x: Math.min(Math.max(newX, -maxX), maxX),
+      y: Math.min(Math.max(newY, -maxY), maxY),
+    };
   };
 
   const handleZoomIn = () => {
-    animateMap(Math.min(zoom + 0.3, 1.8));
+    setZoom((z) => {
+      const next = Math.min(Number((z * 1.5).toFixed(2)), MAX_ZOOM);
+      setPan((prev) => clampPan(prev.x, prev.y, next));
+      return next;
+    });
   };
 
   const handleZoomOut = () => {
-    animateMap(Math.max(zoom - 0.3, 1));
+    setZoom((z) => {
+      const next = Math.max(Number((z / 1.5).toFixed(2)), MIN_ZOOM);
+      if (next <= 1.05) {
+        setPan({ x: 0, y: 0 });
+        return 1;
+      }
+      setPan((prev) => clampPan(prev.x, prev.y, next));
+      return next;
+    });
   };
 
-  const filteredPins = useMemo(() => {
-    if (!searchQuery.trim()) return KOTA_PINS;
-    const q = searchQuery.toLowerCase();
-    return KOTA_PINS.filter(
-      (k) =>
-        k.nama.toLowerCase().includes(q) ||
-        k.provinsi.toLowerCase().includes(q) ||
-        k.topUsaha.toLowerCase().includes(q)
-    );
-  }, [searchQuery]);
+  const handleResetZoom = () => {
+    setZoom(1);
+    setPan({ x: 0, y: 0 });
+  };
+
+  const isDraggingRef = useRef(false);
+  const dragStartRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const touchStartTimeRef = useRef<number>(0);
+  const touchStartPosRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const touchStartDistRef = useRef<number | null>(null);
+  const touchStartZoomRef = useRef<number>(1);
+
+  // Mouse pan handlers
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsPanning(true);
+    isDraggingRef.current = false;
+    dragStartRef.current = { x: e.clientX - pan.x, y: e.clientY - pan.y };
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      setMousePos({
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+      });
+    }
+    if (!isPanning) return;
+    const rawX = e.clientX - dragStartRef.current.x;
+    const rawY = e.clientY - dragStartRef.current.y;
+    if (Math.hypot(rawX - pan.x, rawY - pan.y) > 6) {
+      isDraggingRef.current = true;
+    }
+    const clamped = clampPan(rawX, rawY, zoom);
+    // Sinkronkan drag start agar respon instan saat arah geser dibalik (tanpa dead-zone)
+    dragStartRef.current = {
+      x: e.clientX - clamped.x,
+      y: e.clientY - clamped.y,
+    };
+    setPan(clamped);
+  };
+
+  const handleMouseUp = () => {
+    setIsPanning(false);
+    if (zoom <= 1.05) {
+      setPan({ x: 0, y: 0 });
+    }
+    setTimeout(() => {
+      isDraggingRef.current = false;
+    }, 60);
+  };
+
+  // Touch pan & pinch-to-zoom handlers for mobile screens
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 1) {
+      const t = e.touches[0];
+      touchStartTimeRef.current = Date.now();
+      touchStartPosRef.current = { x: t.clientX, y: t.clientY };
+      setIsPanning(true);
+      isDraggingRef.current = false;
+      dragStartRef.current = { x: t.clientX - pan.x, y: t.clientY - pan.y };
+      touchStartDistRef.current = null;
+    } else if (e.touches.length === 2) {
+      setIsPanning(false);
+      isDraggingRef.current = true;
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      touchStartDistRef.current = dist;
+      touchStartZoomRef.current = zoom;
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (e.touches.length === 1 && isPanning) {
+      const t = e.touches[0];
+      const dx = t.clientX - touchStartPosRef.current.x;
+      const dy = t.clientY - touchStartPosRef.current.y;
+      if (Math.hypot(dx, dy) > 10) {
+        isDraggingRef.current = true;
+      }
+      const rawX = t.clientX - dragStartRef.current.x;
+      const rawY = t.clientY - dragStartRef.current.y;
+      const clamped = clampPan(rawX, rawY, zoom);
+      dragStartRef.current = {
+        x: t.clientX - clamped.x,
+        y: t.clientY - clamped.y,
+      };
+      setPan(clamped);
+    } else if (e.touches.length === 2 && touchStartDistRef.current !== null) {
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      const scale = dist / touchStartDistRef.current;
+      const nextZoom = Math.min(
+        Math.max(Number((touchStartZoomRef.current * scale).toFixed(2)), MIN_ZOOM),
+        MAX_ZOOM
+      );
+      setZoom(nextZoom);
+      setPan((prev) => (nextZoom <= 1.05 ? { x: 0, y: 0 } : clampPan(prev.x, prev.y, nextZoom)));
+    }
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (e.touches.length === 0) {
+      setIsPanning(false);
+      touchStartDistRef.current = null;
+      if (zoom <= 1.05) {
+        setPan({ x: 0, y: 0 });
+      }
+      const duration = Date.now() - touchStartTimeRef.current;
+      if (duration < 250) {
+        isDraggingRef.current = false;
+      } else {
+        setTimeout(() => {
+          isDraggingRef.current = false;
+        }, 80);
+      }
+    } else if (e.touches.length === 1) {
+      const t = e.touches[0];
+      setIsPanning(true);
+      dragStartRef.current = { x: t.clientX - pan.x, y: t.clientY - pan.y };
+      touchStartDistRef.current = null;
+    }
+  };
 
   return (
     <div className="mx-auto w-full max-w-6xl">
       {/* ══════════════════════════════════════════════════════════════════
-          TOP HEADER: BADGE, TITLE, SUBTITLE & SEARCH INPUT
+          TOP HEADER: TITLE, SUBTITLE & SEARCH INPUT
       ══════════════════════════════════════════════════════════════════ */}
-      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-8">
+      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-6">
         <div className="space-y-2 max-w-3xl">
+          <div className="flex items-center gap-2">
+            <span className="flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 px-3 py-1 text-[11px] font-extrabold text-[#00df82]">
+              <Compass className="h-3.5 w-3.5" />
+              <span>Peta Vektor 38 Provinsi Nusantara</span>
+            </span>
+          </div>
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
             Eksplorasi Parameter Wilayah & Potensi Usaha
           </h2>
-
           <p className="text-xs sm:text-sm leading-relaxed text-slate-600 dark:text-slate-400 font-normal">
-            Bandingkan standar upah minimum resmi dan potensi sektor unggulan di setiap titik kota nusantara. {isLoggedIn ? "Klik pin wilayah pada peta untuk menampilkan rincian insight." : "Masuk ke akun Anda untuk membuka seluruh data pin interaktif."}
+            Batas wilayah resmi 38 provinsi di Indonesia. Arahkan kursor atau sentuh provinsi pada peta untuk melihat standar UMR resmi dan sektor bisnis unggulan.
           </p>
         </div>
 
-        {/* Right Search Input */}
-        <div className="w-full lg:w-72 space-y-1.5">
+        {/* Search Input */}
+        <div className="w-full lg:w-80 space-y-1.5">
           <label className="text-xs font-bold text-slate-500 dark:text-slate-400">
-            Cari Kota / Provinsi
+            Cari Provinsi / Wilayah
           </label>
           <div className="relative">
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={isLoggedIn ? "Cari Jakarta, Surabaya, Bali..." : "🔒 Masuk untuk mencari..."}
-              disabled={!isLoggedIn}
-              className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-4 pr-10 text-xs font-semibold text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#00df82] disabled:opacity-60 disabled:cursor-not-allowed dark:border-slate-800 dark:bg-slate-900/90 dark:text-white"
+              placeholder="Cari Jawa Barat, Bali, Papua..."
+              className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-4 pr-10 text-xs font-semibold text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#00df82] focus:ring-1 focus:ring-[#00df82]/30 dark:border-slate-800 dark:bg-slate-900/90 dark:text-white"
             />
             <Search className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           </div>
@@ -370,251 +366,313 @@ export default function InteractiveUMRMap() {
       </div>
 
       {/* ══════════════════════════════════════════════════════════════════
-          MAIN SATELLITE MAP CONTAINER (BOUNDED & DRAGGABLE/PANNABLE)
+          REGION QUICK FILTER TABS
       ══════════════════════════════════════════════════════════════════ */}
-      <div className="relative rounded-[2.5rem] border border-slate-200 bg-white p-4 sm:p-6 shadow-2xl dark:border-slate-800/90 dark:bg-slate-950 overflow-hidden min-h-[540px]">
-        {/* Top Floating Badge */}
-        <div className="absolute top-6 right-8 z-30 flex items-center gap-2">
-          <span className="flex items-center gap-1.5 rounded-full border border-slate-300/80 bg-white/90 px-4 py-1.5 text-xs font-extrabold text-slate-700 shadow-lg backdrop-blur-md dark:border-slate-700/80 dark:bg-slate-900/90 dark:text-white">
-            <Globe2 className="h-3.5 w-3.5 text-emerald-500 dark:text-[#00df82]" />
-            <span>Peta Nusantara • Data Resmi 2026</span>
-          </span>
-        </div>
+      <div className="mb-4 flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+        {REGION_CATEGORIES.map((region) => {
+          const isActive = activeRegion === region;
+          return (
+            <button
+              key={region}
+              onClick={() => setActiveRegion(region)}
+              className={`shrink-0 rounded-full px-4 py-1.5 text-xs font-bold transition cursor-pointer ${
+                isActive
+                  ? "bg-[#00df82] text-slate-950 shadow-md shadow-emerald-500/20"
+                  : "border border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900/80 dark:text-slate-400 dark:hover:text-white"
+              }`}
+            >
+              {region === "Semua" ? "Semua (38 Provinsi)" : region}
+            </button>
+          );
+        })}
+      </div>
 
-        {/* Instruction Badge */}
-        <div className="absolute top-6 left-8 z-30 hidden sm:flex items-center gap-2 rounded-full border border-emerald-500/30 bg-white/80 px-3.5 py-1.5 text-[11px] font-bold text-emerald-700 backdrop-blur-md dark:bg-slate-900/80 dark:text-emerald-300">
-          {!isLoggedIn ? (
-            <>
-              <Lock className="h-3.5 w-3.5 text-[#00df82]" />
-              <span>Peta Satelit • Masuk untuk membuka data UMR & pin lokasi</span>
-            </>
-          ) : zoom > 1 ? (
-            <>
-              <Hand className="h-3.5 w-3.5 text-[#00df82]" />
-              <span>Geser peta untuk navigasi • Klik pin untuk insight</span>
-            </>
-          ) : (
-            <>
-              <Navigation className="h-3 w-3 text-[#00df82] animate-bounce" />
-              <span>Klik pin kota pada peta untuk melihat insight</span>
-            </>
-          )}
-        </div>
-
-        {/* Interactive Map Visual Area (Strictly Bounded Frame) */}
-        <div 
-          ref={containerRef} 
-          className="relative w-full h-[420px] sm:h-[480px] lg:h-[540px] rounded-3xl overflow-hidden border border-slate-200 bg-slate-100 dark:border-slate-800/80 dark:bg-slate-950"
-          style={{ 
-            WebkitOverflowScrolling: "touch",
-            transform: "translate3d(0,0,0)"
+      {/* ══════════════════════════════════════════════════════════════════
+          MAIN VECTOR MAP CONTAINER
+      ══════════════════════════════════════════════════════════════════ */}
+      <div className="relative rounded-[2rem] sm:rounded-[2.5rem] border border-slate-200 bg-slate-950 p-3.5 sm:p-6 shadow-2xl dark:border-slate-800/90 dark:bg-[#060a14] overflow-hidden">
+        {/* Subtle Oceanic Grid Background Pattern */}
+        <div
+          className="absolute inset-0 opacity-20 pointer-events-none"
+          style={{
+            backgroundImage:
+              "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.2) 1px, transparent 0)",
+            backgroundSize: "28px 28px",
           }}
+        />
+
+        {/* Top Status Banner */}
+        <div className="relative z-20 flex flex-wrap items-center justify-between gap-3 mb-3">
+          <div className="flex items-center gap-2">
+            <span className="flex items-center gap-1.5 rounded-full border border-slate-800 bg-[#0c1424]/90 px-3.5 py-1 text-xs font-bold text-white shadow-sm backdrop-blur-md">
+              <Globe2 className="h-3.5 w-3.5 text-[#00df82]" />
+              <span>Data Kemnaker 2026</span>
+            </span>
+
+            {selectedProvince && (
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-950/40 px-3 py-1 text-xs font-extrabold text-[#00df82]">
+                <Sparkles className="h-3 w-3" />
+                <span>
+                  {selectedProvince.name} • {formatRupiah(selectedProvince.avgUmr)}
+                </span>
+              </span>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] text-slate-400 font-medium hidden sm:inline">
+              Hover untuk nama provinsi • Klik untuk rincian insight
+            </span>
+            <span className="text-[11px] text-[#00df82] font-semibold inline sm:hidden">
+              Geser peta • Ketuk untuk detail
+            </span>
+          </div>
+        </div>
+
+        {/* SVG Map Canvas Frame */}
+        <div
+          ref={containerRef}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          onTouchCancel={handleTouchEnd}
+          className="relative w-full h-[280px] sm:h-[400px] lg:h-[460px] rounded-2xl overflow-hidden select-none cursor-grab active:cursor-grabbing"
+          style={{ touchAction: "none" }}
         >
-          {/* Framer Motion Draggable & Zoomable Canvas */}
-          <motion.div
-            drag={zoom > 1}
-            dragConstraints={dragConstraints}
-            dragElastic={0}
-            dragMomentum={false}
-            dragTransition={{ bounceStiffness: 300, bounceDamping: 25, power: 0.2 }}
-            animate={mapControls}
-            initial={{ x: 0, y: 0, scale: 1 }}
-            onDragStart={() => setIsDragging(true)}
-            onDragEnd={() => setIsDragging(false)}
-            className={`absolute inset-0 origin-center select-none ${
-              zoom > 1 ? "cursor-grab active:cursor-grabbing" : "cursor-default"
+          {/* ── TOOLTIP HOVER KECIL: HANYA MENAMPILKAN NAMA PROVINSI DI ATAS KURSOR ── */}
+          {hoveredProvince && (
+            <div
+              className="pointer-events-none absolute z-40 -translate-x-1/2 -translate-y-[calc(100%+14px)] rounded-xl border border-emerald-500/50 bg-[#060a14]/95 px-3 py-1.5 shadow-2xl backdrop-blur-md flex items-center gap-2 select-none"
+              style={{
+                left: `${mousePos.x}px`,
+                top: `${mousePos.y}px`,
+              }}
+            >
+              <span className="h-2 w-2 rounded-full bg-[#00df82] animate-pulse" />
+              <span className="text-xs font-black tracking-tight text-white">
+                {hoveredProvince.name}
+              </span>
+              <span className="text-[10px] font-bold text-[#00df82] border-l border-slate-700 pl-2">
+                {hoveredProvince.wilayah}
+              </span>
+            </div>
+          )}
+
+          <div
+            className={`w-full h-full flex items-center justify-center ${
+              isPanning ? "transition-none" : "transition-transform duration-150 ease-out"
             }`}
-            style={{ 
-              willChange: zoom > 1 ? "transform" : "auto",
-              contain: "layout paint",
-              touchAction: zoom > 1 ? "none" : "auto"
+            style={{
+              transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+              transformOrigin: "center center",
             }}
           >
-            {/* Real Satellite Map Image */}
-            <Image
-              src="/indonesia-map-satellite.jpg"
-              alt="Peta Satelit Indonesia Interaktif PetaKarier"
-              fill
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
-              quality={60}
-              className="object-cover object-center brightness-95 contrast-105 pointer-events-none"
-              style={{ transform: "translate3d(0,0,0)" }}
-              loading="lazy"
-            />
+            {isLoading ? (
+              <div className="flex h-full w-full flex-col items-center justify-center gap-3 text-slate-400">
+                <Loader2 className="h-8 w-8 animate-spin text-[#00df82]" />
+                <span className="text-xs font-semibold">Memuat peta wilayah dari database...</span>
+              </div>
+            ) : (
+              <svg
+                viewBox="0 0 1000 380"
+                className="w-full h-full max-h-full filter drop-shadow-[0_12px_24px_rgba(0,0,0,0.4)]"
+              >
+                <defs>
+                  {/* Glow filter for active/hovered province */}
+                  <filter id="emerald-glow" x="-20%" y="-20%" width="140%" height="140%">
+                    <feDropShadow dx="0" dy="0" stdDeviation="4" floodColor="#00df82" floodOpacity="0.8" />
+                  </filter>
+                </defs>
 
-            {/* Subtle Gradient Vignette for Depth */}
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-slate-950/30 pointer-events-none" />
+                {/* Render each of the 38 provinces as pure vector path directly from DB */}
+                {provinces.map((prov) => {
+                const isSelected = selectedProvince?.id === prov.id;
+                const isHovered = hoveredProvince?.id === prov.id;
+                const isMatched = matchedIds.has(prov.id);
+                const regionStyle = REGION_COLORS[prov.wilayah] || {
+                  base: "#0f172a",
+                  border: "#334155",
+                  label: "text-slate-300",
+                };
 
-            {/* ── INTERACTIVE CITY PIN MARKERS (ONLY WHEN LOGGED IN) ── */}
-            {isLoggedIn &&
-              filteredPins.map((k) => {
-                const isSelected = selectedKota?.id === k.id;
+                const isSmallProvince =
+                  prov.name === "DKI Jakarta" ||
+                  prov.name === "DI Yogyakarta" ||
+                  prov.name === "Bali" ||
+                  prov.name === "Kepulauan Riau" ||
+                  prov.name === "Kepulauan Bangka Belitung" ||
+                  prov.name === "Gorontalo";
+
+                let fillColor = regionStyle.base;
+                let strokeColor = regionStyle.border;
+                let strokeWidth = isSmallProvince ? 1.4 : 0.8;
+                let filter = "none";
+                let opacity = 1;
+
+                if (isSelected) {
+                  fillColor = "#00df82";
+                  strokeColor = "#ffffff";
+                  strokeWidth = isSmallProvince ? 2.8 : 2;
+                  filter = "url(#emerald-glow)";
+                } else if (isHovered) {
+                  fillColor = "#00df82";
+                  strokeColor = "#ffffff";
+                  strokeWidth = isSmallProvince ? 2.4 : 1.6;
+                  filter = "url(#emerald-glow)";
+                } else if (!isMatched) {
+                  opacity = 0.25;
+                }
+
                 return (
-                  <div
-                    key={k.id}
-                    style={{ top: `${k.y}%`, left: `${k.x}%` }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (!isDragging) {
-                        setSelectedKota(k);
+                  <path
+                    key={prov.id}
+                    d={prov.path}
+                    fill={fillColor}
+                    stroke={strokeColor}
+                    strokeWidth={strokeWidth}
+                    opacity={opacity}
+                    filter={filter}
+                    pointerEvents="all"
+                    onMouseEnter={(e) => {
+                      setHoveredProvince(prov);
+                      if (containerRef.current) {
+                        const rect = containerRef.current.getBoundingClientRect();
+                        setMousePos({
+                          x: e.clientX - rect.left,
+                          y: e.clientY - rect.top,
+                        });
                       }
                     }}
-                    className="absolute -translate-x-1/2 -translate-y-1/2 z-20 cursor-pointer group select-none"
+                    onMouseMove={(e) => {
+                      if (containerRef.current) {
+                        const rect = containerRef.current.getBoundingClientRect();
+                        setMousePos({
+                          x: e.clientX - rect.left,
+                          y: e.clientY - rect.top,
+                        });
+                      }
+                    }}
+                    onMouseLeave={() => setHoveredProvince(null)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (isDraggingRef.current) return;
+                      setSelectedProvince((prev) => (prev?.id === prov.id ? null : prov));
+                    }}
+                    className="transition-all duration-150 cursor-pointer ease-out"
                   >
-                    {/* Radar Pulse Rings */}
-                    {!isDragging && isSelected && (
-                      <span
-                        className={`absolute -inset-3 rounded-full animate-ping opacity-75 ${
-                          isSelected ? "bg-[#00df82]" : "bg-emerald-400/40"
-                        }`}
-                      />
-                    )}
-
-                    {/* Pin Dot / Icon Marker */}
-                    <motion.div
-                      animate={{ scale: isSelected ? 1.35 : 1 }}
-                      whileHover={{ scale: isDragging ? 1 : 1.25 }}
-                      transition={{ type: "spring", stiffness: 400, damping: 20, mass: 0.5 }}
-                      className={`relative flex h-8 w-8 items-center justify-center rounded-full border-2 shadow-2xl transition-all ${
-                        isSelected
-                          ? "bg-[#00df82] text-slate-950 border-white ring-4 ring-emerald-400/60 shadow-emerald-500/50"
-                          : "bg-slate-900/80 text-[#00df82] border-emerald-400/80 hover:bg-emerald-500 hover:text-white dark:bg-slate-950/90 dark:text-[#00df82]"
-                      }`}
-                    >
-                      <MapPin className="h-4 w-4" />
-                    </motion.div>
-
-                    {/* City Label Badge */}
-                    <span
-                      className={`absolute top-9 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-lg px-2.5 py-0.5 text-[10px] font-extrabold transition-all shadow-xl backdrop-blur-md ${
-                        isSelected
-                          ? "bg-[#00df82] text-slate-950 border border-white"
-                          : "bg-slate-900/80 text-slate-100 border border-slate-600/80 group-hover:bg-emerald-500 group-hover:text-white dark:bg-slate-950/90 dark:text-slate-100 dark:border-slate-700/80"
-                      }`}
-                    >
-                      {k.nama}
-                    </span>
-                  </div>
+                    <title>{`${prov.name} (${prov.wilayah}) - UMR: ${formatRupiah(prov.avgUmr)}`}</title>
+                  </path>
                 );
               })}
-          </motion.div>
+            </svg>
+          )}
+          </div>
 
-
-          {/* ── FLOATING GLASS INSIGHT CARD (ONLY APPEARS AFTER CLICK AND WHEN LOGGED IN) ── */}
-          <AnimatePresence mode="wait">
-            {isLoggedIn && selectedKota && (
+          {/* ── CARD DETAIL DESKTOP (HANYA MUNCUL DI DESKTOP: sm:block) ── */}
+          <AnimatePresence>
+            {selectedProvince && (
               <motion.div
-                key={selectedKota.id}
-                initial={{ opacity: 0, y: 20, scale: 0.92 }}
+                key={`desktop-${selectedProvince.id}`}
+                initial={{ opacity: 0, y: 15, scale: 0.96 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 20, scale: 0.92 }}
-                transition={{ duration: 0.25, ease: "easeOut" }}
-                className="absolute bottom-4 left-4 right-4 sm:left-6 sm:right-auto sm:max-w-sm z-40 rounded-2xl border-2 border-emerald-400/80 bg-white/95 p-5 backdrop-blur-2xl text-slate-900 shadow-2xl shadow-emerald-500/15 dark:bg-slate-950/95 dark:text-white"
+                exit={{ opacity: 0, y: 10, scale: 0.96 }}
+                transition={{ duration: 0.2 }}
+                className="hidden sm:block absolute bottom-4 left-4 z-30 max-w-sm rounded-2xl border border-slate-800 bg-[#0c1424]/95 p-4 shadow-2xl backdrop-blur-xl"
               >
-                {/* Header with Close (X) Button */}
-                <div className="flex items-center justify-between border-b border-slate-200 pb-3 dark:border-slate-800">
-                  <div className="flex items-center gap-2.5">
-                    <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-600 border border-emerald-500/40 shadow-sm dark:text-[#00df82]">
-                      <MapPin className="h-4 w-4" />
-                    </span>
-                    <div>
-                      <h4 className="text-base font-extrabold text-slate-900 leading-tight dark:text-white">
-                        {selectedKota.nama}
-                      </h4>
-                      <p className="text-[11px] text-slate-500 font-semibold dark:text-slate-400">
-                        {selectedKota.provinsi}
-                      </p>
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="rounded-full bg-[#0b2b24] border border-emerald-500/30 px-2 py-0.5 text-[10px] font-black uppercase text-[#00df82]">
+                        {selectedProvince.wilayah}
+                      </span>
+                      <span className="text-[10px] text-slate-400">
+                        {selectedProvince.cityCount} Daerah Terdata
+                      </span>
                     </div>
+
+                    <h4 className="mt-1 text-base font-extrabold text-white tracking-tight">
+                      {selectedProvince.name}
+                    </h4>
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    <span className="rounded-full bg-emerald-500/20 border border-emerald-400/40 px-2.5 py-0.5 text-[10px] font-extrabold text-emerald-600 dark:text-emerald-300">
-                      2026
-                    </span>
+                  <div className="flex items-center gap-2.5">
+                    <div className="text-right">
+                      <span className="text-[10px] font-bold uppercase text-slate-400 block">
+                        Rata-Rata UMR
+                      </span>
+                      <span className="text-sm font-black text-[#00df82] block">
+                        {formatRupiah(selectedProvince.avgUmr)}
+                      </span>
+                    </div>
+
                     <button
                       type="button"
-                      onClick={() => setSelectedKota(null)}
-                      className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition dark:hover:bg-slate-800 dark:hover:text-white"
-                      title="Tutup Insight"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedProvince(null);
+                      }}
+                      className="flex h-7 w-7 items-center justify-center rounded-lg border border-slate-700 bg-slate-800/80 text-slate-400 hover:border-slate-500 hover:bg-slate-700 hover:text-white transition cursor-pointer"
+                      title="Tutup Insight (X)"
                     >
                       <X className="h-4 w-4" />
                     </button>
                   </div>
                 </div>
 
-                {/* Metric Grid */}
-                <div className="grid grid-cols-2 gap-2.5 pt-3 text-xs">
-                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-2.5 dark:border-slate-800 dark:bg-white/5">
-                    <span className="text-[10px] text-slate-500 font-bold uppercase block dark:text-slate-400">
-                      Standar UMR Resmi
-                    </span>
-                    <p className="text-sm font-extrabold text-emerald-600 mt-0.5 dark:text-[#00df82]">
-                      {formatRupiah(selectedKota.umr)}
-                    </p>
-                  </div>
-
-                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-2.5 dark:border-slate-800 dark:bg-white/5">
-                    <span className="text-[10px] text-slate-500 font-bold uppercase block dark:text-slate-400">
-                      Potensi UMKM Aktif
-                    </span>
-                    <p className="text-sm font-extrabold text-slate-900 mt-0.5 dark:text-white">
-                      {selectedKota.umkmAktif} Unit
-                    </p>
-                  </div>
+                <div className="mt-2.5 rounded-xl border border-slate-800 bg-[#070b14] px-3 py-2 text-xs">
+                  <span className="text-[10px] text-slate-400 font-bold uppercase block">
+                    Sektor Unggulan Wilayah
+                  </span>
+                  <p className="mt-0.5 font-bold text-slate-200 truncate">
+                    {selectedProvince.topSector}
+                  </p>
                 </div>
 
-                {/* Sektor Favorit */}
-                <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs dark:border-slate-800/80 dark:bg-white/5">
-                  <span className="text-[10px] text-slate-500 font-bold uppercase block dark:text-slate-400">
-                    Sektor Usaha Favorit
-                  </span>
-                  <span className="font-extrabold text-slate-900 block mt-0.5 dark:text-white">
-                    {selectedKota.topUsaha}
-                  </span>
-                </div>
-
-                {/* Action Link */}
                 <Link
-                  href={`/kalkulator?kota=${selectedKota.id}`}
-                  className="mt-3 flex w-full items-center justify-between rounded-xl bg-[#00df82] px-4 py-2.5 text-xs font-black text-slate-950 shadow-md transition hover:bg-[#00c975] hover:scale-[1.02] active:scale-95"
+                  href={`/perbandingan?provinsi=${encodeURIComponent(selectedProvince.name)}`}
+                  className="mt-3 flex w-full items-center justify-between rounded-xl bg-[#00df82] px-3.5 py-2 text-xs font-black text-slate-950 shadow-md transition hover:bg-[#00c975] active:scale-[0.98]"
                 >
-                  <span>Simulasi Modal di {selectedKota.nama}</span>
+                  <span>Bandingkan UMR {selectedProvince.name}</span>
                   <ChevronRight className="h-4 w-4" />
                 </Link>
               </motion.div>
             )}
           </AnimatePresence>
 
-          {/* Zoom & Pan Controls */}
-          <div className="absolute bottom-4 right-4 z-30 flex flex-col rounded-xl border border-slate-200 bg-white/90 shadow-xl backdrop-blur-md overflow-hidden dark:border-slate-800 dark:bg-slate-900/90">
+          {/* Map Controls (+, -, Reset) */}
+          <div className="absolute top-3 right-3 z-30 flex flex-col rounded-xl border border-slate-800 bg-[#0c1424]/90 shadow-xl backdrop-blur-md overflow-hidden">
             <button
               type="button"
               onClick={handleZoomIn}
-              className="p-2.5 text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+              className="p-2 text-slate-300 hover:bg-slate-800 hover:text-white transition cursor-pointer"
               title="Perbesar Peta (Zoom In)"
             >
               <Plus className="h-4 w-4" />
             </button>
 
-            {zoom > 1 && (
+            {(zoom > 1 || pan.x !== 0 || pan.y !== 0) && (
               <>
-                <div className="h-px bg-slate-200 dark:bg-slate-800" />
+                <div className="h-px bg-slate-800" />
                 <button
                   type="button"
-                  onClick={handleResetView}
-                  className="p-2.5 text-emerald-600 hover:bg-slate-100 transition dark:text-emerald-400 dark:hover:bg-slate-800"
-                  title="Reset Tampilan (100%)"
+                  onClick={handleResetZoom}
+                  className="p-2 text-[#00df82] hover:bg-slate-800 transition cursor-pointer"
+                  title="Reset Posisi Peta (100%)"
                 >
                   <RotateCcw className="h-4 w-4" />
                 </button>
               </>
             )}
 
-            <div className="h-px bg-slate-200 dark:bg-slate-800" />
+            <div className="h-px bg-slate-800" />
             <button
               type="button"
               onClick={handleZoomOut}
-              className="p-2.5 text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+              className="p-2 text-slate-300 hover:bg-slate-800 hover:text-white transition cursor-pointer"
               title="Perkecil Peta (Zoom Out)"
             >
               <Minus className="h-4 w-4" />
@@ -623,8 +681,79 @@ export default function InteractiveUMRMap() {
         </div>
       </div>
 
+      {/* ── CARD DETAIL MOBILE: SEPENUHNYA DI LUAR CONTAINER PETA ── */}
+      <AnimatePresence>
+        {selectedProvince && (
+          <motion.div
+            key={`mobile-${selectedProvince.id}`}
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.25 }}
+            className="mt-6 block sm:hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-xl dark:border-slate-800 dark:bg-[#0c1424]"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="rounded-full bg-emerald-50 border border-emerald-300 px-2.5 py-0.5 text-[10px] font-black uppercase text-emerald-700 dark:bg-[#0b2b24] dark:border-emerald-500/30 dark:text-[#00df82]">
+                    {selectedProvince.wilayah}
+                  </span>
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                    {selectedProvince.cityCount} Daerah Terdata
+                  </span>
+                </div>
+
+                <h4 className="mt-1.5 text-lg font-extrabold text-slate-900 dark:text-white tracking-tight">
+                  {selectedProvince.name}
+                </h4>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="text-right">
+                  <span className="text-[10px] font-bold uppercase text-slate-400 block">
+                    Rata-Rata UMR
+                  </span>
+                  <span className="text-base font-black text-emerald-600 dark:text-[#00df82] block">
+                    {formatRupiah(selectedProvince.avgUmr)}
+                  </span>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedProvince(null);
+                  }}
+                  className="flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 bg-slate-100 text-slate-500 hover:border-slate-300 hover:bg-slate-200 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800/80 dark:text-slate-400 dark:hover:border-slate-500 dark:hover:bg-slate-700 dark:hover:text-white transition cursor-pointer"
+                  title="Tutup Insight (X)"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+
+            <div className="mt-3.5 rounded-xl border border-slate-100 bg-slate-50 px-3.5 py-2.5 text-xs dark:border-slate-800 dark:bg-[#070b14]">
+              <span className="text-[10px] text-slate-400 font-bold uppercase block">
+                Sektor Unggulan Wilayah
+              </span>
+              <p className="mt-0.5 font-bold text-slate-800 dark:text-slate-200">
+                {selectedProvince.topSector}
+              </p>
+            </div>
+
+            <Link
+              href={`/perbandingan?provinsi=${encodeURIComponent(selectedProvince.name)}`}
+              className="mt-4 flex w-full items-center justify-between rounded-xl bg-[#00df82] px-4 py-3 text-xs font-black text-slate-950 shadow-md transition hover:bg-[#00c975] active:scale-[0.98]"
+            >
+              <span>Bandingkan UMR {selectedProvince.name}</span>
+              <ChevronRight className="h-4 w-4" />
+            </Link>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* ══════════════════════════════════════════════════════════════════
-          BOTTOM 3 SUMMARY METRIC CARDS (INTERACTIVE HOVER & CLICK TO FOCUS MAP)
+          BOTTOM 3 SUMMARY METRIC CARDS (INTERACTIVE CLICK FOCUS)
       ══════════════════════════════════════════════════════════════════ */}
       <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-6">
         {/* Card 1: UMR TERTINGGI (DKI Jakarta) */}
@@ -636,15 +765,11 @@ export default function InteractiveUMRMap() {
           viewport={{ once: true }}
           transition={{ duration: 0.3 }}
           onClick={() => {
-            if (!isLoggedIn) {
-              router.push("/login");
-              return;
-            }
-            const jkt = KOTA_PINS.find((k) => k.id === "jakarta");
-            if (jkt) setSelectedKota(jkt);
+            const jkt = provinces.find((p) => p.name === "DKI Jakarta");
+            if (jkt) setSelectedProvince(jkt);
           }}
           className={`cursor-pointer rounded-[2rem] border-2 bg-white p-6 sm:p-7 shadow-xl transition-all duration-300 flex flex-col justify-between select-none ${
-            selectedKota?.id === "jakarta"
+            selectedProvince?.name === "DKI Jakarta"
               ? "border-[#00df82] ring-4 ring-emerald-400/30 shadow-emerald-500/25 dark:bg-[#051d14]"
               : "border-slate-200 hover:border-emerald-400 hover:shadow-emerald-500/20 dark:border-slate-800 dark:bg-[#0a0f1d] dark:hover:border-emerald-400"
           }`}
@@ -672,11 +797,13 @@ export default function InteractiveUMRMap() {
               <CheckCircle2 className="h-3.5 w-3.5" />
               <span>Data resmi Kemenaker 2026</span>
             </div>
-            <span className="text-[10px] font-bold opacity-75 group-hover:opacity-100">{isLoggedIn ? "Klik lihat peta →" : "🔒 Masuk →"}</span>
+            <span className="text-[10px] font-bold opacity-75 group-hover:opacity-100">
+              Lihat di peta →
+            </span>
           </div>
         </motion.div>
 
-        {/* Card 2: UMR PALING EFISIEN (Yogyakarta) */}
+        {/* Card 2: UMR PALING EFISIEN (DI Yogyakarta) */}
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -685,26 +812,22 @@ export default function InteractiveUMRMap() {
           viewport={{ once: true }}
           transition={{ duration: 0.3 }}
           onClick={() => {
-            if (!isLoggedIn) {
-              router.push("/login");
-              return;
-            }
-            const yogya = KOTA_PINS.find((k) => k.id === "yogyakarta");
-            if (yogya) setSelectedKota(yogya);
+            const yogya = provinces.find((p) => p.name === "DI Yogyakarta");
+            if (yogya) setSelectedProvince(yogya);
           }}
           className={`cursor-pointer rounded-[2rem] border-2 bg-white p-6 sm:p-7 shadow-xl transition-all duration-300 flex flex-col justify-between select-none ${
-            selectedKota?.id === "yogyakarta"
+            selectedProvince?.name === "DI Yogyakarta"
               ? "border-[#f59e0b] ring-4 ring-amber-400/30 shadow-amber-500/25 dark:bg-[#1e1706]"
               : "border-slate-200 hover:border-amber-400 hover:shadow-amber-500/20 dark:border-slate-800 dark:bg-[#0a0f1d] dark:hover:border-amber-400"
           }`}
         >
           <div>
             <div className="flex items-center justify-between mb-3">
-              <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#f59e0b]">
+              <span className="text-[11px] font-extrabold uppercase tracking-wider text-amber-600 dark:text-[#f59e0b]">
                 UMR PALING EFISIEN
               </span>
-              <span className="rounded-full bg-amber-50 border border-amber-300 px-3 py-0.5 text-[11px] font-bold text-amber-700 dark:bg-amber-950/40 dark:border-amber-500/40 dark:text-amber-400">
-                Yogyakarta
+              <span className="rounded-full bg-amber-50 border border-amber-300 px-3 py-0.5 text-[11px] font-bold text-amber-700 dark:bg-[#1e1706] dark:border-[#f59e0b]/40 dark:text-[#f59e0b]">
+                DI Yogyakarta
               </span>
             </div>
 
@@ -716,16 +839,18 @@ export default function InteractiveUMRMap() {
             </p>
           </div>
 
-          <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] font-bold text-amber-600 dark:text-amber-400">
+          <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] font-bold text-amber-600 dark:text-[#f59e0b]">
             <div className="flex items-center gap-1.5">
               <TrendingUp className="h-3.5 w-3.5" />
               <span>Optimal inkubasi bisnis kreatif</span>
             </div>
-            <span className="text-[10px] font-bold opacity-75">{isLoggedIn ? "Klik lihat peta →" : "🔒 Masuk →"}</span>
+            <span className="text-[10px] font-bold opacity-75 group-hover:opacity-100">
+              Lihat di peta →
+            </span>
           </div>
         </motion.div>
 
-        {/* Card 3: SENTRA EKONOMI TIMUR (Makassar) */}
+        {/* Card 3: HUB EKONOMI TIMUR (Sulawesi Selatan) */}
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -734,26 +859,22 @@ export default function InteractiveUMRMap() {
           viewport={{ once: true }}
           transition={{ duration: 0.3 }}
           onClick={() => {
-            if (!isLoggedIn) {
-              router.push("/login");
-              return;
-            }
-            const mks = KOTA_PINS.find((k) => k.id === "makassar");
-            if (mks) setSelectedKota(mks);
+            const sulsel = provinces.find((p) => p.name === "Sulawesi Selatan");
+            if (sulsel) setSelectedProvince(sulsel);
           }}
           className={`cursor-pointer rounded-[2rem] border-2 bg-white p-6 sm:p-7 shadow-xl transition-all duration-300 flex flex-col justify-between select-none ${
-            selectedKota?.id === "makassar"
-              ? "border-[#00df82] ring-4 ring-emerald-400/30 shadow-emerald-500/25 dark:bg-[#051d14]"
-              : "border-slate-200 hover:border-emerald-400 hover:shadow-emerald-500/20 dark:border-slate-800 dark:bg-[#0a0f1d] dark:hover:border-emerald-400"
+            selectedProvince?.name === "Sulawesi Selatan"
+              ? "border-[#38bdf8] ring-4 ring-sky-400/30 shadow-sky-500/25 dark:bg-[#081a2e]"
+              : "border-slate-200 hover:border-sky-400 hover:shadow-sky-500/20 dark:border-slate-800 dark:bg-[#0a0f1d] dark:hover:border-sky-400"
           }`}
         >
           <div>
             <div className="flex items-center justify-between mb-3">
-              <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              <span className="text-[11px] font-extrabold uppercase tracking-wider text-sky-600 dark:text-[#38bdf8]">
                 HUB EKONOMI TIMUR
               </span>
-              <span className="rounded-full bg-slate-100 border border-slate-300 px-3 py-0.5 text-[11px] font-bold text-slate-700 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300">
-                Makassar
+              <span className="rounded-full bg-sky-50 border border-sky-300 px-3 py-0.5 text-[11px] font-bold text-sky-700 dark:bg-[#081a2e] dark:border-[#38bdf8]/40 dark:text-[#38bdf8]">
+                Sulawesi Selatan
               </span>
             </div>
 
@@ -765,12 +886,14 @@ export default function InteractiveUMRMap() {
             </p>
           </div>
 
-          <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] font-semibold text-slate-600 dark:text-slate-300">
+          <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] font-bold text-sky-600 dark:text-[#38bdf8]">
             <div className="flex items-center gap-1.5">
-              <Building2 className="h-3.5 w-3.5 text-emerald-500" />
+              <Building2 className="h-3.5 w-3.5" />
               <span>Konektivitas maritim strategis</span>
             </div>
-            <span className="text-[10px] font-bold text-emerald-600 dark:text-[#00df82] opacity-75">{isLoggedIn ? "Klik lihat peta →" : "🔒 Masuk →"}</span>
+            <span className="text-[10px] font-bold opacity-75 group-hover:opacity-100">
+              Lihat di peta →
+            </span>
           </div>
         </motion.div>
       </div>

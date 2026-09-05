@@ -14,7 +14,7 @@ export function generateRencana(data: RencanaBisnisData): string {
 
   const tenagaKerja = sdgImpact?.estimasiLapanganKerja ?? (hasilModal.skala === "besar" ? 5 : hasilModal.skala === "sedang" ? 3 : 1);
 
-  return `# 📋 Dokumen Rencana Bisnis — ${usaha.nama}
+  return `# Dokumen Rencana Bisnis — ${usaha.nama}
 
 **Diterbitkan Oleh:** Platform PetaKarier · Selaras RAN TPB / SDG 8 Indonesia
 **Tanggal Pembuatan:** ${data.dibuatPada}
@@ -24,7 +24,7 @@ export function generateRencana(data: RencanaBisnisData): string {
 
 ## 1. Ringkasan Eksekutif (Executive Summary)
 
-Usaha **${usaha.nama}** (${usaha.emoji}) merupakan model usaha terkurasi pada kategori **${usaha.kategori}**, dirancang khusus berdasarkan profil kapabilitas, ketersediaan modal awal, serta potensi ekonomi lokal di wilayah **${kota.nama}, ${kota.provinsi}**.
+Usaha **${usaha.nama}** merupakan model usaha terkurasi pada kategori **${usaha.kategori}**, dirancang khusus berdasarkan profil kapabilitas, ketersediaan modal awal, serta potensi ekonomi lokal di wilayah **${kota.nama}, ${kota.provinsi}**.
 
 - **Domisili Operasional:** ${kota.nama}, ${kota.provinsi}
 - **Klasifikasi Skala:** ${LABEL_SKALA[hasilModal.skala]}

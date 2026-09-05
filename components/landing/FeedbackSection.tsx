@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Star, Send, CheckCircle2, Loader2, MessageSquare } from "lucide-react";
+import { Star, Send, CheckCircle2, Loader2, MessageSquare, Sparkles } from "lucide-react";
 import Reveal from "@/components/ui/Reveal";
 
 // ── Replace this with your own Formspree form ID after signing up at formspree.io ──
@@ -36,7 +36,7 @@ export default function FeedbackSection() {
           email,
           rating: `${rating} / 5 bintang`,
           pesan,
-          _subject: `Feedback PetaKarier dari ${nama || "Anonim"} — ${rating}⭐`,
+          _subject: `Feedback PetaKarier dari ${nama || "Anonim"} — Rating ${rating}/5`,
         }),
       });
 
@@ -92,8 +92,9 @@ export default function FeedbackSection() {
                   >
                     <CheckCircle2 className="h-16 w-16 text-emerald-500" />
                   </motion.div>
-                  <h3 className="text-xl font-extrabold text-slate-900 dark:text-white">
-                    Terima kasih! 🎉
+                  <h3 className="text-xl font-extrabold text-slate-900 dark:text-white flex items-center justify-center gap-2">
+                    <span>Terima kasih!</span>
+                    <Sparkles className="h-5 w-5 text-emerald-500" />
                   </h3>
                   <p className="text-sm text-slate-500 dark:text-slate-400 max-w-sm leading-relaxed">
                     Feedback kamu sudah kami terima. Cerita suksesmu menginspirasi ribuan wirausaha muda Indonesia lainnya.

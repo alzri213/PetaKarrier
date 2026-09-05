@@ -52,6 +52,24 @@ model Kota {
   @@index([provinsi])
 }
 
+model Provinsi {
+  id         String   @id
+  nama       String   @unique
+  wilayah    String   // Sumatera, Jawa, Kalimantan, Sulawesi, Maluku, Papua, Nusa Tenggara
+  avgUmr     Int
+  minUmr     Int
+  maxUmr     Int
+  cityCount  Int
+  topSector  String
+  svgPath    String   @db.Text
+  centroidX  Float
+  centroidY  Float
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([wilayah])
+}
+
 model User {
   id             String    @id @default(cuid())
   name           String

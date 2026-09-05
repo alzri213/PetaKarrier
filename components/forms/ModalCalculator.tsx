@@ -17,6 +17,7 @@ import { formatRupiah } from "@/lib/utils/formatCurrency";
 import { getLocalSessionState, setLocalSessionState } from "@/lib/utils/sessionSync";
 import { getUserActiveAnalisis, updateKalkulatorAction } from "@/lib/actions/analisis";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
+import { jenisUsahaSeedList } from "@/prisma/seed-data";
 
 interface ModalCalculatorProps {
   daftarUsaha?: JenisUsaha[];
@@ -31,15 +32,31 @@ export default function ModalCalculator({
   const queryUsahaId = searchParams.get("usahaId") || searchParams.get("id");
   const queryKotaId = searchParams.get("kota") || searchParams.get("kotaId");
 
-  // Fallback defaults if props are empty
-  const usahaList = useMemo(() => {
-    if (daftarUsaha.length > 0) return daftarUsaha;
-    return [
-      { id: "jasa-web-digital", nama: "Agensi Web & Software House", emoji: "💻", modalMin: 10000000, modalMax: 35000000, peralatan: 15000000, bahanBakuBulanan: 1000000, gajiKaryawan: 1500000, promosiBulanan: 800000, revenueBulanan: 18000000, marginBulanan: 9500000 },
-      { id: "kedai-kopi", nama: "Kedai Kopi & Minuman Kekinian", emoji: "☕", modalMin: 15000000, modalMax: 40000000, peralatan: 12000000, bahanBakuBulanan: 3000000, gajiKaryawan: 1500000, promosiBulanan: 800000, revenueBulanan: 15000000, marginBulanan: 6000000 },
-      { id: "distro-thrift", nama: "Distro & Thrift Terkurasi", emoji: "👕", modalMin: 10000000, modalMax: 30000000, peralatan: 6000000, bahanBakuBulanan: 5000000, gajiKaryawan: 500000, promosiBulanan: 700000, revenueBulanan: 14000000, marginBulanan: 4500000 },
-      { id: "laundry-kiloan", nama: "Laundry Kiloan & Dry Clean", emoji: "🧺", modalMin: 15000000, modalMax: 35000000, peralatan: 15000000, bahanBakuBulanan: 1500000, gajiKaryawan: 1000000, promosiBulanan: 500000, revenueBulanan: 12000000, marginBulanan: 5500000 },
-    ];
+  // State untuk data usaha dari database
+  const [usahaList, setUsahaList] = useState<JenisUsaha[]>(
+    daftarUsaha.length > 0 ? daftarUsaha : (jenisUsahaSeedList as unknown as JenisUsaha[])
+  );
+
+  // Fetch usaha data from database API on mount
+  useEffect(() => {
+    if (daftarUsaha.length > 0) {
+      setUsahaList(daftarUsaha);
+      return;
+    }
+
+    const fetchUsahaData = async () => {
+      try {
+        const res = await fetch("/api/usaha");
+        const json = await res.json();
+        if (json.success && json.data && json.data.length > 0) {
+          setUsahaList(json.data);
+        }
+      } catch {
+        // Keeps initial seed list intact
+      }
+    };
+
+    fetchUsahaData();
   }, [daftarUsaha]);
 
   // State untuk data kota dari database
