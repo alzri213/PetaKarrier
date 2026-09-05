@@ -266,7 +266,7 @@ export default function UMRComparison({
         >
           <div>
             {/* Top Tag & Badge */}
-            <div className="flex items-center justify-between mb-4">
+            <div className="mb-4 flex flex-col items-start gap-2.5 sm:flex-row sm:items-center sm:justify-between">
               <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#f59e0b]">
                 STANDAR UPAH MINIMUM
               </span>
@@ -318,14 +318,14 @@ export default function UMRComparison({
               </span>
 
               {/* Floating Dropdown Trigger Container */}
-              <div className="relative">
+              <div className="relative w-full sm:w-auto">
                 <button
                   type="button"
                   onClick={() => {
                     setIsUsahaModalOpen(!isUsahaModalOpen);
                     setUsahaSearch("");
                   }}
-                  className="group inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-400/50 px-3 py-1 text-[11px] font-bold text-emerald-700 hover:border-emerald-500 transition shadow-sm cursor-pointer dark:bg-[#051d14] dark:border-[#00df82]/40 dark:text-[#00df82] dark:hover:border-[#00df82]"
+                  className="group inline-flex w-full items-center justify-between gap-1.5 rounded-full bg-emerald-50 border border-emerald-400/50 px-3 py-2 text-[11px] font-bold text-emerald-700 hover:border-emerald-500 transition shadow-sm cursor-pointer dark:bg-[#051d14] dark:border-[#00df82]/40 dark:text-[#00df82] dark:hover:border-[#00df82] sm:w-auto sm:justify-start sm:py-1"
                 >
                   <span>{selectedUsaha.nama}</span>
                   <ChevronDown className={`h-3 w-3 text-[#00df82] transition-transform duration-200 ${isUsahaModalOpen ? "rotate-180" : ""}`} />
