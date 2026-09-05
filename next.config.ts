@@ -8,6 +8,7 @@ const nextConfig: NextConfig = {
     "*.ngrok.io",
   ],
   images: {
+    qualities: [60, 75],
     remotePatterns: [
       {
         protocol: "https",
