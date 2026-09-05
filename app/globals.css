@@ -106,12 +106,12 @@ html.a11y-high-contrast textarea {
   border-color: currentColor !important;
 }
 
-/* 2. Color Saturation & Monochrome (Target main only to preserve fixed UI) */
-html.a11y-saturate main {
+/* 2. Color Saturation & Monochrome (Apply to the complete application shell) */
+html.a11y-saturate body {
   filter: saturate(180%);
 }
 
-html.a11y-monochrome main {
+html.a11y-monochrome body {
   filter: grayscale(100%);
 }
 
