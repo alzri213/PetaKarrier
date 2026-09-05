@@ -82,7 +82,9 @@ export default function ModalCalculator({
 
   // Daftar wilayah unik untuk filter
   const wilayahOptions = useMemo(() => {
-    const uniqueWilayah = Array.from(new Set(kotaList.map((k) => k.wilayah))).sort();
+    const uniqueWilayah = Array.from(
+      new Set(kotaList.map((k) => k.wilayah).filter((wilayah): wilayah is string => Boolean(wilayah)))
+    ).sort();
     return [
       { value: "", label: "Semua Wilayah" },
       ...uniqueWilayah.map((w) => ({ value: w, label: w })),

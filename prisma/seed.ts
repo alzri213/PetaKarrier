@@ -4,6 +4,17 @@ import kotaList from "../lib/data/umr.json";
 
 const prisma = new PrismaClient();
 
+function getWilayah(provinsi: string): string {
+  if (["Aceh", "Sumatera Utara", "Sumatera Barat", "Riau", "Jambi", "Sumatera Selatan", "Bengkulu", "Lampung", "Kepulauan Bangka Belitung", "Kepulauan Riau"].includes(provinsi)) return "Sumatera";
+  if (["Banten", "DKI Jakarta", "Jawa Barat", "Jawa Tengah", "DI Yogyakarta", "Jawa Timur"].includes(provinsi)) return "Jawa";
+  if (["Bali", "Nusa Tenggara Barat", "Nusa Tenggara Timur"].includes(provinsi)) return "Nusa Tenggara";
+  if (["Kalimantan Barat", "Kalimantan Tengah", "Kalimantan Selatan", "Kalimantan Timur", "Kalimantan Utara"].includes(provinsi)) return "Kalimantan";
+  if (["Sulawesi Utara", "Sulawesi Tengah", "Sulawesi Selatan", "Sulawesi Tenggara", "Gorontalo", "Sulawesi Barat"].includes(provinsi)) return "Sulawesi";
+  if (["Maluku", "Maluku Utara"].includes(provinsi)) return "Maluku";
+  if (["Papua", "Papua Barat", "Papua Selatan", "Papua Tengah", "Papua Pegunungan", "Papua Barat Daya"].includes(provinsi)) return "Papua";
+  return "Jawa";
+}
+
 async function main() {
   console.log("🌱 Starting seed for PetaKarrier database...");
 
@@ -15,6 +26,7 @@ async function main() {
       update: {
         nama: k.nama,
         provinsi: k.provinsi,
+        wilayah: getWilayah(k.provinsi),
         umr: k.umr,
         sewaTempat: k.sewaTempat,
         utilitas: k.utilitas,
@@ -24,6 +36,7 @@ async function main() {
         id: k.id,
         nama: k.nama,
         provinsi: k.provinsi,
+        wilayah: getWilayah(k.provinsi),
         umr: k.umr,
         sewaTempat: k.sewaTempat,
         utilitas: k.utilitas,

@@ -14,6 +14,7 @@ interface SearchableSelectProps {
   placeholder: string;
   searchPlaceholder?: string;
   onChange: (value: string) => void;
+  disabled?: boolean;
   className?: string;
 }
 
@@ -23,6 +24,7 @@ export function SearchableSelect({
   placeholder,
   searchPlaceholder = "Ketik untuk mencari...",
   onChange,
+  disabled = false,
   className = "",
 }: SearchableSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -48,6 +50,7 @@ export function SearchableSelect({
   }, []);
 
   const openSelect = () => {
+    if (disabled) return;
     setIsOpen(true);
     setQuery("");
   };
@@ -62,6 +65,9 @@ export function SearchableSelect({
     <div ref={containerRef} className={`relative ${className}`}>
       <div
         className={`flex w-full items-center rounded-xl border-2 bg-white transition-all duration-200 dark:bg-slate-800 ${
+          disabled
+            ? "cursor-not-allowed border-slate-200 opacity-60 dark:border-slate-700"
+            :
           isOpen
             ? "border-emerald-500 ring-2 ring-emerald-500/20 dark:border-emerald-400 dark:bg-slate-800 dark:ring-emerald-400/20"
             : selectedOption
@@ -69,7 +75,7 @@ export function SearchableSelect({
               : "border-slate-300 dark:border-slate-600"
         }`}
       >
-        <Search className="ml-4 h-5 w-5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+        <Search className="ml-3 h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400 sm:ml-4 sm:h-5 sm:w-5" />
         <input
           ref={inputRef}
           type="text"
@@ -79,6 +85,7 @@ export function SearchableSelect({
             if (!isOpen) setIsOpen(true);
           }}
           onFocus={openSelect}
+          onClick={openSelect}
           onKeyDown={(event) => {
             if (event.key === "Escape") {
               setIsOpen(false);
@@ -96,12 +103,13 @@ export function SearchableSelect({
           aria-expanded={isOpen}
           aria-controls={listboxId}
           aria-autocomplete="list"
-          className={`min-w-0 flex-1 bg-transparent px-3 py-3.5 text-sm font-bold outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500 ${
+          disabled={disabled}
+          className={`min-w-0 flex-1 bg-transparent px-2.5 py-2.5 text-xs font-bold outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500 sm:px-3 sm:py-3.5 sm:text-sm ${
             selectedOption ? "text-slate-900 dark:text-white" : "text-slate-500 dark:text-slate-400"
           }`}
         />
         <ChevronDown
-          className={`mr-4 h-5 w-5 shrink-0 text-slate-400 transition-transform dark:text-slate-500 ${
+          className={`mr-3 h-4 w-4 shrink-0 text-slate-400 transition-transform dark:text-slate-500 sm:mr-4 sm:h-5 sm:w-5 ${
             isOpen ? "rotate-180 text-emerald-600 dark:text-emerald-400" : ""
           }`}
         />
