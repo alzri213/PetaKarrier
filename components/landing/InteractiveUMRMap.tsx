@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useMemo, useRef, useEffect } from "react";
+import { useState, useMemo, useRef, useEffect, useSyncExternalStore } from "react";
+import { useTheme } from "next-themes";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -48,49 +49,103 @@ const REGION_CATEGORIES = [
   "Papua",
 ];
 
-// Color palette by geographic island region
-const REGION_COLORS: Record<string, { base: string; border: string; label: string }> = {
+// Color palette by geographic island region for both Dark & Light modes
+interface RegionThemeColor {
+  darkBase: string;
+  darkBorder: string;
+  lightBase: string;
+  lightBorder: string;
+  label: string;
+}
+
+const REGION_COLORS: Record<string, RegionThemeColor> = {
   Jawa: {
-    base: "#0f2e24",
-    border: "#195c47",
-    label: "text-emerald-400",
+    darkBase: "#0f2e24",
+    darkBorder: "#195c47",
+    lightBase: "#d1fae5",
+    lightBorder: "#059669",
+    label: "text-emerald-600 dark:text-emerald-400",
   },
   Sumatera: {
-    base: "#0e2438",
-    border: "#1d476f",
-    label: "text-sky-400",
+    darkBase: "#0e2438",
+    darkBorder: "#1d476f",
+    lightBase: "#e0f2fe",
+    lightBorder: "#0284c7",
+    label: "text-sky-600 dark:text-sky-400",
   },
   Kalimantan: {
-    base: "#241e12",
-    border: "#544223",
-    label: "text-amber-400",
+    darkBase: "#241e12",
+    darkBorder: "#544223",
+    lightBase: "#fef3c7",
+    lightBorder: "#d97706",
+    label: "text-amber-600 dark:text-amber-400",
   },
   Sulawesi: {
-    base: "#1a1633",
-    border: "#3a3070",
-    label: "text-violet-400",
+    darkBase: "#1a1633",
+    darkBorder: "#3a3070",
+    lightBase: "#ede9fe",
+    lightBorder: "#7c3aed",
+    label: "text-violet-600 dark:text-violet-400",
   },
   "Nusa Tenggara": {
-    base: "#27162b",
-    border: "#5c3365",
-    label: "text-fuchsia-400",
+    darkBase: "#27162b",
+    darkBorder: "#5c3365",
+    lightBase: "#fae8ff",
+    lightBorder: "#c026d3",
+    label: "text-fuchsia-600 dark:text-fuchsia-400",
   },
   Maluku: {
-    base: "#112726",
-    border: "#255c5a",
-    label: "text-teal-400",
+    darkBase: "#112726",
+    darkBorder: "#255c5a",
+    lightBase: "#ccfbf1",
+    lightBorder: "#0d9488",
+    label: "text-teal-600 dark:text-teal-400",
   },
   Papua: {
-    base: "#16233b",
-    border: "#2b4676",
-    label: "text-blue-400",
+    darkBase: "#16233b",
+    darkBorder: "#2b4676",
+    lightBase: "#dbeafe",
+    lightBorder: "#2563eb",
+    label: "text-blue-600 dark:text-blue-400",
   },
 };
+
+// Titik koordinat sentra ekonomi & kota strategis nusantara (terkalibrasi persis dengan proyeksi SVG 1000x380)
+interface StrategicCity {
+  name: string;
+  pos: [number, number];
+  tier: "capital" | "metro" | "hub" | "major";
+  provinsi: string;
+}
+
+const STRATEGIC_CITIES: StrategicCity[] = [
+  { name: "Jakarta", pos: [264.1, 266.9], tier: "capital", provinsi: "DKI Jakarta" },
+  { name: "Surabaya", pos: [387.8, 288.7], tier: "metro", provinsi: "Jawa Timur" },
+  { name: "Medan", pos: [92.9, 63.1], tier: "metro", provinsi: "Sumatera Utara" },
+  { name: "Bandung", pos: [280.3, 281.6], tier: "metro", provinsi: "Jawa Barat" },
+  { name: "Semarang", pos: [339.0, 283.2], tier: "major", provinsi: "Jawa Tengah" },
+  { name: "Makassar", pos: [527.8, 244.8], tier: "metro", provinsi: "Sulawesi Selatan" },
+  { name: "Palembang", pos: [220.3, 199.7], tier: "major", provinsi: "Sumatera Selatan" },
+  { name: "Balikpapan (IKN)", pos: [473.3, 163.5], tier: "hub", provinsi: "Kalimantan Timur" },
+  { name: "Denpasar", pos: [439.5, 318.0], tier: "major", provinsi: "Bali" },
+  { name: "Pontianak", pos: [316.4, 138.3], tier: "major", provinsi: "Kalimantan Barat" },
+  { name: "Manado", pos: [641.2, 107.1], tier: "major", provinsi: "Sulawesi Utara" },
+  { name: "Ambon", pos: [711.0, 213.8], tier: "major", provinsi: "Maluku" },
+  { name: "Jayapura", pos: [973.7, 190.8], tier: "major", provinsi: "Papua" },
+];
 
 export default function InteractiveUMRMap() {
   const { data: session } = useSession();
   const isLoggedIn = !!session?.user;
   const router = useRouter();
+
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
+  const { resolvedTheme } = useTheme();
+  const isDark = mounted && resolvedTheme === "dark";
 
   const [hoveredProvince, setHoveredProvince] = useState<ProvinceMapItem | null>(null);
   const [selectedProvince, setSelectedProvince] = useState<ProvinceMapItem | null>(null);
@@ -105,6 +160,24 @@ export default function InteractiveUMRMap() {
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
 
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Kalkulasi skala jarak dinamis (Cartographic Scale Bar)
+  const scaleKm = useMemo(() => {
+    const raw = 500 / zoom;
+    if (raw >= 400) return 500;
+    if (raw >= 200) return 250;
+    if (raw >= 120) return 150;
+    if (raw >= 70) return 100;
+    if (raw >= 35) return 50;
+    if (raw >= 15) return 20;
+    return 10;
+  }, [zoom]);
+
+  const scaleBarWidth = useMemo(() => {
+    const baseWidth = 55;
+    const ratio = scaleKm / (500 / zoom);
+    return Math.min(Math.max(Math.round(baseWidth * ratio), 32), 75);
+  }, [scaleKm, zoom]);
 
   // Ambil data peta 38 provinsi langsung dari database PostgreSQL
   useEffect(() => {
@@ -388,15 +461,23 @@ export default function InteractiveUMRMap() {
       </div>
 
       {/* ══════════════════════════════════════════════════════════════════
-          MAIN VECTOR MAP CONTAINER
+          MAIN VECTOR MAP CONTAINER (LIGHT & DARK THEME ADAPTIVE)
       ══════════════════════════════════════════════════════════════════ */}
-      <div className="relative rounded-[2rem] sm:rounded-[2.5rem] border border-slate-200 bg-slate-950 p-3.5 sm:p-6 shadow-2xl dark:border-slate-800/90 dark:bg-[#060a14] overflow-hidden">
+      <div
+        className="relative rounded-[2rem] sm:rounded-[2.5rem] border border-slate-300/80 bg-gradient-to-b from-[#eaf4fb] via-[#e2eef7] to-[#d8e8f3] dark:bg-none dark:bg-[#060a14] p-3.5 sm:p-6 shadow-xl shadow-sky-950/5 dark:border-slate-800/90 dark:shadow-2xl overflow-hidden transition-colors duration-300"
+        style={{
+          backgroundColor: isDark ? "#060a14" : undefined,
+          backgroundImage: isDark ? "none" : undefined,
+        }}
+      >
         {/* Subtle Oceanic Grid Background Pattern */}
         <div
-          className="absolute inset-0 opacity-20 pointer-events-none"
+          className="absolute inset-0 pointer-events-none transition-opacity duration-300"
           style={{
-            backgroundImage:
-              "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.2) 1px, transparent 0)",
+            opacity: isDark ? 0.2 : 0.45,
+            backgroundImage: isDark
+              ? "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.2) 1px, transparent 0)"
+              : "radial-gradient(circle at 1px 1px, rgba(2,132,199,0.25) 1px, transparent 0)",
             backgroundSize: "28px 28px",
           }}
         />
@@ -404,13 +485,13 @@ export default function InteractiveUMRMap() {
         {/* Top Status Banner */}
         <div className="relative z-20 flex flex-wrap items-center justify-between gap-3 mb-3">
           <div className="flex items-center gap-2">
-            <span className="flex items-center gap-1.5 rounded-full border border-slate-800 bg-[#0c1424]/90 px-3.5 py-1 text-xs font-bold text-white shadow-sm backdrop-blur-md">
-              <Globe2 className="h-3.5 w-3.5 text-[#00df82]" />
+            <span className="flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/95 px-3.5 py-1 text-xs font-bold text-slate-800 shadow-sm backdrop-blur-md dark:border-slate-800 dark:bg-[#0c1424]/90 dark:text-white">
+              <Globe2 className="h-3.5 w-3.5 text-emerald-600 dark:text-[#00df82]" />
               <span>Data Kemnaker 2026</span>
             </span>
 
             {selectedProvince && (
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-950/40 px-3 py-1 text-xs font-extrabold text-[#00df82]">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-100/90 px-3 py-1 text-xs font-extrabold text-emerald-900 shadow-sm dark:border-emerald-500/30 dark:bg-emerald-950/40 dark:text-[#00df82]">
                 <Sparkles className="h-3 w-3" />
                 <span>
                   {selectedProvince.name} • {formatRupiah(selectedProvince.avgUmr)}
@@ -420,10 +501,10 @@ export default function InteractiveUMRMap() {
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-[11px] text-slate-400 font-medium hidden sm:inline">
+            <span className="text-[11px] text-slate-600 font-semibold hidden sm:inline dark:text-slate-400 dark:font-medium">
               Hover untuk nama provinsi • Klik untuk rincian insight
             </span>
-            <span className="text-[11px] text-[#00df82] font-semibold inline sm:hidden">
+            <span className="text-[11px] text-emerald-700 font-bold inline sm:hidden dark:text-[#00df82] dark:font-semibold">
               Geser peta • Ketuk untuk detail
             </span>
           </div>
@@ -446,17 +527,17 @@ export default function InteractiveUMRMap() {
           {/* ── TOOLTIP HOVER KECIL: HANYA MENAMPILKAN NAMA PROVINSI DI ATAS KURSOR ── */}
           {hoveredProvince && (
             <div
-              className="pointer-events-none absolute z-40 -translate-x-1/2 -translate-y-[calc(100%+14px)] rounded-xl border border-emerald-500/50 bg-[#060a14]/95 px-3 py-1.5 shadow-2xl backdrop-blur-md flex items-center gap-2 select-none"
+              className="pointer-events-none absolute z-40 -translate-x-1/2 -translate-y-[calc(100%+14px)] rounded-xl border border-emerald-500/50 bg-white/95 px-3 py-1.5 shadow-2xl backdrop-blur-md flex items-center gap-2 select-none dark:bg-[#060a14]/95"
               style={{
                 left: `${mousePos.x}px`,
                 top: `${mousePos.y}px`,
               }}
             >
               <span className="h-2 w-2 rounded-full bg-[#00df82] animate-pulse" />
-              <span className="text-xs font-black tracking-tight text-white">
+              <span className="text-xs font-black tracking-tight text-slate-900 dark:text-white">
                 {hoveredProvince.name}
               </span>
-              <span className="text-[10px] font-bold text-[#00df82] border-l border-slate-700 pl-2">
+              <span className="text-[10px] font-bold text-emerald-600 dark:text-[#00df82] border-l border-slate-200 dark:border-slate-700 pl-2">
                 {hoveredProvince.wilayah}
               </span>
             </div>
@@ -479,14 +560,45 @@ export default function InteractiveUMRMap() {
             ) : (
               <svg
                 viewBox="0 0 1000 380"
-                className="w-full h-full max-h-full filter drop-shadow-[0_12px_24px_rgba(0,0,0,0.4)]"
+                className={`w-full h-full max-h-full filter ${
+                  isDark
+                    ? "drop-shadow-[0_12px_24px_rgba(0,0,0,0.4)]"
+                    : "drop-shadow-[0_8px_16px_rgba(2,132,199,0.15)]"
+                }`}
               >
                 <defs>
                   {/* Glow filter for active/hovered province */}
                   <filter id="emerald-glow" x="-20%" y="-20%" width="140%" height="140%">
                     <feDropShadow dx="0" dy="0" stdDeviation="4" floodColor="#00df82" floodOpacity="0.8" />
                   </filter>
+                  {/* Coastal bathymetry gradient & depth vignette */}
+                  <radialGradient id="ocean-depth-vignette" cx="50%" cy="50%" r="65%">
+                    <stop offset="0%" stopColor="#0284c7" stopOpacity={isDark ? "0.07" : "0.04"} />
+                    <stop offset="60%" stopColor="#0369a1" stopOpacity={isDark ? "0.03" : "0.08"} />
+                    <stop offset="100%" stopColor={isDark ? "#000000" : "#0284c7"} stopOpacity={isDark ? "0.25" : "0.14"} />
+                  </radialGradient>
                 </defs>
+
+                {/* Ocean Depth Vignette Layer */}
+                <rect x="0" y="0" width="1000" height="380" fill="url(#ocean-depth-vignette)" pointerEvents="none" />
+
+                {/* Tipografi Nama Laut Nusantara (Gaya Atlas Resmi) */}
+                <g
+                  className="pointer-events-none select-none transition-colors duration-300"
+                  style={{
+                    fontStyle: "italic",
+                    letterSpacing: "3px",
+                    fill: isDark ? "#38bdf8" : "#0284c7",
+                    opacity: isDark ? 0.25 : 0.55,
+                  }}
+                >
+                  <text x="310" y="362" fontSize="6.5" fontWeight="800">SAMUDRA HINDIA</text>
+                  <text x="340" y="270" fontSize="5.5" fontWeight="700">LAUT JAWA</text>
+                  <text x="495" y="165" fontSize="5" fontWeight="700">SELAT MAKASSAR</text>
+                  <text x="610" y="280" fontSize="5.5" fontWeight="700">LAUT BANDA</text>
+                  <text x="545" y="70" fontSize="5" fontWeight="700">LAUT SULAWESI</text>
+                  <text x="820" y="65" fontSize="6.5" fontWeight="800">SAMUDRA PASIFIK</text>
+                </g>
 
                 {/* Render each of the 38 provinces as pure vector path directly from DB */}
                 {provinces.map((prov) => {
@@ -494,9 +606,11 @@ export default function InteractiveUMRMap() {
                 const isHovered = hoveredProvince?.id === prov.id;
                 const isMatched = matchedIds.has(prov.id);
                 const regionStyle = REGION_COLORS[prov.wilayah] || {
-                  base: "#0f172a",
-                  border: "#334155",
-                  label: "text-slate-300",
+                  darkBase: "#0f172a",
+                  darkBorder: "#334155",
+                  lightBase: "#f1f5f9",
+                  lightBorder: "#94a3b8",
+                  label: "text-slate-500",
                 };
 
                 const isSmallProvince =
@@ -507,24 +621,24 @@ export default function InteractiveUMRMap() {
                   prov.name === "Kepulauan Bangka Belitung" ||
                   prov.name === "Gorontalo";
 
-                let fillColor = regionStyle.base;
-                let strokeColor = regionStyle.border;
+                let fillColor = isDark ? regionStyle.darkBase : regionStyle.lightBase;
+                let strokeColor = isDark ? regionStyle.darkBorder : regionStyle.lightBorder;
                 let strokeWidth = isSmallProvince ? 1.4 : 0.8;
                 let filter = "none";
                 let opacity = 1;
 
                 if (isSelected) {
-                  fillColor = "#00df82";
-                  strokeColor = "#ffffff";
+                  fillColor = isDark ? "#00df82" : "#10b981";
+                  strokeColor = isDark ? "#ffffff" : "#047857";
                   strokeWidth = isSmallProvince ? 2.8 : 2;
                   filter = "url(#emerald-glow)";
                 } else if (isHovered) {
-                  fillColor = "#00df82";
-                  strokeColor = "#ffffff";
+                  fillColor = isDark ? "#00df82" : "#34d399";
+                  strokeColor = isDark ? "#ffffff" : "#059669";
                   strokeWidth = isSmallProvince ? 2.4 : 1.6;
                   filter = "url(#emerald-glow)";
                 } else if (!isMatched) {
-                  opacity = 0.25;
+                  opacity = isDark ? 0.25 : 0.35;
                 }
 
                 return (
@@ -568,6 +682,76 @@ export default function InteractiveUMRMap() {
                   </path>
                 );
               })}
+
+                {/* Strategic City & Business Hub Markers (Scale adaptif agar selalu tajam saat di-zoom) */}
+                {(() => {
+                  const markerScale = Math.max(0.35, 1 / Math.sqrt(zoom));
+                  const visibleCities =
+                    zoom >= 1.4
+                      ? STRATEGIC_CITIES
+                      : STRATEGIC_CITIES.filter(
+                          (c) => c.tier === "capital" || c.tier === "hub" || c.tier === "metro"
+                        );
+                  return (
+                    <g className="city-markers select-none">
+                      {visibleCities.map((city) => {
+                        const isCapital = city.tier === "capital";
+                        const isHub = city.tier === "hub";
+                        return (
+                          <g
+                            key={city.name}
+                            transform={`translate(${city.pos[0]}, ${city.pos[1]}) scale(${markerScale})`}
+                            className="cursor-pointer group"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (isDraggingRef.current) return;
+                              const prov = provinces.find((p) =>
+                                p.name.toLowerCase().includes(city.provinsi.toLowerCase())
+                              );
+                              if (prov) {
+                                setSelectedProvince((prev) => (prev?.id === prov.id ? null : prov));
+                              }
+                            }}
+                          >
+                            <title>{`${city.name} (${city.provinsi}) - Pusat Kegiatan Ekonomi`}</title>
+                            {/* Radar ripple beacon */}
+                            <circle
+                              r={isCapital ? 6.5 : 4}
+                              fill="none"
+                              stroke={isCapital ? (isDark ? "#00df82" : "#059669") : isHub ? "#f59e0b" : isDark ? "#38bdf8" : "#0284c7"}
+                              strokeWidth="0.8"
+                              opacity="0.75"
+                              className="animate-ping"
+                              style={{ animationDuration: isCapital ? "2.2s" : "3.2s" }}
+                            />
+                            {/* Center pinpoint */}
+                            <circle
+                              r={isCapital ? 3 : 1.8}
+                              fill={isCapital ? (isDark ? "#00df82" : "#059669") : isHub ? "#f59e0b" : isDark ? "#ffffff" : "#0284c7"}
+                              stroke={isDark ? "#060a14" : "#ffffff"}
+                              strokeWidth="0.8"
+                            />
+                            {/* City Label */}
+                            <text
+                              x={isCapital ? 5.5 : 3.5}
+                              y={1.5}
+                              fill={isCapital ? (isDark ? "#00df82" : "#047857") : isDark ? "#f8fafc" : "#0f172a"}
+                              fontSize={isCapital ? "5.5" : "4.2"}
+                              fontWeight={isCapital ? "900" : "800"}
+                              className={`select-none pointer-events-none ${
+                                isDark
+                                  ? "drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]"
+                                  : "drop-shadow-[0_1px_2px_rgba(255,255,255,0.95)]"
+                              }`}
+                            >
+                              {city.name}
+                            </text>
+                          </g>
+                        );
+                      })}
+                    </g>
+                  );
+                })()}
             </svg>
           )}
           </div>
@@ -581,30 +765,30 @@ export default function InteractiveUMRMap() {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 10, scale: 0.96 }}
                 transition={{ duration: 0.2 }}
-                className="hidden sm:block absolute bottom-4 left-4 z-30 max-w-sm rounded-2xl border border-slate-800 bg-[#0c1424]/95 p-4 shadow-2xl backdrop-blur-xl"
+                className="hidden sm:block absolute bottom-4 left-4 z-30 max-w-sm rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-2xl backdrop-blur-xl dark:border-slate-800 dark:bg-[#0c1424]/95"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="rounded-full bg-[#0b2b24] border border-emerald-500/30 px-2 py-0.5 text-[10px] font-black uppercase text-[#00df82]">
+                      <span className="rounded-full bg-emerald-100 border border-emerald-300 px-2 py-0.5 text-[10px] font-black uppercase text-emerald-800 dark:bg-[#0b2b24] dark:border-emerald-500/30 dark:text-[#00df82]">
                         {selectedProvince.wilayah}
                       </span>
-                      <span className="text-[10px] text-slate-400">
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400">
                         {selectedProvince.cityCount} Daerah Terdata
                       </span>
                     </div>
 
-                    <h4 className="mt-1 text-base font-extrabold text-white tracking-tight">
+                    <h4 className="mt-1 text-base font-extrabold text-slate-900 dark:text-white tracking-tight">
                       {selectedProvince.name}
                     </h4>
                   </div>
 
                   <div className="flex items-center gap-2.5">
                     <div className="text-right">
-                      <span className="text-[10px] font-bold uppercase text-slate-400 block">
+                      <span className="text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400 block">
                         Rata-Rata UMR
                       </span>
-                      <span className="text-sm font-black text-[#00df82] block">
+                      <span className="text-sm font-black text-emerald-700 dark:text-[#00df82] block">
                         {formatRupiah(selectedProvince.avgUmr)}
                       </span>
                     </div>
@@ -615,7 +799,7 @@ export default function InteractiveUMRMap() {
                         e.stopPropagation();
                         setSelectedProvince(null);
                       }}
-                      className="flex h-7 w-7 items-center justify-center rounded-lg border border-slate-700 bg-slate-800/80 text-slate-400 hover:border-slate-500 hover:bg-slate-700 hover:text-white transition cursor-pointer"
+                      className="flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 bg-slate-100 text-slate-500 hover:border-slate-300 hover:bg-slate-200 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800/80 dark:text-slate-400 dark:hover:border-slate-500 dark:hover:bg-slate-700 dark:hover:text-white transition cursor-pointer"
                       title="Tutup Insight (X)"
                     >
                       <X className="h-4 w-4" />
@@ -623,11 +807,11 @@ export default function InteractiveUMRMap() {
                   </div>
                 </div>
 
-                <div className="mt-2.5 rounded-xl border border-slate-800 bg-[#070b14] px-3 py-2 text-xs">
-                  <span className="text-[10px] text-slate-400 font-bold uppercase block">
+                <div className="mt-2.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs dark:border-slate-800 dark:bg-[#070b14]">
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase block">
                     Sektor Unggulan Wilayah
                   </span>
-                  <p className="mt-0.5 font-bold text-slate-200 truncate">
+                  <p className="mt-0.5 font-bold text-slate-800 dark:text-slate-200 truncate">
                     {selectedProvince.topSector}
                   </p>
                 </div>
@@ -644,11 +828,11 @@ export default function InteractiveUMRMap() {
           </AnimatePresence>
 
           {/* Map Controls (+, -, Reset) */}
-          <div className="absolute top-3 right-3 z-30 flex flex-col rounded-xl border border-slate-800 bg-[#0c1424]/90 shadow-xl backdrop-blur-md overflow-hidden">
+          <div className="absolute top-3 right-3 z-30 flex flex-col rounded-xl border border-slate-200 bg-white/95 shadow-xl backdrop-blur-md overflow-hidden dark:border-slate-800 dark:bg-[#0c1424]/90">
             <button
               type="button"
               onClick={handleZoomIn}
-              className="p-2 text-slate-300 hover:bg-slate-800 hover:text-white transition cursor-pointer"
+              className="p-2 text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white transition cursor-pointer"
               title="Perbesar Peta (Zoom In)"
             >
               <Plus className="h-4 w-4" />
@@ -656,11 +840,11 @@ export default function InteractiveUMRMap() {
 
             {(zoom > 1 || pan.x !== 0 || pan.y !== 0) && (
               <>
-                <div className="h-px bg-slate-800" />
+                <div className="h-px bg-slate-200 dark:bg-slate-800" />
                 <button
                   type="button"
                   onClick={handleResetZoom}
-                  className="p-2 text-[#00df82] hover:bg-slate-800 transition cursor-pointer"
+                  className="p-2 text-emerald-600 hover:bg-slate-100 dark:text-[#00df82] dark:hover:bg-slate-800 transition cursor-pointer"
                   title="Reset Posisi Peta (100%)"
                 >
                   <RotateCcw className="h-4 w-4" />
@@ -668,15 +852,42 @@ export default function InteractiveUMRMap() {
               </>
             )}
 
-            <div className="h-px bg-slate-800" />
+            <div className="h-px bg-slate-200 dark:bg-slate-800" />
             <button
               type="button"
               onClick={handleZoomOut}
-              className="p-2 text-slate-300 hover:bg-slate-800 hover:text-white transition cursor-pointer"
+              className="p-2 text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white transition cursor-pointer"
               title="Perkecil Peta (Zoom Out)"
             >
               <Minus className="h-4 w-4" />
             </button>
+          </div>
+
+          {/* ── REALISTIC GIS OVERLAY: COMPASS ROSE & DYNAMIC SCALE BAR ── */}
+          <div className="absolute bottom-3 right-3 z-20 flex items-center gap-2 pointer-events-none select-none">
+            {/* Compass Rose */}
+            <div className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white/95 px-2.5 py-1.5 shadow-md backdrop-blur-md dark:border-slate-800/90 dark:bg-[#0c1424]/90">
+              <div className="relative flex h-3.5 w-3.5 items-center justify-center">
+                <div className="flex flex-col items-center">
+                  <div className="w-0 h-0 border-l-[3px] border-r-[3px] border-b-[6px] border-l-transparent border-r-transparent border-b-rose-500" />
+                  <div className="w-0 h-0 border-l-[3px] border-r-[3px] border-t-[6px] border-l-transparent border-r-transparent border-t-slate-400" />
+                </div>
+              </div>
+              <span className="text-[10px] font-black tracking-widest text-slate-700 dark:text-slate-200 font-mono">U</span>
+            </div>
+
+            {/* Dynamic Scale Bar */}
+            <div className="flex flex-col items-end rounded-xl border border-slate-200 bg-white/95 px-2.5 py-1 shadow-md backdrop-blur-md dark:border-slate-800/90 dark:bg-[#0c1424]/90">
+              <span className="text-[9px] font-extrabold font-mono text-slate-700 dark:text-slate-300 leading-tight">
+                {scaleKm} km
+              </span>
+              <div className="mt-0.5 flex h-1.5 items-end">
+                <div
+                  className="h-1 border-x-2 border-b-2 border-emerald-600 dark:border-[#00df82] transition-all duration-200"
+                  style={{ width: `${scaleBarWidth}px` }}
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>
