@@ -149,13 +149,13 @@ export default function SdgDashboard({ stats }: SdgDashboardProps) {
       {/* Interactive Charts: Category Distribution & Impact Metrics */}
       <div className="grid gap-6 lg:grid-cols-2">
         <Reveal>
-          <div className="rounded-3xl border-2 border-emerald-100 bg-white p-7 shadow-md h-full flex flex-col justify-between dark:border-slate-700 dark:bg-slate-800 dark:shadow-lg">
+          <div className="rounded-3xl border-2 border-emerald-100 bg-white p-4 shadow-md h-full flex flex-col justify-between dark:border-slate-700 dark:bg-slate-800 dark:shadow-lg sm:p-7">
             <div>
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-extrabold uppercase tracking-wider text-slate-900 dark:text-white">
+              <div className="flex min-w-0 items-center gap-2 sm:justify-between sm:gap-3">
+                <h3 className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-[10px] font-extrabold uppercase leading-none tracking-wide text-slate-900 dark:text-white sm:text-sm sm:tracking-wider">
                   Distribusi Sektor Usaha yang Diminati
                 </h3>
-                <span className="text-[10px] font-extrabold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200 dark:text-emerald-300 dark:bg-emerald-500/20 dark:border-emerald-500/40">
+                <span className="shrink-0 whitespace-nowrap rounded-full border border-emerald-200 bg-emerald-50 px-2 py-1 text-[9px] font-extrabold leading-none text-emerald-700 dark:border-emerald-500/40 dark:bg-emerald-500/20 dark:text-emerald-300 sm:px-2.5 sm:py-0.5 sm:text-[10px]">
                   14 Model Terkurasi
                 </span>
               </div>
@@ -209,7 +209,7 @@ export default function SdgDashboard({ stats }: SdgDashboardProps) {
         </Reveal>
 
         <Reveal delay={0.1}>
-          <div className="rounded-3xl border-2 border-emerald-100 bg-white p-7 shadow-md h-full flex flex-col justify-between dark:border-slate-700 dark:bg-slate-800 dark:shadow-lg">
+          <div className="rounded-3xl border-2 border-emerald-100 bg-white p-4 shadow-md h-full flex flex-col justify-between dark:border-slate-700 dark:bg-slate-800 dark:shadow-lg sm:p-7">
             <div>
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-extrabold uppercase tracking-wider text-slate-900 dark:text-white">
@@ -271,14 +271,14 @@ export default function SdgDashboard({ stats }: SdgDashboardProps) {
           {SDG_TARGET_DETAILS.map((t, idx) => (
             <Reveal key={t.target} delay={idx * 0.1}>
               <div className="rounded-3xl border-2 border-emerald-100 bg-white p-7 shadow-md space-y-4 hover:border-emerald-400 transition-all hover:shadow-xl hover:-translate-y-0.5 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-emerald-500 dark:shadow-lg dark:hover:shadow-emerald-500/10">
-                <div className="flex items-center justify-between border-b border-slate-100 pb-3 dark:border-slate-700">
+                <div className="flex flex-col items-start gap-2 border-b border-slate-100 pb-3 dark:border-slate-700 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <span className="text-xs font-mono font-extrabold text-emerald-700 dark:text-emerald-400">
                       {t.target}
                     </span>
                     <h4 className="text-base font-extrabold text-slate-900 dark:text-white">{t.pilar}</h4>
                   </div>
-                  <span className="flex items-center gap-1 text-[10px] font-extrabold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200 dark:text-emerald-200 dark:bg-emerald-500/20 dark:border-emerald-500/40">
+                  <span className="flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[10px] font-extrabold text-emerald-700 dark:border-emerald-500/40 dark:bg-emerald-500/20 dark:text-emerald-200">
                     <CheckCircle2 className="h-3 w-3 text-emerald-600 dark:text-emerald-400" /> {t.status}
                   </span>
                 </div>

@@ -134,19 +134,25 @@ export async function POST(request: NextRequest) {
           <meta charset="utf-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
           <style>
-            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; margin: 0; padding: 0; background-color: #f8fafc; }
-            .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
-            .header { background: linear-gradient(135deg, #00df82 0%, #00c975 100%); padding: 40px 20px; text-align: center; }
-            .header h1 { color: #ffffff; margin: 0; font-size: 28px; font-weight: 800; }
-            .content { padding: 40px 30px; }
-            .otp-box { background: linear-gradient(135deg, #f0fdf4 0%, #d1fae5 100%); border: 3px solid #00df82; border-radius: 12px; padding: 30px; text-align: center; margin: 30px 0; }
-            .otp-code { font-size: 48px; font-weight: 900; color: #065f46; letter-spacing: 8px; margin: 10px 0; font-family: 'Courier New', monospace; }
-            .info-box { background-color: #f1f5f9; border-left: 4px solid #00df82; padding: 16px 20px; border-radius: 8px; margin: 20px 0; }
-            .footer { background-color: #f8fafc; padding: 30px; text-align: center; border-top: 1px solid #e2e8f0; }
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; margin: 0; padding: 16px 0; background-color: #f8fafc; }
+            .container { width: 100%; max-width: 560px; margin: 0 auto; background-color: #ffffff; border-radius: 14px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.08); }
+            .header { background: linear-gradient(135deg, #00df82 0%, #00c975 100%); padding: 28px 20px; text-align: center; }
+            .header h1 { color: #ffffff; margin: 0; font-size: 24px; font-weight: 800; }
+            .content { padding: 28px 24px; }
+            .otp-box { background: linear-gradient(135deg, #f0fdf4 0%, #d1fae5 100%); border: 2px solid #00df82; border-radius: 12px; padding: 22px 16px; text-align: center; margin: 24px 0; }
+            .otp-code { font-size: 40px; font-weight: 900; color: #065f46; letter-spacing: 5px; margin: 8px 0; font-family: 'Courier New', monospace; }
+            .info-box { background-color: #f1f5f9; border-left: 4px solid #00df82; padding: 14px 16px; border-radius: 8px; margin: 18px 0; }
+            .footer { background-color: #f8fafc; padding: 24px 20px; text-align: center; border-top: 1px solid #e2e8f0; }
             .footer p { color: #64748b; font-size: 13px; margin: 5px 0; }
             .warning { color: #dc2626; font-size: 13px; margin-top: 20px; }
             .button { display: inline-block; background-color: #00df82; color: #000000; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 700; margin: 20px 0; }
             ul { text-align: left; color: #475569; line-height: 1.8; }
+            @media only screen and (max-width: 600px) {
+              body { padding: 0; }
+              .container { border-radius: 0; }
+              .content { padding: 24px 20px; }
+              .otp-code { font-size: 36px; letter-spacing: 4px; }
+            }
           </style>
         </head>
         <body>
@@ -157,13 +163,13 @@ export async function POST(request: NextRequest) {
             </div>
             
             <div class="content">
-              <p style="font-size: 16px; color: #1e293b; line-height: 1.6;">
+              <p style="font-size: 15px; color: #1e293b; line-height: 1.55;">
                 Halo,<br><br>
                 Anda atau seseorang mencoba masuk ke akun PetaKarier Anda. Gunakan kode OTP berikut untuk melanjutkan proses login:
               </p>
 
               <div class="otp-box">
-                <p style="margin: 0; font-size: 14px; color: #059669; font-weight: 600;">KODE OTP ANDA</p>
+                <p style="margin: 0; font-size: 13px; color: #059669; font-weight: 700;">KODE OTP ANDA</p>
                 <div class="otp-code">${otp}</div>
                 <p style="margin: 10px 0 0 0; font-size: 13px; color: #065f46;">
                   Kode ini berlaku selama <strong>10 menit</strong>
