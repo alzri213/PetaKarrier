@@ -359,7 +359,6 @@ export default function AccessibilityPanel() {
     if (typeof document !== "undefined") {
       document.documentElement.classList.remove("a11y-saturate", "a11y-monochrome");
       if (next === "saturated") document.documentElement.classList.add("a11y-saturate");
-      if (next === "monochrome") document.documentElement.classList.add("a11y-monochrome");
     }
 
     setSettings((prev) => ({ ...prev, saturationMode: next }));
