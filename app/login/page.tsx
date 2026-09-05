@@ -15,19 +15,25 @@ import {
   Loader2,
   AlertCircle,
   CheckCircle2,
+  Shield,
 } from "lucide-react";
+import { GoogleReCaptchaProvider, useGoogleReCaptcha } from "react-google-recaptcha-v3";
+import OTPModal from "@/components/auth/OTPModal";
 
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/";
   const justRegistered = searchParams.get("registered") === "true";
+  const { executeRecaptcha } = useGoogleReCaptcha();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showOTPModal, setShowOTPModal] = useState(false);
+  const [otpVerified, setOtpVerified] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,6 +41,56 @@ function LoginForm() {
     setIsLoading(true);
 
     try {
+      // Step 1: Verify reCAPTCHA
+      if (!executeRecaptcha) {
+        setError("reCAPTCHA belum siap. Silakan refresh halaman.");
+        setIsLoading(false);
+        return;
+      }
+
+      const recaptchaToken = await executeRecaptcha("login");
+
+      // Step 2: Send OTP to email
+      const otpResponse = await fetch("/api/auth/send-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, recaptchaToken }),
+      });
+
+      const otpData = await otpResponse.json();
+
+      if (!otpResponse.ok) {
+        throw new Error(otpData.error || "Gagal mengirim kode OTP");
+      }
+
+      // Step 3: Show OTP modal
+      setShowOTPModal(true);
+      setIsLoading(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Terjadi kesalahan. Silakan coba lagi.");
+      setIsLoading(false);
+    }
+  };
+
+  const handleVerifyOTP = async (otp: string) => {
+    try {
+      // Verify OTP
+      const verifyResponse = await fetch("/api/auth/verify-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, otp }),
+      });
+
+      const verifyData = await verifyResponse.json();
+
+      if (!verifyResponse.ok) {
+        throw new Error(verifyData.error || "Kode OTP salah");
+      }
+
+      // OTP verified, now proceed with actual login
+      setOtpVerified(true);
+      setShowOTPModal(false);
+
       const result = await signIn("credentials", {
         email,
         password,
@@ -47,10 +103,32 @@ function LoginForm() {
         router.push(callbackUrl);
         router.refresh();
       }
-    } catch {
-      setError("Terjadi kesalahan. Silakan coba lagi.");
-    } finally {
-      setIsLoading(false);
+    } catch (err) {
+      throw err; // Re-throw to be caught by OTPModal
+    }
+  };
+
+  const handleResendOTP = async () => {
+    try {
+      if (!executeRecaptcha) {
+        throw new Error("reCAPTCHA belum siap");
+      }
+
+      const recaptchaToken = await executeRecaptcha("resend_otp");
+
+      const response = await fetch("/api/auth/send-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, recaptchaToken }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Gagal mengirim ulang kode OTP");
+      }
+    } catch (err) {
+      throw err; // Re-throw to be caught by OTPModal
     }
   };
 
@@ -165,16 +243,48 @@ function LoginForm() {
           {isLoading ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" />
-              <span>Memproses...</span>
+              <span>Mengirim Kode OTP...</span>
             </>
           ) : (
             <>
-              <span>Masuk</span>
+              <Shield className="h-4 w-4" />
+              <span>Masuk dengan Verifikasi OTP</span>
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </>
           )}
         </button>
+
+        {/* reCAPTCHA Badge Info */}
+        <p className="text-center text-[10px] text-slate-400 dark:text-slate-600">
+          Dilindungi oleh reCAPTCHA & Google{" "}
+          <a
+            href="https://policies.google.com/privacy"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:text-slate-600 dark:hover:text-slate-400"
+          >
+            Privacy Policy
+          </a>{" "}
+          dan{" "}
+          <a
+            href="https://policies.google.com/terms"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:text-slate-600 dark:hover:text-slate-400"
+          >
+            Terms
+          </a>
+        </p>
       </form>
+
+      {/* OTP Modal */}
+      <OTPModal
+        isOpen={showOTPModal}
+        onClose={() => setShowOTPModal(false)}
+        onVerify={handleVerifyOTP}
+        email={email}
+        onResend={handleResendOTP}
+      />
 
       {/* ═══ OR Divider ═══ */}
       <div className="my-6 flex items-center gap-3">
@@ -252,8 +362,34 @@ function LoginForm() {
 }
 
 export default function LoginPage() {
+  const recaptchaSiteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
+
+  if (!recaptchaSiteKey) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-[#060a14]">
+        <div className="text-center">
+          <AlertCircle className="mx-auto h-12 w-12 text-red-500" />
+          <h2 className="mt-4 text-xl font-bold text-slate-900 dark:text-white">
+            Konfigurasi reCAPTCHA Tidak Ditemukan
+          </h2>
+          <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+            Silakan hubungi administrator untuk mengatur NEXT_PUBLIC_RECAPTCHA_SITE_KEY
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-slate-50 dark:bg-[#060a14] transition-colors duration-300 pt-28 pb-16">
+    <GoogleReCaptchaProvider
+      reCaptchaKey={recaptchaSiteKey}
+      scriptProps={{
+        async: true,
+        defer: true,
+        appendTo: "head",
+      }}
+    >
+      <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-slate-50 dark:bg-[#060a14] transition-colors duration-300 pt-28 pb-16">
       {/* Background Decorative Elements (Dark Mode Only) */}
       <div className="pointer-events-none absolute inset-0 -z-10 hidden dark:block">
         <div className="absolute left-1/2 top-0 h-[600px] w-[900px] -translate-x-1/2 -translate-y-1/3 rounded-full bg-[#00df82]/[0.04] blur-[140px]" />
@@ -328,6 +464,7 @@ export default function LoginPage() {
           </motion.div>
         </div>
       </div>
-    </div>
+      </div>
+    </GoogleReCaptchaProvider>
   );
 }

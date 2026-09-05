@@ -42,46 +42,52 @@ export default function ModalCalculator({
     ];
   }, [daftarUsaha]);
 
-  const kotaList = useMemo(() => {
-    if (daftarKota.length > 0) return daftarKota;
-    // Full 34 provinsi UMP/UMR 2024–2025 (Sumber: Kemenaker RI)
-    return [
-      { id: "dki-jakarta",      nama: "DKI Jakarta",          provinsi: "DKI Jakarta",          umr: 5067381, sewaTempat: 1500000, utilitas: 600000, retribusi: 150000 },
-      { id: "jawa-barat",       nama: "Jawa Barat",           provinsi: "Jawa Barat",            umr: 2101000, sewaTempat: 950000,  utilitas: 400000, retribusi: 90000  },
-      { id: "jawa-tengah",      nama: "Jawa Tengah",          provinsi: "Jawa Tengah",           umr: 2036947, sewaTempat: 800000,  utilitas: 350000, retribusi: 80000  },
-      { id: "diy",              nama: "DI Yogyakarta",        provinsi: "DI Yogyakarta",         umr: 2159000, sewaTempat: 750000,  utilitas: 300000, retribusi: 60000  },
-      { id: "jawa-timur",       nama: "Jawa Timur",           provinsi: "Jawa Timur",            umr: 2165244, sewaTempat: 900000,  utilitas: 400000, retribusi: 85000  },
-      { id: "banten",           nama: "Banten",               provinsi: "Banten",                umr: 2727812, sewaTempat: 1100000, utilitas: 450000, retribusi: 100000 },
-      { id: "bali",             nama: "Bali",                 provinsi: "Bali",                  umr: 2713672, sewaTempat: 1200000, utilitas: 500000, retribusi: 100000 },
-      { id: "aceh",             nama: "Aceh",                 provinsi: "Aceh",                  umr: 3460672, sewaTempat: 700000,  utilitas: 300000, retribusi: 70000  },
-      { id: "sumatera-utara",   nama: "Sumatera Utara",       provinsi: "Sumatera Utara",        umr: 2809915, sewaTempat: 800000,  utilitas: 380000, retribusi: 75000  },
-      { id: "sumatera-barat",   nama: "Sumatera Barat",       provinsi: "Sumatera Barat",        umr: 2811000, sewaTempat: 750000,  utilitas: 350000, retribusi: 70000  },
-      { id: "riau",             nama: "Riau",                 provinsi: "Riau",                  umr: 3294625, sewaTempat: 900000,  utilitas: 400000, retribusi: 80000  },
-      { id: "kepulauan-riau",   nama: "Kepulauan Riau",       provinsi: "Kepulauan Riau",        umr: 3402492, sewaTempat: 950000,  utilitas: 420000, retribusi: 85000  },
-      { id: "jambi",            nama: "Jambi",                provinsi: "Jambi",                 umr: 3037121, sewaTempat: 750000,  utilitas: 350000, retribusi: 70000  },
-      { id: "sumatera-selatan", nama: "Sumatera Selatan",     provinsi: "Sumatera Selatan",      umr: 3456874, sewaTempat: 800000,  utilitas: 370000, retribusi: 75000  },
-      { id: "bangka-belitung",  nama: "Bangka Belitung",      provinsi: "Bangka Belitung",       umr: 3640000, sewaTempat: 800000,  utilitas: 370000, retribusi: 75000  },
-      { id: "bengkulu",         nama: "Bengkulu",             provinsi: "Bengkulu",              umr: 2507079, sewaTempat: 650000,  utilitas: 300000, retribusi: 60000  },
-      { id: "lampung",          nama: "Lampung",              provinsi: "Lampung",               umr: 2716497, sewaTempat: 700000,  utilitas: 320000, retribusi: 65000  },
-      { id: "kalimantan-barat", nama: "Kalimantan Barat",     provinsi: "Kalimantan Barat",      umr: 2702616, sewaTempat: 750000,  utilitas: 350000, retribusi: 70000  },
-      { id: "kalimantan-tengah",nama: "Kalimantan Tengah",    provinsi: "Kalimantan Tengah",     umr: 3261616, sewaTempat: 800000,  utilitas: 380000, retribusi: 75000  },
-      { id: "kalimantan-selatan",nama:"Kalimantan Selatan",   provinsi: "Kalimantan Selatan",    umr: 3149977, sewaTempat: 800000,  utilitas: 370000, retribusi: 75000  },
-      { id: "kalimantan-timur", nama: "Kalimantan Timur",     provinsi: "Kalimantan Timur",      umr: 3360067, sewaTempat: 950000,  utilitas: 420000, retribusi: 90000  },
-      { id: "kalimantan-utara", nama: "Kalimantan Utara",     provinsi: "Kalimantan Utara",      umr: 3361653, sewaTempat: 900000,  utilitas: 400000, retribusi: 85000  },
-      { id: "sulawesi-utara",   nama: "Sulawesi Utara",       provinsi: "Sulawesi Utara",        umr: 3545000, sewaTempat: 750000,  utilitas: 350000, retribusi: 70000  },
-      { id: "sulawesi-tengah",  nama: "Sulawesi Tengah",      provinsi: "Sulawesi Tengah",       umr: 2914583, sewaTempat: 700000,  utilitas: 330000, retribusi: 65000  },
-      { id: "sulawesi-selatan", nama: "Sulawesi Selatan",     provinsi: "Sulawesi Selatan",      umr: 3434298, sewaTempat: 800000,  utilitas: 370000, retribusi: 75000  },
-      { id: "sulawesi-tenggara",nama: "Sulawesi Tenggara",    provinsi: "Sulawesi Tenggara",     umr: 2885964, sewaTempat: 680000,  utilitas: 320000, retribusi: 65000  },
-      { id: "sulawesi-barat",   nama: "Sulawesi Barat",       provinsi: "Sulawesi Barat",        umr: 2914583, sewaTempat: 650000,  utilitas: 300000, retribusi: 60000  },
-      { id: "gorontalo",        nama: "Gorontalo",            provinsi: "Gorontalo",             umr: 3025100, sewaTempat: 650000,  utilitas: 300000, retribusi: 60000  },
-      { id: "ntb",              nama: "Nusa Tenggara Barat",  provinsi: "Nusa Tenggara Barat",   umr: 2371407, sewaTempat: 650000,  utilitas: 300000, retribusi: 60000  },
-      { id: "ntt",              nama: "Nusa Tenggara Timur",  provinsi: "Nusa Tenggara Timur",   umr: 2186826, sewaTempat: 600000,  utilitas: 280000, retribusi: 55000  },
-      { id: "maluku",           nama: "Maluku",               provinsi: "Maluku",                umr: 3141700, sewaTempat: 650000,  utilitas: 300000, retribusi: 60000  },
-      { id: "maluku-utara",     nama: "Maluku Utara",         provinsi: "Maluku Utara",          umr: 3200000, sewaTempat: 650000,  utilitas: 300000, retribusi: 60000  },
-      { id: "papua-barat",      nama: "Papua Barat",          provinsi: "Papua Barat",           umr: 3600000, sewaTempat: 700000,  utilitas: 320000, retribusi: 65000  },
-      { id: "papua",            nama: "Papua",                provinsi: "Papua",                 umr: 4024270, sewaTempat: 750000,  utilitas: 350000, retribusi: 70000  },
-    ];
+  // State untuk data kota dari database
+  const [kotaList, setKotaList] = useState<KotaData[]>(daftarKota);
+  const [isLoadingKota, setIsLoadingKota] = useState<boolean>(false);
+  const [selectedWilayah, setSelectedWilayah] = useState<string>("");
+
+  // Fetch kota data from API on mount
+  useEffect(() => {
+    if (daftarKota.length > 0) {
+      setKotaList(daftarKota);
+      return;
+    }
+
+    const fetchKotaData = async () => {
+      setIsLoadingKota(true);
+      try {
+        const res = await fetch("/api/kota");
+        const json = await res.json();
+        if (json.success && json.data) {
+          setKotaList(json.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch kota data:", error);
+        // Fallback to empty if API fails
+        setKotaList([]);
+      } finally {
+        setIsLoadingKota(false);
+      }
+    };
+
+    fetchKotaData();
   }, [daftarKota]);
+
+  // Filter kota berdasarkan wilayah yang dipilih
+  const filteredKotaList = useMemo(() => {
+    if (!selectedWilayah) return kotaList;
+    return kotaList.filter((k) => k.wilayah === selectedWilayah);
+  }, [kotaList, selectedWilayah]);
+
+  // Daftar wilayah unik untuk filter
+  const wilayahOptions = useMemo(() => {
+    const uniqueWilayah = Array.from(new Set(kotaList.map((k) => k.wilayah))).sort();
+    return [
+      { value: "", label: "Semua Wilayah" },
+      ...uniqueWilayah.map((w) => ({ value: w, label: w })),
+    ];
+  }, [kotaList]);
 
   const getDefaultModal = useCallback((usaha?: { modalMin?: number; modalMax?: number }) => {
     if (!usaha) return 20000000;
@@ -437,11 +443,11 @@ export default function ModalCalculator({
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
-          className="lg:col-span-5 lg:h-full rounded-[2rem] border border-slate-200 bg-white p-7 shadow-xl dark:border-slate-800 dark:bg-[#0a0f1d] dark:shadow-2xl sm:p-8"
+          className="lg:col-span-5 lg:h-full rounded-[2rem] border border-slate-200 bg-white p-5 shadow-xl dark:border-slate-800 dark:bg-[#0a0f1d] dark:shadow-2xl sm:p-8"
         >
           {/* Header text with proper wrap protection */}
-          <div className="mb-6 space-y-2">
-            <h2 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+          <div className="mb-5 space-y-2 sm:mb-6">
+            <h2 className="text-xl font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-2xl">
               Kalkulator Modal & BEP
             </h2>
             <p className="text-xs leading-relaxed text-slate-500 dark:text-slate-400 break-words max-w-full">
@@ -449,10 +455,10 @@ export default function ModalCalculator({
             </p>
           </div>
 
-          <form onSubmit={handleHitung} className="space-y-5">
+          <form onSubmit={handleHitung} className="space-y-4 sm:space-y-5">
             {/* Field 1: Jenis Rencana Usaha */}
             <div className="space-y-2">
-              <label className="text-sm font-extrabold text-slate-800 dark:text-slate-200">
+              <label className="text-xs font-extrabold text-slate-800 dark:text-slate-200 sm:text-sm">
                 Jenis Rencana Usaha
               </label>
               <SearchableSelect
@@ -463,48 +469,71 @@ export default function ModalCalculator({
               />
             </div>
 
-            {/* Field 2: Kota Domisili */}
+            {/* Field 2: Filter Wilayah (Baru) */}
             <div className="space-y-2">
-              <label className="text-sm font-extrabold text-slate-800 dark:text-slate-200">
+              <label className="text-xs font-extrabold text-slate-800 dark:text-slate-200 sm:text-sm">
+                Filter Wilayah
+              </label>
+              <SearchableSelect
+                value={selectedWilayah}
+                onChange={setSelectedWilayah}
+                placeholder="Semua Wilayah Indonesia"
+                options={wilayahOptions}
+                disabled={isLoadingKota}
+              />
+              {filteredKotaList.length > 0 && (
+                <p className="text-[10px] text-slate-500 dark:text-slate-400">
+                  {filteredKotaList.length} provinsi tersedia {selectedWilayah && `di wilayah ${selectedWilayah}`}
+                </p>
+              )}
+            </div>
+
+            {/* Field 3: Kota Domisili */}
+            <div className="space-y-2">
+              <label className="text-xs font-extrabold text-slate-800 dark:text-slate-200 sm:text-sm">
                 Kota Domisili
               </label>
               <SearchableSelect
                 value={selectedKotaId}
                 onChange={setSelectedKotaId}
-                placeholder="Pilih kota domisili"
-                options={kotaList.map((kota) => ({ value: kota.id, label: kota.nama }))}
+                placeholder={isLoadingKota ? "Memuat data kota..." : "Pilih kota domisili"}
+                options={filteredKotaList.map((kota) => ({ 
+                  value: kota.id, 
+                  label: `${kota.nama} - ${kota.wilayah}` 
+                }))}
+                disabled={isLoadingKota || filteredKotaList.length === 0}
               />
             </div>
 
-            {/* Field 3: Target Modal Awal (Green Border Highlight) */}
+            {/* Field 4: Target Modal Awal (Green Border Highlight) */}
             <div className="space-y-2">
-              <label className="text-sm font-extrabold text-slate-800 dark:text-slate-200">
+              <label className="text-xs font-extrabold text-slate-800 dark:text-slate-200 sm:text-sm">
                 Target Modal Awal
               </label>
-              <div className="flex items-center rounded-xl border-2 border-[#00df82] bg-slate-50 px-4 py-3 shadow-sm transition dark:bg-[#0f172a]">
-                <span className="font-bold text-[#00df82] mr-2 text-sm select-none">Rp</span>
+              <div className="flex items-center rounded-xl border-2 border-[#00df82] bg-slate-50 px-3 py-2.5 shadow-sm transition dark:bg-[#0f172a] sm:px-4 sm:py-3">
+                <span className="mr-2 text-xs font-bold text-[#00df82] select-none sm:text-sm">Rp</span>
                 <input
                   type="text"
                   value={modalAwalStr}
                   onChange={handleModalChange}
-                  className="w-full bg-transparent text-sm font-bold text-slate-900 outline-none dark:text-white"
+                  className="w-full bg-transparent text-xs font-bold text-slate-900 outline-none dark:text-white sm:text-sm"
                   placeholder="45.000.000"
                 />
               </div>
             </div>
 
-            {/* Field 4: Biaya Operasional Bulanan */}
+            {/* Field 5: Biaya Operasional Bulanan */}
             <div className="space-y-2">
-              <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+              <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 sm:text-xs">
                 Biaya Operasional Bulanan
               </label>
-              <div className="flex items-center rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 shadow-sm transition focus-within:border-[#00df82] dark:border-slate-800 dark:bg-[#0f172a]">
-                <span className="font-bold text-slate-400 mr-2 text-sm select-none">Rp</span>
+              <div className="flex items-center rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 shadow-sm transition focus-within:border-[#00df82] dark:border-slate-800 dark:bg-[#0f172a] sm:px-4 sm:py-3">
+                <span className="mr-2 text-xs font-bold text-slate-400 select-none sm:text-sm">Rp</span>
                 <input
                   type="text"
                   value={operasionalStr}
                   onChange={handleOperasionalChange}
-                  className="w-full bg-transparent text-sm font-bold text-slate-900 outline-none dark:text-white"
+                  className="w-full bg-transparent text-xs font-bold text-slate-900 outline-none dark:text-white sm:text-sm"
                   placeholder="8.500.000"
                 />
               </div>
@@ -516,7 +545,7 @@ export default function ModalCalculator({
                 <button
                   type="submit"
                   disabled={isCalculating || !selectedUsahaId || !selectedKotaId}
-                  className={`flex min-w-0 flex-1 items-center justify-center gap-2 rounded-full py-4 text-sm font-extrabold text-slate-950 shadow-lg transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] ${
+                  className={`flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded-full py-3 text-xs font-extrabold leading-none text-slate-950 shadow-lg transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] sm:gap-2 sm:py-4 sm:text-sm ${
                     hasChanges
                       ? "bg-[#00df82] shadow-emerald-500/30 ring-2 ring-[#00df82]/50 hover:bg-[#00c975]"
                       : "bg-[#00df82] shadow-emerald-500/20 hover:bg-[#00c975]"
@@ -536,7 +565,7 @@ export default function ModalCalculator({
                   type="button"
                   onClick={handleReset}
                   disabled={isCalculating}
-                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-slate-300 bg-white text-slate-600 shadow-md transition hover:border-emerald-400 hover:bg-emerald-50 hover:text-emerald-700 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-emerald-500 dark:hover:bg-emerald-950/40 dark:hover:text-emerald-400"
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-slate-300 bg-white text-slate-600 shadow-md transition hover:border-emerald-400 hover:bg-emerald-50 hover:text-emerald-700 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-emerald-500 dark:hover:bg-emerald-950/40 dark:hover:text-emerald-400 sm:h-12 sm:w-12"
                   aria-label="Reset kalkulator"
                   title="Reset kalkulator"
                 >
@@ -611,10 +640,19 @@ export default function ModalCalculator({
           </div>
 
           {/* Bottom Card: Proyeksi Akumulasi Arus Kas Menuju BEP Bar Chart */}
-          <div className="lg:flex-1 flex flex-col rounded-[2rem] border border-slate-200 bg-white p-6 sm:p-8 shadow-xl dark:border-slate-800 dark:bg-[#0a0f1d] dark:shadow-2xl transition-colors">
-            <h3 className="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-white mb-8">
-              Proyeksi Akumulasi Arus Kas Menuju BEP
-            </h3>
+          <div className="lg:flex-1 flex flex-col rounded-[2rem] border border-slate-200 bg-white p-4 sm:p-8 shadow-xl dark:border-slate-800 dark:bg-[#0a0f1d] dark:shadow-2xl transition-colors">
+            <div className="mb-4 sm:mb-6">
+              <h3 className="text-base font-bold tracking-tight text-slate-900 dark:text-white sm:text-lg">
+                Proyeksi Akumulasi Arus Kas Menuju BEP
+              </h3>
+              <div className="mt-2 flex items-center justify-between gap-3 text-[10px] font-semibold text-slate-500 dark:text-slate-400 sm:text-xs">
+                <span>Perkiraan arus kas 6 tahap</span>
+                <span className="inline-flex shrink-0 items-center gap-1.5 text-emerald-600 dark:text-[#00df82]">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#00df82]" />
+                  Titik BEP
+                </span>
+              </div>
+            </div>
 
             {/* Empty state prompt when not yet calculated */}
             {!hasCalculated && (
@@ -633,13 +671,13 @@ export default function ModalCalculator({
 
             {/* Actual bar chart (only when calculated) */}
             {hasCalculated && (
-              <div className="relative pt-6 pb-2 overflow-x-auto scrollbar-none">
-                <div className="grid grid-cols-6 gap-2 sm:gap-4 items-end min-h-[220px] min-w-[320px]">
+              <div className="relative overflow-hidden px-1 pb-2 pt-4 sm:overflow-x-auto sm:px-0 sm:pt-6 scrollbar-none">
+                <div className="grid min-h-[155px] w-full min-w-0 grid-cols-6 items-end gap-1.5 sm:min-h-[220px] sm:gap-4">
                   {calculations.bars.map((bar, idx) => (
                     <div key={idx} className="flex flex-col items-center justify-end h-full group">
                       {/* Top Value Label */}
                       <span
-                        className={`text-[10px] sm:text-xs font-bold mb-2 transition-all whitespace-nowrap ${
+                        className={`mb-1 text-[9px] font-bold leading-none tracking-tight transition-all whitespace-nowrap sm:mb-2 sm:text-xs sm:tracking-normal ${
                           bar.isBep
                             ? "text-[#00df82] font-extrabold scale-105"
                             : bar.isPostBep
@@ -651,7 +689,7 @@ export default function ModalCalculator({
                       </span>
 
                       {/* Vertical Bar */}
-                      <div className="w-full max-w-[58px] h-40 flex items-end justify-center">
+                      <div className="flex h-28 w-full max-w-[58px] items-end justify-center sm:h-40">
                         <motion.div
                           initial={{ height: 0 }}
                           animate={{ height: `${bar.heightPct}%` }}
@@ -668,7 +706,7 @@ export default function ModalCalculator({
 
                       {/* Bottom Month Label */}
                       <span
-                        className={`mt-3 text-[10px] sm:text-xs font-semibold whitespace-nowrap ${
+                        className={`mt-2 text-[9px] font-semibold leading-none tracking-tight whitespace-nowrap sm:mt-3 sm:text-xs sm:tracking-normal ${
                           bar.isBep
                             ? "text-[#00df82] font-bold"
                             : "text-slate-500 dark:text-slate-400"

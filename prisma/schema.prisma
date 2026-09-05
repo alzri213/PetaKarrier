@@ -35,13 +35,21 @@ model Kota {
   id         String   @id
   nama       String
   provinsi   String
+  wilayah    String   // Sumatera, Jawa, Kalimantan, Sulawesi, Maluku, Papua, Nusa Tenggara
   umr        Int
   sewaTempat Int
   utilitas   Int
   retribusi  Int
+  latitude   Float?   // Koordinat untuk map
+  longitude  Float?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   analisis      Analisis[]
   rencanaBisnis RencanaBisnis[]
+
+  @@index([wilayah])
+  @@index([provinsi])
 }
 
 model User {

@@ -32,10 +32,15 @@ export interface KotaData {
   id: string;
   nama: string;
   provinsi: string;
+  wilayah?: string; // Sumatera, Jawa, Kalimantan, Sulawesi, Maluku, Papua, Nusa Tenggara
   umr: number;
   sewaTempat: number;
   utilitas: number;
   retribusi: number;
+  latitude?: number;
+  longitude?: number;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface ProfilUser {

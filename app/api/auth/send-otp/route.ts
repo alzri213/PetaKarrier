@@ -1,0 +1,213 @@
+import { NextRequest, NextResponse } from "next/server";
+import nodemailer from "nodemailer";
+import bcrypt from "bcryptjs";
+
+// In-memory OTP storage (in production, use Redis or database)
+const otpStore = new Map<string, { code: string; expiresAt: number; attempts: number }>();
+
+// Cleanup expired OTPs every 5 minutes
+setInterval(() => {
+  const now = Date.now();
+  for (const [email, data] of otpStore.entries()) {
+    if (data.expiresAt < now) {
+      otpStore.delete(email);
+    }
+  }
+}, 5 * 60 * 1000);
+
+function generateOTP(): string {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const { email, recaptchaToken } = await request.json();
+
+    if (!email || !recaptchaToken) {
+      return NextResponse.json(
+        { error: "Email dan reCAPTCHA token diperlukan" },
+        { status: 400 }
+      );
+    }
+
+    // Verify reCAPTCHA token
+    const recaptchaSecret = process.env.RECAPTCHA_SECRET_KEY;
+    if (!recaptchaSecret) {
+      console.error("RECAPTCHA_SECRET_KEY tidak ditemukan di environment variables");
+      return NextResponse.json(
+        { error: "Konfigurasi server tidak lengkap" },
+        { status: 500 }
+      );
+    }
+
+    const recaptchaResponse = await fetch(
+      `https://www.google.com/recaptcha/api/siteverify`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: `secret=${recaptchaSecret}&response=${recaptchaToken}`,
+      }
+    );
+
+    const recaptchaData = await recaptchaResponse.json();
+
+    if (!recaptchaData.success || recaptchaData.score < 0.5) {
+      return NextResponse.json(
+        { error: "Verifikasi reCAPTCHA gagal. Silakan coba lagi." },
+        { status: 400 }
+      );
+    }
+
+    // Check rate limiting (max 3 OTP per email per 10 minutes)
+    const existingOTP = otpStore.get(email);
+    if (existingOTP && existingOTP.attempts >= 3) {
+      const timeLeft = Math.ceil((existingOTP.expiresAt - Date.now()) / 1000 / 60);
+      return NextResponse.json(
+        { error: `Terlalu banyak percobaan. Coba lagi dalam ${timeLeft} menit.` },
+        { status: 429 }
+      );
+    }
+
+    // Generate OTP
+    const otp = generateOTP();
+    const hashedOTP = await bcrypt.hash(otp, 10);
+
+    // Store OTP (expires in 10 minutes)
+    otpStore.set(email, {
+      code: hashedOTP,
+      expiresAt: Date.now() + 10 * 60 * 1000,
+      attempts: (existingOTP?.attempts || 0) + 1,
+    });
+
+    // Send OTP via email
+    const transporter = nodemailer.createTransport({
+      host: process.env.EMAIL_HOST || "smtp.gmail.com",
+      port: parseInt(process.env.EMAIL_PORT || "587"),
+      secure: process.env.EMAIL_SECURE === "true",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    const mailOptions = {
+      from: `"PetaKarier Security" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: "🔐 Kode OTP Login Anda - PetaKarier",
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; margin: 0; padding: 0; background-color: #f8fafc; }
+            .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
+            .header { background: linear-gradient(135deg, #00df82 0%, #00c975 100%); padding: 40px 20px; text-align: center; }
+            .header h1 { color: #ffffff; margin: 0; font-size: 28px; font-weight: 800; }
+            .content { padding: 40px 30px; }
+            .otp-box { background: linear-gradient(135deg, #f0fdf4 0%, #d1fae5 100%); border: 3px solid #00df82; border-radius: 12px; padding: 30px; text-align: center; margin: 30px 0; }
+            .otp-code { font-size: 48px; font-weight: 900; color: #065f46; letter-spacing: 8px; margin: 10px 0; font-family: 'Courier New', monospace; }
+            .info-box { background-color: #f1f5f9; border-left: 4px solid #00df82; padding: 16px 20px; border-radius: 8px; margin: 20px 0; }
+            .footer { background-color: #f8fafc; padding: 30px; text-align: center; border-top: 1px solid #e2e8f0; }
+            .footer p { color: #64748b; font-size: 13px; margin: 5px 0; }
+            .warning { color: #dc2626; font-size: 13px; margin-top: 20px; }
+            .button { display: inline-block; background-color: #00df82; color: #000000; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 700; margin: 20px 0; }
+            ul { text-align: left; color: #475569; line-height: 1.8; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>🔐 PetaKarier Security</h1>
+              <p style="color: #ffffff; margin: 10px 0 0 0; font-size: 16px;">Kode Verifikasi Login Anda</p>
+            </div>
+            
+            <div class="content">
+              <p style="font-size: 16px; color: #1e293b; line-height: 1.6;">
+                Halo,<br><br>
+                Anda atau seseorang mencoba masuk ke akun PetaKarier Anda. Gunakan kode OTP berikut untuk melanjutkan proses login:
+              </p>
+
+              <div class="otp-box">
+                <p style="margin: 0; font-size: 14px; color: #059669; font-weight: 600;">KODE OTP ANDA</p>
+                <div class="otp-code">${otp}</div>
+                <p style="margin: 10px 0 0 0; font-size: 13px; color: #065f46;">
+                  ⏱️ Kode ini berlaku selama <strong>10 menit</strong>
+                </p>
+              </div>
+
+              <div class="info-box">
+                <p style="margin: 0; font-size: 14px; color: #334155; line-height: 1.6;">
+                  <strong>⚠️ Penting untuk Keamanan Anda:</strong>
+                </p>
+                <ul style="margin: 10px 0 0 0; padding-left: 20px;">
+                  <li>Jangan bagikan kode ini kepada siapa pun</li>
+                  <li>Tim PetaKarier tidak akan pernah meminta kode OTP Anda</li>
+                  <li>Kode ini hanya valid untuk 1 kali penggunaan</li>
+                  <li>Abaikan email ini jika Anda tidak melakukan login</li>
+                </ul>
+              </div>
+
+              <p style="font-size: 14px; color: #64748b; text-align: center; margin-top: 30px;">
+                Jika tombol tidak berfungsi, salin dan tempel kode di atas ke halaman login.
+              </p>
+
+              <p class="warning" style="text-align: center;">
+                ⚠️ Jika Anda <strong>tidak</strong> mencoba login, segera amankan akun Anda dan ubah password.
+              </p>
+            </div>
+
+            <div class="footer">
+              <p><strong>PetaKarier</strong> - Platform Akselerator Wirausaha Muda Indonesia</p>
+              <p>Selaras dengan SDG 8: Pekerjaan Layak & Pertumbuhan Ekonomi</p>
+              <p style="margin-top: 15px;">
+                Email ini dikirim secara otomatis. Mohon tidak membalas email ini.
+              </p>
+              <p style="margin-top: 10px; font-size: 12px;">
+                © ${new Date().getFullYear()} PetaKarier. All rights reserved.
+              </p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `,
+      text: `
+        PetaKarier - Kode OTP Login Anda
+        
+        Kode OTP: ${otp}
+        
+        Kode ini berlaku selama 10 menit.
+        
+        PENTING:
+        - Jangan bagikan kode ini kepada siapa pun
+        - Tim PetaKarier tidak akan pernah meminta kode OTP Anda
+        - Kode ini hanya valid untuk 1 kali penggunaan
+        
+        Jika Anda tidak mencoba login, segera amankan akun Anda.
+        
+        Terima kasih,
+        Tim PetaKarier
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    return NextResponse.json(
+      {
+        success: true,
+        message: "Kode OTP telah dikirim ke email Anda. Periksa inbox atau folder spam.",
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error sending OTP:", error);
+    return NextResponse.json(
+      {
+        error: "Gagal mengirim kode OTP. Silakan coba lagi.",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 }
+    );
+  }
+}
