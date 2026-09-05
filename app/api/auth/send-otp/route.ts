@@ -35,15 +35,26 @@ export async function POST(request: NextRequest) {
       {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: `secret=${recaptchaSecret}&response=${recaptchaToken}`,
+        body: new URLSearchParams({
+          secret: recaptchaSecret,
+          response: recaptchaToken,
+        }),
       }
     );
 
     const recaptchaData = await recaptchaResponse.json();
 
     if (!recaptchaData.success || recaptchaData.score < 0.5) {
+      console.error("reCAPTCHA rejected request", {
+        errors: recaptchaData["error-codes"] ?? [],
+        hostname: recaptchaData.hostname ?? null,
+        score: recaptchaData.score ?? null,
+        action: recaptchaData.action ?? null,
+      });
       return NextResponse.json(
-        { error: "Verifikasi reCAPTCHA gagal. Silakan coba lagi." },
+        {
+          error: "Verifikasi reCAPTCHA gagal. Pastikan domain Vercel terdaftar pada key reCAPTCHA production.",
+        },
         { status: 400 }
       );
     }
