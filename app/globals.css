@@ -185,20 +185,6 @@ html.a11y-lh-2 main li {
   display: flex !important;
 }
 
-html.hide-chat-widget #chat-ai-trigger {
-  display: none !important;
-  visibility: hidden !important;
-  opacity: 0 !important;
-  pointer-events: none !important;
-}
-
-html.hide-a11y-widget #a11y-trigger {
-  display: none !important;
-  visibility: hidden !important;
-  opacity: 0 !important;
-  pointer-events: none !important;
-}
-
 /* 9. Kurangi Animasi (Reduced Motion) */
 html.a11y-reduced-motion,
 html.a11y-reduced-motion * {
@@ -647,13 +633,5 @@ a, button, input, select, textarea {
     14px 14px 0 #14532d,
     15px 15px 20px rgba(0,0,0,0.15);
 }
+
 /* Print styles are handled via dedicated print window in BusinessPlan.tsx */
-
-/* Widget visibility toggles controlled from mobile drawer */
-html.hide-chat-widget #chat-ai-trigger {
-  display: none !important;
-}
-
-html.hide-a11y-widget #a11y-trigger {
-  display: none !important;
-}

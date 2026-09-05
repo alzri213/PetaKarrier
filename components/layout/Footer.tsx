@@ -40,7 +40,7 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Col 2: Fitur Platform */}
+          {/* Col 2: Fitur Platform (Semua Halaman Internal) */}
           <div className="space-y-3">
             <p className="text-xs font-extrabold uppercase tracking-widest text-slate-700 dark:text-slate-200">
               Fitur Platform
@@ -51,6 +51,8 @@ export default function Footer() {
                 { href: "/kalkulator",     label: "Kalkulator Modal & BEP" },
                 { href: "/perbandingan",   label: "Komparasi Usaha vs UMR" },
                 { href: "/rencana-bisnis", label: "Generator Rencana Bisnis" },
+                { href: "/sdg-impact",     label: "Dashboard Dampak SDG 8" },
+                { href: "/komunitas",      label: "Resource Hub & Komunitas" },
               ].map(({ href, label }) => (
                 <li key={href}>
                   <Link
@@ -68,56 +70,30 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Col 3: Ekosistem & Dampak */}
+          {/* Col 3: Regulasi & Sumber Data (Portal Rujukan Resmi Pemerintah) */}
           <div className="space-y-3">
             <p className="text-xs font-extrabold uppercase tracking-widest text-slate-700 dark:text-slate-200">
-              Ekosistem & Dampak
+              Regulasi & Sumber Data
             </p>
             <ul className="space-y-2.5 text-sm">
-              <li>
-                <Link
-                  href="/sdg-impact"
-                  className={`flex items-center gap-1 font-semibold transition ${
-                    pathname === "/sdg-impact"
-                      ? "text-emerald-600 dark:text-emerald-400"
-                      : "text-slate-600 hover:text-emerald-600 dark:text-slate-400 dark:hover:text-emerald-400"
-                  }`}
-                >
-                  Dashboard Dampak SDG 8 <ArrowUpRight className="h-3.5 w-3.5" />
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/komunitas"
-                  className={`flex items-center gap-1 transition font-semibold ${
-                    pathname === "/komunitas"
-                      ? "text-emerald-600 dark:text-emerald-400"
-                      : "text-slate-600 hover:text-emerald-600 dark:text-slate-400 dark:hover:text-emerald-400"
-                  }`}
-                >
-                  Resource Hub & Panduan UMKM <ArrowUpRight className="h-3.5 w-3.5" />
-                </Link>
-              </li>
-              <li>
-                <a
-                  href="https://sdgs.bappenas.go.id"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-slate-600 transition hover:text-emerald-600 dark:text-slate-400 dark:hover:text-emerald-400"
-                >
-                  Bappenas SDGs TPB <ArrowUpRight className="h-3.5 w-3.5" />
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://oss.go.id"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-slate-600 transition hover:text-emerald-600 dark:text-slate-400 dark:hover:text-emerald-400"
-                >
-                  Perizinan NIB (OSS RBA) <ArrowUpRight className="h-3.5 w-3.5" />
-                </a>
-              </li>
+              {[
+                { href: "https://sdgs.bappenas.go.id", label: "Bappenas SDGs TPB" },
+                { href: "https://oss.go.id",           label: "Perizinan NIB (OSS RBA)" },
+                { href: "https://ptsp.halal.go.id",    label: "Sertifikasi Halal BPJPH" },
+                { href: "https://kur.ekon.go.id",      label: "Akses Pembiayaan KUR" },
+                { href: "https://katalog.inaproc.id",  label: "E-Katalog LKPP UMKM" },
+              ].map(({ href, label }) => (
+                <li key={href}>
+                  <a
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1 text-slate-600 transition hover:text-emerald-600 dark:text-slate-400 dark:hover:text-emerald-400"
+                  >
+                    {label} <ArrowUpRight className="h-3.5 w-3.5 opacity-70" />
+                  </a>
+                </li>
+              ))}
             </ul>
           </div>
 
@@ -126,16 +102,16 @@ export default function Footer() {
             <p className="text-xs font-extrabold uppercase tracking-widest text-slate-700 dark:text-slate-200">
               Kompetisi & Inisiatif
             </p>
-            <div className="space-y-2 rounded-2xl border border-slate-200 bg-white p-4 text-xs shadow-sm dark:border-slate-800 dark:bg-slate-900/60">
+            <div className="space-y-2.5 rounded-2xl border border-slate-200 bg-white p-4 text-xs shadow-sm dark:border-slate-800 dark:bg-slate-900/60">
               <div className="flex items-center gap-1.5 font-bold text-slate-800 dark:text-white">
                 ITechnoCup 2026
               </div>
               <p className="text-slate-500 leading-relaxed dark:text-slate-400">
                 Karya inovasi teknologi berfokus pada Pilar Pembangunan Ekonomi untuk penciptaan lapangan kerja produktif dan inklusif.
               </p>
-              <div className="flex items-center gap-1 text-slate-500 pt-1 dark:text-slate-400">
-                <ShieldCheck className="h-3.5 w-3.5 text-emerald-500 dark:text-emerald-400" />
-                Data 34 Provinsi Indonesia
+              <div className="flex items-center gap-1 text-slate-500 pt-1 dark:text-slate-400 font-medium">
+                <ShieldCheck className="h-3.5 w-3.5 text-emerald-500 dark:text-emerald-400 shrink-0" />
+                Data Standar 38 Provinsi RI
               </div>
             </div>
           </div>

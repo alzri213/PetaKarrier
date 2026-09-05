@@ -325,7 +325,7 @@ export default function ResourceHub() {
           </div>
 
           <a
-            href="https://wa.me/?text=Halo%20PetaKarier%2C%20saya%20tertarik%20bergabung%20dengan%20komunitas%20wirausaha%20muda."
+            href="https://chat.whatsapp.com/D4rI3zV131XJ2a1ceElUPe"
             target="_blank"
             rel="noopener noreferrer"
             className="btn-shine inline-flex items-center justify-center gap-2.5 rounded-2xl bg-[#00df82] px-8 py-4 text-sm font-extrabold text-slate-950 shadow-xl shadow-emerald-500/25 transition-all duration-300 hover:bg-[#00c975] hover:scale-105 active:scale-95 shrink-0 w-full sm:w-auto"
