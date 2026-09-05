@@ -612,11 +612,11 @@ export default function QuestionnaireForm() {
                     </div>
 
                     {/* Navigation Buttons */}
-                    <div className="grid grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] items-stretch gap-2.5 pt-3 sm:grid-cols-[auto_minmax(0,1fr)] sm:gap-3">
+                    <div className="grid grid-cols-[minmax(0,0.75fr)_minmax(0,1.25fr)] items-stretch gap-2 pt-3 sm:grid-cols-[auto_minmax(0,1fr)] sm:gap-3">
                       <button
                         type="button"
                         onClick={() => setStep(0)}
-                        className="flex min-h-14 items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-slate-100 px-2.5 text-[11px] font-bold leading-tight text-slate-700 transition hover:bg-slate-200 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white sm:min-h-12 sm:gap-2 sm:px-5 sm:text-sm"
+                        className="flex min-h-12 items-center justify-center gap-1 rounded-xl border border-slate-200 bg-slate-100 px-2 text-[10px] font-bold leading-none text-slate-700 transition hover:bg-slate-200 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white sm:min-h-12 sm:gap-2 sm:px-5 sm:text-sm"
                       >
                         <ArrowLeft className="h-4 w-4" />
                         <span>Kembali</span>
@@ -625,10 +625,10 @@ export default function QuestionnaireForm() {
                       <button
                         type="button"
                         onClick={handleProcessAnalysis}
-                        className="group flex min-h-14 min-w-0 items-center justify-center gap-1.5 rounded-xl bg-[#00df82] px-2.5 py-2.5 text-center text-[11px] font-bold leading-tight text-slate-950 shadow-lg shadow-emerald-500/20 transition hover:bg-[#00c975] active:scale-[0.99] sm:min-h-12 sm:gap-2 sm:px-4 sm:text-sm"
+                        className="group flex min-h-12 min-w-0 items-center justify-center gap-1 rounded-xl bg-[#00df82] px-2 py-2 text-center text-[10px] font-bold leading-none text-slate-950 shadow-lg shadow-emerald-500/20 transition hover:bg-[#00c975] active:scale-[0.99] sm:min-h-12 sm:gap-2 sm:px-4 sm:text-sm"
                       >
                         <Compass className="h-4 w-4" />
-                        <span>Analisis & Cocokkan Usaha</span>
+                        <span className="whitespace-nowrap">Analisis & Cocokkan Usaha</span>
                       </button>
                     </div>
                   </motion.div>
