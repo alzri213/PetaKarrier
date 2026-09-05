@@ -352,8 +352,8 @@ export default function AccessibilityPanel() {
   };
 
   const cycleSaturation = () => {
-    const modes: SaturationMode[] = ["normal", "saturated", "monochrome"];
-    const next = modes[(modes.indexOf(settings.saturationMode) + 1) % modes.length];
+    // Keep this control focused on saturation; legacy monochrome state is restored to Jenuh+.
+    const next: SaturationMode = settings.saturationMode === "saturated" ? "normal" : "saturated";
 
     // Clear the previous visual mode immediately so filters cannot overlap.
     if (typeof document !== "undefined") {
