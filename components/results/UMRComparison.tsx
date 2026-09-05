@@ -312,22 +312,22 @@ export default function UMRComparison({
         >
           <div>
             {/* Top Tag & Switchable Business Badge */}
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-[11px] font-extrabold uppercase tracking-wider text-emerald-600 dark:text-[#00df82]">
+            <div className="mb-4 flex items-center gap-2 sm:justify-between sm:gap-3">
+              <span className="shrink-0 whitespace-nowrap text-[9px] font-extrabold uppercase leading-none tracking-wide text-emerald-600 dark:text-[#00df82] sm:text-[11px] sm:tracking-wider">
                 ESTIMASI HASIL USAHA
               </span>
 
               {/* Floating Dropdown Trigger Container */}
-              <div className="relative w-full sm:w-auto">
+              <div className="relative min-w-0 flex-1 sm:flex-none">
                 <button
                   type="button"
                   onClick={() => {
                     setIsUsahaModalOpen(!isUsahaModalOpen);
                     setUsahaSearch("");
                   }}
-                  className="group inline-flex w-full items-center justify-between gap-1.5 rounded-full bg-emerald-50 border border-emerald-400/50 px-3 py-2 text-[11px] font-bold text-emerald-700 hover:border-emerald-500 transition shadow-sm cursor-pointer dark:bg-[#051d14] dark:border-[#00df82]/40 dark:text-[#00df82] dark:hover:border-[#00df82] sm:w-auto sm:justify-start sm:py-1"
+                  className="group inline-flex w-full min-w-0 items-center justify-between gap-1.5 rounded-full bg-emerald-50 border border-emerald-400/50 px-3 py-2 text-[10px] font-bold text-emerald-700 hover:border-emerald-500 transition shadow-sm cursor-pointer dark:bg-[#051d14] dark:border-[#00df82]/40 dark:text-[#00df82] dark:hover:border-[#00df82] sm:w-auto sm:py-1 sm:text-[11px]"
                 >
-                  <span>{selectedUsaha.nama}</span>
+                  <span className="min-w-0 truncate whitespace-nowrap">{selectedUsaha.nama}</span>
                   <ChevronDown className={`h-3 w-3 text-[#00df82] transition-transform duration-200 ${isUsahaModalOpen ? "rotate-180" : ""}`} />
                 </button>
 
