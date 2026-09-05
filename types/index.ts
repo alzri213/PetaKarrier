@@ -12,7 +12,8 @@ export interface JenisUsaha {
   id: string;
   nama: string;
   kategori: KategoriUsaha;
-  emoji: string;
+  icon: string;
+  emoji?: string;
   deskripsi: string;
   tags: string[];
   modalMin: number;

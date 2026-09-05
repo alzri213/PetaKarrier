@@ -1,6 +1,8 @@
 import { formatRupiah } from "@/lib/utils/formatCurrency";
 import type { JenisUsaha, ProfilUser, Rekomendasi } from "@/types";
-import fallbackJenisUsaha from "@/lib/data/jenisUsaha.json";
+import { jenisUsahaSeedList } from "@/prisma/seed-data";
+
+const fallbackJenisUsaha = jenisUsahaSeedList as unknown as JenisUsaha[];
 
 const SKILL_KATEGORI: Record<string, string[]> = {
   Kuliner: ["memasak", "peracik-kopi", "logistik", "kemasan", "manajemen-waktu"],

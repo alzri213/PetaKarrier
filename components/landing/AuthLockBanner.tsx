@@ -41,7 +41,7 @@ export default function AuthLockBanner() {
               Buka Akses Penuh ke Seluruh Ekosistem PetaKarier
             </h2>
             <p className="mx-auto max-w-3xl text-sm sm:text-base leading-relaxed text-slate-600 dark:text-slate-300 font-normal">
-              Masuk atau buat akun gratis sekarang untuk membuka roadmap 90 hari aksi wirausaha, simulasi modal real-time 18 kota, perbandingan UMR, dan pembuatan rencana bisnis otomatis siap KUR.
+              Masuk atau buat akun gratis sekarang untuk membuka roadmap 90 hari aksi wirausaha, simulasi modal real-time 38 provinsi, perbandingan UMR, dan pembuatan rencana bisnis otomatis siap KUR.
             </p>
           </div>
 
@@ -55,7 +55,7 @@ export default function AuthLockBanner() {
               },
               {
                 icon: FileSpreadsheet,
-                title: "Kalkulator BEP 18 Kota",
+                title: "Kalkulator BEP 38 Provinsi",
                 desc: "Simulasi biaya hidup & sewa tempat",
               },
               {

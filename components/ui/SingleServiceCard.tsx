@@ -16,7 +16,7 @@ interface SingleServiceCardProps {
 
 export default function SingleServiceCard({
   title = "Kalkulator Modal & BEP",
-  desc = "Hitung simulasi modal berbasis UMR 18 kota dengan proyeksi arus kas 12 bulan.",
+  desc = "Hitung simulasi modal berbasis UMR 38 provinsi dengan proyeksi arus kas 12 bulan.",
   href = "/kalkulator",
   imageSrc = "/services/kalkulator_real.jpg",
   defaultActive = false,

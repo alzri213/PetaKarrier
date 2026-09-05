@@ -185,6 +185,84 @@ html.a11y-lh-2 main li {
   display: flex !important;
 }
 
+html.hide-chat-widget #chat-ai-trigger {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+html.hide-a11y-widget #a11y-trigger {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* 9. Kurangi Animasi (Reduced Motion) */
+html.a11y-reduced-motion,
+html.a11y-reduced-motion * {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* 10. Kursor XL (Big Cursor) */
+html.a11y-big-cursor,
+html.a11y-big-cursor * {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='38' height='38' viewBox='0 0 24 24' fill='%2300df82' stroke='%2305101e' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m3 3 7.07 16.97 2.51-7.39 7.39-2.51L3 3z'/%3E%3Cpath d='m13 13 6 6'/%3E%3C/svg%3E") 3 3, auto !important;
+}
+
+/* 11. Fokus Teks (Text Focus) */
+html.a11y-text-focus main p:hover,
+html.a11y-text-focus main h1:hover,
+html.a11y-text-focus main h2:hover,
+html.a11y-text-focus main h3:hover,
+html.a11y-text-focus main h4:hover,
+html.a11y-text-focus main li:hover {
+  background-color: rgba(0, 223, 130, 0.12) !important;
+  outline: 2px solid rgba(0, 223, 130, 0.65) !important;
+  outline-offset: 4px !important;
+  border-radius: 6px !important;
+}
+
+/* 12. Sorot Link (Highlight Links) */
+html.a11y-highlight-links main a,
+html.a11y-highlight-links main button:not(#a11y-trigger):not(#chat-ai-trigger) {
+  outline: 2px solid #00df82 !important;
+  outline-offset: 3px !important;
+  text-decoration: underline !important;
+  text-decoration-color: #00df82 !important;
+  text-decoration-thickness: 2px !important;
+}
+
+/* 13. Jarak Huruf (Letter Spacing) */
+html.a11y-ls-1 main p,
+html.a11y-ls-1 main span,
+html.a11y-ls-1 main li,
+html.a11y-ls-1 main h1,
+html.a11y-ls-1 main h2,
+html.a11y-ls-1 main h3,
+html.a11y-ls-1 main a {
+  letter-spacing: 0.12em !important;
+}
+
+html.a11y-ls-2 main p,
+html.a11y-ls-2 main span,
+html.a11y-ls-2 main li,
+html.a11y-ls-2 main h1,
+html.a11y-ls-2 main h2,
+html.a11y-ls-2 main h3,
+html.a11y-ls-2 main a {
+  letter-spacing: 0.22em !important;
+}
+
+/* 14. Tooltip Diperluas */
+html.a11y-expanded-tooltips [title] {
+  cursor: help !important;
+}
+
 html {
   scroll-behavior: smooth;
   color-scheme: light;
@@ -569,5 +647,13 @@ a, button, input, select, textarea {
     14px 14px 0 #14532d,
     15px 15px 20px rgba(0,0,0,0.15);
 }
-
 /* Print styles are handled via dedicated print window in BusinessPlan.tsx */
+
+/* Widget visibility toggles controlled from mobile drawer */
+html.hide-chat-widget #chat-ai-trigger {
+  display: none !important;
+}
+
+html.hide-a11y-widget #a11y-trigger {
+  display: none !important;
+}

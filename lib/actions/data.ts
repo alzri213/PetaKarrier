@@ -2,8 +2,10 @@
 
 import { prisma, isDatabaseConfigured } from "@/lib/prisma";
 import type { JenisUsaha, KotaData, KategoriUsaha } from "@/types";
-import fallbackJenisUsaha from "@/lib/data/jenisUsaha.json";
-import fallbackKota from "@/lib/data/umr.json";
+import { jenisUsahaSeedList, kotaSeedList } from "@/prisma/seed-data";
+
+const fallbackJenisUsaha = jenisUsahaSeedList as unknown as JenisUsaha[];
+const fallbackKota = kotaSeedList as unknown as KotaData[];
 
 export async function getDaftarUsaha(): Promise<JenisUsaha[]> {
   if (isDatabaseConfigured()) {

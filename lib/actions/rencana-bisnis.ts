@@ -103,7 +103,7 @@ export async function generateRencanaAction(
         })
         .catch(() => {});
     } catch (err) {
-      console.warn("⚠️ Database insertion failed for RencanaBisnis:", err);
+      console.warn("[RencanaBisnis] Database insertion failed:", err);
     }
   }
 
@@ -130,7 +130,7 @@ export async function getRencanaBisnisById(id: string) {
     });
     return data;
   } catch (err) {
-    console.warn("⚠️ Database query failed for getRencanaBisnisById:", err);
+    console.warn("[RencanaBisnis] Database query failed for getRencanaBisnisById:", err);
     return null;
   }
 }

@@ -8,8 +8,8 @@ import ScrollSpeedMarquee from "@/components/ui/ScrollSpeedMarquee";
 const POIN = [
   {
     icon: "solar:map-point-bold",
-    title: "Data Riil 18 Kota Indonesia",
-    desc: "Basis data standar UMR, sewa tempat, dan utilitas dikurasi per kota dari sumber kredibel, menghindari jebakan estimasi modal fiktif.",
+    title: "Data Riil 38 Provinsi Indonesia",
+    desc: "Basis data standar UMR, sewa tempat, dan utilitas dikurasi per provinsi dari sumber kredibel, menghindari jebakan estimasi modal fiktif.",
     color: "text-[#16a34a]",
   },
   {

@@ -1,6 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import jenisUsahaList from "../lib/data/jenisUsaha.json";
-import kotaList from "../lib/data/umr.json";
+import { jenisUsahaSeedList, kotaSeedList } from "./seed-data";
 
 const prisma = new PrismaClient();
 
@@ -16,11 +15,11 @@ function getWilayah(provinsi: string): string {
 }
 
 async function main() {
-  console.log("🌱 Starting seed for PetaKarrier database...");
+  console.log("[Seed] Starting seed for PetaKarrier database...");
 
   // Seed Kota
-  console.log("📍 Seeding Kota data...");
-  for (const k of kotaList) {
+  console.log("[Seed] Seeding Kota data...");
+  for (const k of kotaSeedList) {
     await prisma.kota.upsert({
       where: { id: k.id },
       update: {
@@ -46,8 +45,8 @@ async function main() {
   }
 
   // Seed JenisUsaha
-  console.log("🏢 Seeding JenisUsaha data...");
-  for (const u of jenisUsahaList) {
+  console.log("[Seed] Seeding JenisUsaha data...");
+  for (const u of jenisUsahaSeedList) {
     await prisma.jenisUsaha.upsert({
       where: { id: u.id },
       update: {
@@ -91,7 +90,7 @@ async function main() {
   }
 
   // Seed PlatformStats
-  console.log("📊 Seeding initial PlatformStats...");
+  console.log("[Seed] Seeding initial PlatformStats...");
   await prisma.platformStats.upsert({
     where: { id: "global" },
     update: {},
@@ -104,12 +103,12 @@ async function main() {
     },
   });
 
-  console.log("✅ Seed completed successfully!");
+  console.log("[Seed] Seed completed successfully!");
 }
 
 main()
   .catch((e) => {
-    console.error("❌ Seed error:", e);
+    console.error("[Seed] Seed error:", e);
     process.exit(1);
   })
   .finally(async () => {

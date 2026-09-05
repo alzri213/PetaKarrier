@@ -69,7 +69,7 @@ export async function submitAnalisisAction(
       })
       .catch(() => {});
   } catch (err) {
-    console.warn("⚠️ Database insertion failed for Analisis, continuing with local id:", err);
+    console.warn("[Analisis] Database insertion failed, continuing with local id:", err);
   }
 
   return {
@@ -92,7 +92,7 @@ export async function getAnalisisById(id: string) {
     });
     return data;
   } catch (err) {
-    console.warn("⚠️ Database query failed for getAnalisisById:", err);
+    console.warn("[Analisis] Database query failed for getAnalisisById:", err);
     return null;
   }
 }
@@ -124,7 +124,7 @@ export async function getUserActiveAnalisis() {
 
     return latestAnalisis;
   } catch (err) {
-    console.warn("⚠️ Database query failed for getUserActiveAnalisis:", err);
+    console.warn("[Analisis] Database query failed for getUserActiveAnalisis:", err);
     return null;
   }
 }
@@ -190,7 +190,7 @@ export async function updateKalkulatorAction(input: {
 
     return { success: true, id: input.analisisId };
   } catch (err) {
-    console.warn("⚠️ Failed to update kalkulator action in database:", err);
+    console.warn("[Analisis] Failed to update kalkulator action in database:", err);
     return { success: false, error: "Gagal menyimpan kalkulasi ke database" };
   }
 }
@@ -267,7 +267,7 @@ export async function saveBusinessPlanAction(input: {
 
     return { success: true };
   } catch (err) {
-    console.warn("⚠️ Failed to save business plan to database:", err);
+    console.warn("[Analisis] Failed to save business plan to database:", err);
     return { success: false, error: "Gagal menyimpan rencana bisnis ke database" };
   }
 }

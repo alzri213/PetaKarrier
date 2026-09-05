@@ -86,7 +86,7 @@ export default function EvidenceSection() {
 
                 <div className="space-y-3 pt-2">
                   {[
-                    "Menghilangkan estimasi modal fiktif dengan database 18 kota UMR riil.",
+                    "Menghilangkan estimasi modal fiktif dengan database 38 provinsi UMR riil.",
                     "Perhitungan otomatis titik balik modal (Break Even Point) 12 bulan.",
                     "Dokumen rencana bisnis siap KUR selaras SDG 8 Matriks 4 Bappenas.",
                   ].map((poin, idx) => (

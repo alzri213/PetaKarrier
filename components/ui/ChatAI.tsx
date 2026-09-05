@@ -41,7 +41,7 @@ const SUGGESTIONS = [
 const INITIAL_MESSAGE: Message = {
   role: "assistant",
   content:
-    "Halo! 👋 Saya asisten AI PetaKarier.\n\nAda yang bisa saya bantu seputar:\n1. **Analisis Potensi Usaha** & ide bisnis terkurasi\n2. **Kalkulasi Modal & Titik Impas (BEP)** di 18 kota\n3. **Komparasi Laba vs Standar UMR 2026**\n4. **Penyusunan Rencana Bisnis Siap KUR**",
+    "Halo! Saya asisten AI PetaKarier.\n\nAda yang bisa saya bantu seputar:\n1. **Analisis Potensi Usaha** & ide bisnis terkurasi\n2. **Kalkulasi Modal & Titik Impas (BEP)** di 38 provinsi\n3. **Komparasi Laba vs Standar UMR 2026**\n4. **Penyusunan Rencana Bisnis Siap KUR**",
 };
 
 const CHAT_HISTORY_KEY = "petakarier_chat_history";
@@ -62,6 +62,7 @@ export default function ChatAI() {
   const [userAvatar, setUserAvatar] = useState<string | null>(null);
   const { data: session } = useSession();
   const hasLoadedHistory = useRef(false);
+  const isDraggingRef = useRef(false);
 
   const historyKey = session?.user?.email
     ? `${CHAT_HISTORY_KEY}_${session.user.email}`
@@ -269,7 +270,18 @@ export default function ChatAI() {
         whileDrag={{ scale: 1.15, cursor: "grabbing" }}
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
-        onClick={() => setIsOpen((v) => !v)}
+        onDragStart={() => {
+          isDraggingRef.current = true;
+        }}
+        onDragEnd={() => {
+          setTimeout(() => {
+            isDraggingRef.current = false;
+          }, 200);
+        }}
+        onClick={() => {
+          if (isDraggingRef.current) return;
+          setIsOpen((v) => !v);
+        }}
         className="fixed bottom-5 right-4 sm:right-6 z-[45] flex h-14 w-14 items-center justify-center
                    rounded-full bg-[#00df82] text-slate-950 shadow-xl shadow-emerald-500/30
                    transition-shadow duration-300 hover:bg-[#00c975]

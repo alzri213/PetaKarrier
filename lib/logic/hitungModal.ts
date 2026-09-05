@@ -1,9 +1,8 @@
 import type { HasilModal, HitungModalInput, JenisUsaha, KotaData } from "@/types";
-import fallbackJenisUsaha from "@/lib/data/jenisUsaha.json";
-import fallbackKota from "@/lib/data/umr.json";
+import { jenisUsahaSeedList, kotaSeedList } from "@/prisma/seed-data";
 
-const JENIS_USAHA = fallbackJenisUsaha as unknown as JenisUsaha[];
-const KOTA = fallbackKota as unknown as KotaData[];
+const JENIS_USAHA = jenisUsahaSeedList as unknown as JenisUsaha[];
+const KOTA = kotaSeedList as unknown as KotaData[];
 
 const SKALA_PENGALI: Record<string, { opex: number; revenue: number; aset: number }> = {
   kecil: { opex: 1, revenue: 1, aset: 1 },

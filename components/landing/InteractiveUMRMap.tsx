@@ -323,16 +323,64 @@ export default function InteractiveUMRMap() {
     animateMap(Math.max(zoom - 0.3, 1));
   };
 
+  const [dbPins, setDbPins] = useState<KotaPin[]>(KOTA_PINS);
+
+  // Fetch data kota dari API database untuk menampilkan 38 provinsi
+  useEffect(() => {
+    fetch("/api/kota")
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+          const mapped: KotaPin[] = json.data.map(
+            (k: {
+              id: string;
+              nama: string;
+              provinsi: string;
+              umr: number;
+              wilayah?: string;
+              latitude?: number | null;
+              longitude?: number | null;
+            }) => {
+              const fallbackPin = KOTA_PINS.find(
+                (p) => p.id === k.id || p.nama.toLowerCase() === k.nama.toLowerCase()
+              );
+              let x = fallbackPin?.x ?? 50;
+              let y = fallbackPin?.y ?? 50;
+              if (typeof k.longitude === "number" && typeof k.latitude === "number") {
+                x = Math.max(5, Math.min(95, ((k.longitude - 95) / 46) * 88 + 6));
+                y = Math.max(10, Math.min(90, ((6 - k.latitude) / 17) * 78 + 10));
+              }
+              return {
+                id: k.id,
+                nama: k.nama,
+                provinsi: k.provinsi,
+                umr: k.umr,
+                umkmAktif: fallbackPin?.umkmAktif ?? "1.500+",
+                topUsaha:
+                  fallbackPin?.topUsaha ??
+                  (k.wilayah ? `Sektor Unggulan ${k.wilayah}` : "Agribisnis & Jasa Kreatif"),
+                rasioUMR: fallbackPin?.rasioUMR ?? (k.wilayah ? `Wilayah ${k.wilayah}` : "Standar Regional"),
+                x,
+                y,
+              };
+            }
+          );
+          setDbPins(mapped);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   const filteredPins = useMemo(() => {
-    if (!searchQuery.trim()) return KOTA_PINS;
+    if (!searchQuery.trim()) return dbPins;
     const q = searchQuery.toLowerCase();
-    return KOTA_PINS.filter(
+    return dbPins.filter(
       (k) =>
         k.nama.toLowerCase().includes(q) ||
         k.provinsi.toLowerCase().includes(q) ||
         k.topUsaha.toLowerCase().includes(q)
     );
-  }, [searchQuery]);
+  }, [searchQuery, dbPins]);
 
   return (
     <div className="mx-auto w-full max-w-6xl">
@@ -360,7 +408,7 @@ export default function InteractiveUMRMap() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={isLoggedIn ? "Cari Jakarta, Surabaya, Bali..." : "🔒 Masuk untuk mencari..."}
+              placeholder={isLoggedIn ? "Cari Jakarta, Surabaya, Bali..." : "Masuk untuk mencari..."}
               disabled={!isLoggedIn}
               className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-4 pr-10 text-xs font-semibold text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#00df82] disabled:opacity-60 disabled:cursor-not-allowed dark:border-slate-800 dark:bg-slate-900/90 dark:text-white"
             />
@@ -672,7 +720,7 @@ export default function InteractiveUMRMap() {
               <CheckCircle2 className="h-3.5 w-3.5" />
               <span>Data resmi Kemenaker 2026</span>
             </div>
-            <span className="text-[10px] font-bold opacity-75 group-hover:opacity-100">{isLoggedIn ? "Klik lihat peta →" : "🔒 Masuk →"}</span>
+            <span className="text-[10px] font-bold opacity-75 group-hover:opacity-100 flex items-center gap-1">{isLoggedIn ? "Klik lihat peta →" : <><Lock className="h-3 w-3" /> Masuk →</>}</span>
           </div>
         </motion.div>
 
@@ -721,7 +769,7 @@ export default function InteractiveUMRMap() {
               <TrendingUp className="h-3.5 w-3.5" />
               <span>Optimal inkubasi bisnis kreatif</span>
             </div>
-            <span className="text-[10px] font-bold opacity-75">{isLoggedIn ? "Klik lihat peta →" : "🔒 Masuk →"}</span>
+            <span className="text-[10px] font-bold opacity-75 flex items-center gap-1">{isLoggedIn ? "Klik lihat peta →" : <><Lock className="h-3 w-3" /> Masuk →</>}</span>
           </div>
         </motion.div>
 
@@ -770,7 +818,7 @@ export default function InteractiveUMRMap() {
               <Building2 className="h-3.5 w-3.5 text-emerald-500" />
               <span>Konektivitas maritim strategis</span>
             </div>
-            <span className="text-[10px] font-bold text-emerald-600 dark:text-[#00df82] opacity-75">{isLoggedIn ? "Klik lihat peta →" : "🔒 Masuk →"}</span>
+            <span className="text-[10px] font-bold text-emerald-600 dark:text-[#00df82] opacity-75 flex items-center gap-1">{isLoggedIn ? "Klik lihat peta →" : <><Lock className="h-3 w-3" /> Masuk →</>}</span>
           </div>
         </motion.div>
       </div>

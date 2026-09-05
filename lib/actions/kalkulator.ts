@@ -48,7 +48,7 @@ export async function hitungModalAction(
         },
       });
     } catch (err) {
-      console.warn("⚠️ Database update failed for Analisis modal calculation:", err);
+      console.warn("[Kalkulator] Database update failed for Analisis modal calculation:", err);
     }
   }
 

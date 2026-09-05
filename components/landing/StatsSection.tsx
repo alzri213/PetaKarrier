@@ -42,9 +42,9 @@ export default function StatsSection({ stats }: StatsSectionProps) {
       targetBadge: "Target 8.6",
     },
     {
-      label: "KOTA TERJANGKAU",
-      value: stats?.totalKotaAktif ?? 18,
-      suffix: " Kota",
+      label: "PROVINSI TERJANGKAU",
+      value: stats?.totalKotaAktif ?? 38,
+      suffix: " Provinsi",
       icon: "solar:city-bold",
       textColor: "text-amber-500",
       desc: "Standar upah minimum terverifikasi 2026",

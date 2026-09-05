@@ -32,69 +32,59 @@ interface UMRComparisonProps {
   daftarKota?: KotaItem[];
 }
 
+import { kotaSeedList, jenisUsahaSeedList } from "@/prisma/seed-data";
+
 export default function UMRComparison({
   daftarUsaha = [],
   daftarKota = [],
 }: UMRComparisonProps) {
-  // Available cities — full 34 provinsi UMP/UMR 2024–2025
-  const kotaList: KotaItem[] = useMemo(() => {
-    if (daftarKota.length > 0) {
-      return daftarKota.map((k) => ({ ...k, nama: k.nama.replace(/^Kota\s+/i, "") }));
-    }
-    return [
-      { id: "dki-jakarta",       nama: "DKI Jakarta",          provinsi: "DKI Jakarta",          umr: 5067381 },
-      { id: "jawa-barat",        nama: "Jawa Barat",           provinsi: "Jawa Barat",            umr: 2101000 },
-      { id: "jawa-tengah",       nama: "Jawa Tengah",          provinsi: "Jawa Tengah",           umr: 2036947 },
-      { id: "diy",               nama: "DI Yogyakarta",        provinsi: "DI Yogyakarta",         umr: 2159000 },
-      { id: "jawa-timur",        nama: "Jawa Timur",           provinsi: "Jawa Timur",            umr: 2165244 },
-      { id: "banten",            nama: "Banten",               provinsi: "Banten",                umr: 2727812 },
-      { id: "bali",              nama: "Bali",                 provinsi: "Bali",                  umr: 2713672 },
-      { id: "aceh",              nama: "Aceh",                 provinsi: "Aceh",                  umr: 3460672 },
-      { id: "sumatera-utara",    nama: "Sumatera Utara",       provinsi: "Sumatera Utara",        umr: 2809915 },
-      { id: "sumatera-barat",    nama: "Sumatera Barat",       provinsi: "Sumatera Barat",        umr: 2811000 },
-      { id: "riau",              nama: "Riau",                 provinsi: "Riau",                  umr: 3294625 },
-      { id: "kepulauan-riau",    nama: "Kepulauan Riau",       provinsi: "Kepulauan Riau",        umr: 3402492 },
-      { id: "jambi",             nama: "Jambi",                provinsi: "Jambi",                 umr: 3037121 },
-      { id: "sumatera-selatan",  nama: "Sumatera Selatan",     provinsi: "Sumatera Selatan",      umr: 3456874 },
-      { id: "bangka-belitung",   nama: "Bangka Belitung",      provinsi: "Bangka Belitung",       umr: 3640000 },
-      { id: "bengkulu",          nama: "Bengkulu",             provinsi: "Bengkulu",              umr: 2507079 },
-      { id: "lampung",           nama: "Lampung",              provinsi: "Lampung",               umr: 2716497 },
-      { id: "kalimantan-barat",  nama: "Kalimantan Barat",     provinsi: "Kalimantan Barat",      umr: 2702616 },
-      { id: "kalimantan-tengah", nama: "Kalimantan Tengah",    provinsi: "Kalimantan Tengah",     umr: 3261616 },
-      { id: "kalimantan-selatan",nama: "Kalimantan Selatan",   provinsi: "Kalimantan Selatan",    umr: 3149977 },
-      { id: "kalimantan-timur",  nama: "Kalimantan Timur",     provinsi: "Kalimantan Timur",      umr: 3360067 },
-      { id: "kalimantan-utara",  nama: "Kalimantan Utara",     provinsi: "Kalimantan Utara",      umr: 3361653 },
-      { id: "sulawesi-utara",    nama: "Sulawesi Utara",       provinsi: "Sulawesi Utara",        umr: 3545000 },
-      { id: "sulawesi-tengah",   nama: "Sulawesi Tengah",      provinsi: "Sulawesi Tengah",       umr: 2914583 },
-      { id: "sulawesi-selatan",  nama: "Sulawesi Selatan",     provinsi: "Sulawesi Selatan",      umr: 3434298 },
-      { id: "sulawesi-tenggara", nama: "Sulawesi Tenggara",    provinsi: "Sulawesi Tenggara",     umr: 2885964 },
-      { id: "sulawesi-barat",    nama: "Sulawesi Barat",       provinsi: "Sulawesi Barat",        umr: 2914583 },
-      { id: "gorontalo",         nama: "Gorontalo",            provinsi: "Gorontalo",             umr: 3025100 },
-      { id: "ntb",               nama: "Nusa Tenggara Barat",  provinsi: "Nusa Tenggara Barat",   umr: 2371407 },
-      { id: "ntt",               nama: "Nusa Tenggara Timur",  provinsi: "Nusa Tenggara Timur",   umr: 2186826 },
-      { id: "maluku",            nama: "Maluku",               provinsi: "Maluku",                umr: 3141700 },
-      { id: "maluku-utara",      nama: "Maluku Utara",         provinsi: "Maluku Utara",          umr: 3200000 },
-      { id: "papua-barat",       nama: "Papua Barat",          provinsi: "Papua Barat",           umr: 3600000 },
-      { id: "papua",             nama: "Papua",                provinsi: "Papua",                 umr: 4024270 },
-    ];
-  }, [daftarKota]);
+  const [rawKota, setRawKota] = useState<KotaItem[]>(
+    daftarKota.length > 0 ? daftarKota : (kotaSeedList as unknown as KotaItem[])
+  );
+  const [rawUsaha, setRawUsaha] = useState<UsahaItem[]>(
+    daftarUsaha.length > 0
+      ? daftarUsaha
+      : (jenisUsahaSeedList as unknown as UsahaItem[])
+  );
 
-  // Available businesses
-  const usahaList: UsahaItem[] = useMemo(() => {
-    if (daftarUsaha.length > 0) {
-      return daftarUsaha.map((u) => ({
-        ...u,
-        nama: u.nama.replace(/\s*\(.*\)/, ""),
-      }));
+  // Fetch directly from database APIs if not preloaded
+  useEffect(() => {
+    if (daftarKota.length === 0) {
+      fetch("/api/kota")
+        .then((res) => res.json())
+        .then((json) => {
+          if (json.success && json.data && json.data.length > 0) {
+            setRawKota(json.data);
+          }
+        })
+        .catch(() => {});
     }
-    return [
-      { id: "kopi", nama: "Warung Kopi", emoji: "☕", labaEstimasi: 7200000 },
-      { id: "kuliner", nama: "Kuliner / Food Truck", emoji: "🍔", labaEstimasi: 8500000 },
-      { id: "laundry", nama: "Laundry Kiloan", emoji: "🧺", labaEstimasi: 5800000 },
-      { id: "barbershop", nama: "Barbershop Modern", emoji: "💈", labaEstimasi: 6400000 },
-      { id: "fotocopy", nama: "Jasa Fotokopi & ATK", emoji: "🖨️", labaEstimasi: 6100000 },
-    ];
-  }, [daftarUsaha]);
+
+    if (daftarUsaha.length === 0) {
+      fetch("/api/usaha")
+        .then((res) => res.json())
+        .then((json) => {
+          if (json.success && json.data && json.data.length > 0) {
+            setRawUsaha(json.data);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [daftarKota.length, daftarUsaha.length]);
+
+  // Available cities — data lengkap 38 provinsi UMR dari database
+  const kotaList: KotaItem[] = useMemo(() => {
+    return rawKota.map((k) => ({ ...k, nama: k.nama.replace(/^Kota\s+/i, "") }));
+  }, [rawKota]);
+
+  // Available businesses — dari database
+  const usahaList: UsahaItem[] = useMemo(() => {
+    return rawUsaha.map((u) => ({
+      ...u,
+      nama: u.nama.replace(/\s*\(.*\)/, ""),
+      labaEstimasi: u.labaEstimasi ?? 7200000,
+    }));
+  }, [rawUsaha]);
 
   // Selected state — restored from localStorage
   const [selectedKotaId, setSelectedKotaId] = useState<string>("dki-jakarta");
