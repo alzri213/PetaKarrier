@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Icon } from "@iconify/react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -27,7 +27,7 @@ const SERVICES: ServiceCardData[] = [
   {
     id: "kalkulator",
     title: "Kalkulator Modal & BEP",
-    desc: "Hitung simulasi modal berbasis UMR 18 kota dengan proyeksi arus kas 12 bulan.",
+    desc: "Hitung simulasi modal berbasis UMR 38 provinsi dengan proyeksi arus kas 12 bulan.",
     href: "/kalkulator",
     imageSrc: "/services/kalkulator_real.jpg",
   },
@@ -40,105 +40,17 @@ const SERVICES: ServiceCardData[] = [
   },
 ];
 
-const BTN_INACTIVE = 44;
-const BTN_ACTIVE = 68;
-const REST_TOP = 20;
-const REST_RIGHT = 20;
 const DRAG_THRESHOLD = 50;
 
-interface ArrowButtonProps {
-  isActive: boolean;
-  href: string;
-  label: string;
-  cardRef: React.RefObject<HTMLDivElement | null>;
-  onActivate: () => void;
-}
-
-function ArrowButton({ isActive, href, label, cardRef, onActivate }: ArrowButtonProps) {
-  const [offset, setOffset] = useState({ x: 0, y: 0 });
-
-  useEffect(() => {
-    if (!cardRef.current) return;
-
-    const compute = () => {
-      if (!cardRef.current) return; // Double check for safety
-      const { width, height } = cardRef.current.getBoundingClientRect();
-      const isMobile = window.innerWidth < 768;
-      const overhang = isMobile ? 12 : 24;
-      const targetX = -(width - REST_RIGHT - BTN_ACTIVE + overhang);
-      const targetY = height - REST_TOP - BTN_ACTIVE + overhang;
-      setOffset({ x: targetX, y: targetY });
-    };
-
-    compute();
-    const ro = new ResizeObserver(compute);
-    if (cardRef.current) {
-      ro.observe(cardRef.current);
-    }
-    return () => ro.disconnect();
-  }, [cardRef]);
-
-  return (
-    <motion.div
-      style={{ position: "absolute", top: REST_TOP, right: REST_RIGHT, zIndex: 30 }}
-      animate={
-        isActive
-          ? { x: offset.x, y: offset.y, width: BTN_ACTIVE, height: BTN_ACTIVE }
-          : { x: 0, y: 0, width: BTN_INACTIVE, height: BTN_INACTIVE }
-      }
-      initial={false}
-      transition={{
-        duration: 0.6,
-        ease: [0.22, 1, 0.36, 1],
-      }}
-      className={`flex items-center justify-center rounded-full ${
-        isActive
-          ? "bg-white border-4 border-[#16a34a] shadow-2xl shadow-[#16a34a]/30"
-          : "bg-[#16a34a] border-0 shadow-lg"
-      }`}
-    >
-      <Link
-        href={href}
-        onClick={(e) => {
-          if (!isActive) {
-            e.preventDefault();
-            onActivate();
-          }
-        }}
-        aria-label={label}
-        className="flex h-full w-full items-center justify-center rounded-full"
-      >
-        <motion.span
-          animate={isActive ? { scale: 1 } : { scale: 1 }}
-          className="flex items-center justify-center"
-        >
-          <Icon
-            icon="solar:arrow-right-up-linear"
-            className={`transition-all duration-300 ${
-              isActive ? "h-7 w-7 text-[#16a34a]" : "h-5 w-5 text-white"
-            }`}
-          />
-        </motion.span>
-      </Link>
-    </motion.div>
-  );
-}
-
 export default function FeaturesSection() {
+  // Start on middle card by default (just like Dribbble reference)
   const [activeIndex, setActiveIndex] = useState<number>(1);
   const [direction, setDirection] = useState<number>(0);
-  const [foldedIndex, setFoldedIndex] = useState<number | null>(null);
 
   // Drag tracking for mobile swipe
   const startX = useRef(0);
   const isDragging = useRef(false);
   const didDrag = useRef(false);
-
-  // Desktop card refs
-  const cardRefs = useRef<Array<React.RefObject<HTMLDivElement | null>>>(
-    SERVICES.map(() => ({ current: null }))
-  );
-  const mobileCardRef = useRef<HTMLDivElement>(null);
 
   const total = SERVICES.length;
 
@@ -146,7 +58,6 @@ export default function FeaturesSection() {
     setDirection(dir);
     const target = ((idx % total) + total) % total;
     setActiveIndex(target);
-    setFoldedIndex(target);
   };
 
   const handlePrev = () => {
@@ -197,12 +108,12 @@ export default function FeaturesSection() {
   const currentService = SERVICES[activeIndex];
 
   return (
-    <section className="relative overflow-visible bg-white px-4 py-16 sm:py-24 dark:bg-gradient-to-b dark:from-slate-950 dark:to-slate-900 sm:px-6 lg:px-8">
+    <section className="relative overflow-visible bg-white px-4 py-16 sm:py-24 dark:bg-gradient-to-b dark:from-slate-950 dark:to-slate-900 sm:px-6 lg:px-8 transition-colors duration-300">
       <div className="mx-auto max-w-7xl overflow-visible">
-        {/* Header */}
+        {/* Section Header matching Dribbble reference */}
         <div className="flex flex-col gap-4 text-center md:text-left md:flex-row md:items-end md:justify-between">
           <Reveal className="w-full md:w-auto">
-            <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white sm:text-4xl lg:text-5xl">
+            <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white sm:text-4xl lg:text-5xl tracking-tight">
               Our Services
             </h2>
           </Reveal>
@@ -215,7 +126,6 @@ export default function FeaturesSection() {
 
         {/* ══════════════════════════════════════════════════════════════
             1. MOBILE CAROUSEL SLIDER VIEW (< md)
-            Like Testimoni section: 1 Card with swipe & bottom controls
         ══════════════════════════════════════════════════════════════ */}
         <div
           className="mt-8 md:hidden cursor-grab active:cursor-grabbing select-none"
@@ -233,51 +143,63 @@ export default function FeaturesSection() {
               animate="center"
               exit="exit"
               transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-              className="relative flex flex-col justify-between overflow-hidden rounded-[2rem] bg-[#16a34a] text-white border-4 border-[#16a34a] p-6 pt-7 shadow-2xl shadow-[#16a34a]/30"
+              className="relative flex flex-col justify-between overflow-visible rounded-[2.2rem] bg-gradient-to-b from-[#059669] via-[#047857] to-[#065f46] text-white border-4 border-[#10b981] p-6 pt-7 shadow-2xl shadow-emerald-600/35"
             >
-              {/* Header Title & Top-Right Action Link */}
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <span className="inline-block rounded-full bg-white/20 backdrop-blur-md px-3 py-1 text-[10px] font-extrabold text-white mb-2.5">
-                    LAYANAN {activeIndex + 1} DARI {total}
-                  </span>
-                  <h3 className="text-xl font-extrabold tracking-tight leading-snug text-white">
-                    {currentService.title}
-                  </h3>
-                </div>
-
-                <Link
-                  href={currentService.href}
-                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white text-[#16a34a] shadow-lg transition-transform hover:scale-110 active:scale-95 cursor-pointer"
-                  aria-label={`Buka ${currentService.title}`}
-                >
-                  <Icon icon="solar:arrow-right-up-linear" className="h-6 w-6 text-[#16a34a]" />
-                </Link>
+              {/* Header Title */}
+              <div>
+                <span className="inline-block rounded-full bg-white/20 backdrop-blur-md px-3 py-1 text-[10px] font-extrabold text-white mb-2.5">
+                  LAYANAN {activeIndex + 1} DARI {total}
+                </span>
+                <h3 className="text-xl sm:text-2xl font-black tracking-tight leading-snug text-white">
+                  {currentService.title}
+                </h3>
               </div>
 
               {/* Divider */}
-              <div className="my-3.5 h-px w-full bg-white/25" />
+              <div className="my-3.5 h-px w-full bg-white/20" />
 
               {/* Description */}
-              <p className="text-xs leading-relaxed font-medium text-emerald-50">
+              <p className="text-xs sm:text-sm leading-relaxed font-medium text-emerald-50">
                 {currentService.desc}
               </p>
 
-              {/* Card image */}
-              <div className="relative mt-5 h-48 w-full overflow-hidden rounded-2xl shadow-md border border-white/20 bg-slate-900">
-                <Image
-                  src={currentService.imageSrc}
-                  alt={currentService.title}
-                  fill
-                  sizes="100vw"
-                  className="object-cover"
-                />
+              {/* Card Image Container with Scoop Cutout */}
+              <div className="relative mt-6 w-full overflow-visible pb-3">
+                <div
+                  className="relative h-52 w-full overflow-hidden rounded-[1.8rem] shadow-inner bg-slate-900"
+                  style={{
+                    WebkitMaskImage:
+                      "radial-gradient(circle 62px at 24px calc(100% - 24px), transparent 61px, black 62px)",
+                    maskImage:
+                      "radial-gradient(circle 62px at 24px calc(100% - 24px), transparent 61px, black 62px)",
+                  }}
+                >
+                  <Image
+                    src={currentService.imageSrc}
+                    alt={currentService.title}
+                    fill
+                    sizes="100vw"
+                    className="object-cover"
+                  />
+                </div>
+
+                {/* Overlapping Bottom-Left Circular Button (STARK PURE WHITE) */}
+                <div className="absolute -bottom-2 -left-2 z-30">
+                  <Link
+                    href={currentService.href}
+                    aria-label={`Buka ${currentService.title}`}
+                    style={{ backgroundColor: "#ffffff" }}
+                    className="flex h-[66px] w-[66px] items-center justify-center rounded-full border-[3.5px] border-[#047857] shadow-2xl transition-transform active:scale-95 cursor-pointer"
+                  >
+                    <Icon icon="solar:arrow-right-up-linear" className="h-8 w-8 text-[#047857] stroke-[3]" />
+                  </Link>
+                </div>
               </div>
 
-              {/* Bottom direct CTA button */}
+              {/* Direct Link button */}
               <Link
                 href={currentService.href}
-                className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-xs font-black text-[#16a34a] shadow-lg transition hover:bg-emerald-50 active:scale-95 cursor-pointer"
+                className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-xs font-black text-[#047857] shadow-lg transition hover:bg-emerald-50 active:scale-95 cursor-pointer"
               >
                 <span>Buka Layanan {currentService.title}</span>
                 <Icon icon="solar:arrow-right-linear" className="h-4 w-4" />
@@ -285,13 +207,13 @@ export default function FeaturesSection() {
             </motion.div>
           </AnimatePresence>
 
-          {/* Centered Bottom Navigation Controls (Like Testimoni) */}
+          {/* Centered Bottom Navigation Controls */}
           <div className="mt-6 flex items-center justify-center gap-4">
             <button
               type="button"
               onClick={handlePrev}
               aria-label="Sebelumnya"
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:border-[#16a34a] hover:text-[#16a34a] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 cursor-pointer"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:border-[#10b981] hover:text-[#10b981] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 cursor-pointer"
             >
               <ChevronLeft className="h-5 w-5" />
             </button>
@@ -304,8 +226,8 @@ export default function FeaturesSection() {
                   aria-label={`Ke Layanan ${idx + 1}`}
                   className={`rounded-full transition-all duration-300 cursor-pointer ${
                     idx === activeIndex
-                      ? "w-7 h-2 bg-[#16a34a] shadow-sm"
-                      : "w-2 h-2 bg-slate-300 hover:bg-slate-400 dark:bg-slate-700"
+                      ? "w-8 h-2 bg-[#10b981] shadow-sm"
+                      : "w-2.5 h-2 bg-slate-300 hover:bg-slate-400 dark:bg-slate-700"
                   }`}
                 />
               ))}
@@ -314,78 +236,64 @@ export default function FeaturesSection() {
               type="button"
               onClick={handleNext}
               aria-label="Berikutnya"
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:border-[#16a34a] hover:text-[#16a34a] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 cursor-pointer"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:border-[#10b981] hover:text-[#10b981] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 cursor-pointer"
             >
               <ChevronRight className="h-5 w-5" />
             </button>
           </div>
-
-          <p className="mt-2.5 text-center text-[11px] text-slate-500 dark:text-slate-400">
-            Geser kiri / kanan untuk melihat layanan lainnya
-          </p>
         </div>
 
         {/* ══════════════════════════════════════════════════════════════
             2. DESKTOP & TABLET 3-COLUMN GRID VIEW (>= md)
         ══════════════════════════════════════════════════════════════ */}
         <div
-          className="relative mt-16 hidden md:grid md:grid-cols-3 items-stretch gap-6 sm:gap-8 overflow-visible pb-8"
-          style={{ perspective: 1200 }}
+          className="relative mt-16 hidden md:grid md:grid-cols-3 items-stretch gap-6 lg:gap-8 overflow-visible pb-8"
         >
           {SERVICES.map((service, index) => {
             const isActive = index === activeIndex;
-            const cardRef = cardRefs.current[index];
 
             return (
               <motion.div
                 key={service.id}
-                ref={cardRef as React.RefObject<HTMLDivElement>}
-                onClick={() => {
-                  setActiveIndex(index);
-                  setFoldedIndex(index);
-                }}
-                animate={
-                  foldedIndex === index
-                    ? { rotateX: [0, 4, -3, 0], rotateY: [0, -10, 6, 0], y: [0, -5, 2, 0] }
-                    : { rotateX: 0, rotateY: 0, y: 0 }
-                }
-                transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-                style={{ perspective: 1200, transformStyle: "preserve-3d" }}
-                className={`group relative flex cursor-pointer select-none flex-col justify-between overflow-visible rounded-[2.5rem] px-7 pt-8 pb-0 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${
+                onClick={() => setActiveIndex(index)}
+                layout
+                transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                className={`group relative flex cursor-pointer select-none flex-col justify-between overflow-visible rounded-[2.6rem] p-7 transition-all duration-500 ${
                   isActive
-                    ? "bg-[#16a34a] text-white border-4 border-[#16a34a] shadow-2xl shadow-[#16a34a]/35 scale-[1.03] z-20"
-                    : "bg-white dark:bg-slate-900 text-slate-900 dark:text-white border border-emerald-200 dark:border-slate-800 hover:border-[#16a34a]/60 shadow-md hover:shadow-xl hover:scale-[1.01] z-10"
+                    ? "bg-gradient-to-b from-[#059669] via-[#047857] to-[#065f46] text-white border-4 border-[#10b981] shadow-2xl shadow-emerald-600/35 scale-[1.03] z-20"
+                    : "bg-white dark:bg-[#0c1424] text-slate-900 dark:text-white border-2 border-slate-200/80 dark:border-slate-800 hover:border-emerald-500/50 shadow-lg hover:shadow-xl hover:scale-[1.01] z-10"
                 }`}
               >
-                {/* Arrow button with smooth drag animation */}
-                <ArrowButton
-                  isActive={isActive}
-                  href={service.href}
-                  label={`Buka ${service.title}`}
-                  cardRef={cardRef}
-                  onActivate={() => setActiveIndex(index)}
-                />
+                {/* Top Section */}
+                <div>
+                  {/* Title & Top-Right Button */}
+                  <div className="flex items-start justify-between gap-4">
+                    <h3
+                      className={`text-2xl font-black tracking-tight leading-snug transition-colors duration-300 ${
+                        isActive ? "text-white" : "text-slate-900 dark:text-white"
+                      }`}
+                    >
+                      {service.title}
+                    </h3>
 
-                {/* Title */}
-                <div className="pr-12">
-                  <h3
-                    className={`text-2xl font-extrabold tracking-tight leading-snug transition-colors duration-500 ${
-                      isActive ? "text-white" : "text-slate-900 dark:text-white"
-                    }`}
-                  >
-                    {service.title}
-                  </h3>
+                    {/* Top-Right Arrow Circle Button (ONLY on Inactive Cards, exactly like reference) */}
+                    {!isActive && (
+                      <div className="flex h-13 w-13 shrink-0 items-center justify-center rounded-full bg-[#10b981] text-white shadow-md transition-all duration-300 group-hover:scale-110 group-hover:bg-[#059669]">
+                        <Icon icon="solar:arrow-right-up-linear" className="h-6 w-6 text-white stroke-[2.5]" />
+                      </div>
+                    )}
+                  </div>
 
-                  {/* Divider */}
+                  {/* Clean Horizontal Divider Line under Title (matching reference) */}
                   <div
-                    className={`my-4 h-px w-full transition-colors duration-500 ${
-                      isActive ? "bg-white/25" : "bg-slate-100 dark:bg-slate-800"
+                    className={`my-4 h-[1.5px] w-full transition-colors duration-300 ${
+                      isActive ? "bg-white/35" : "bg-slate-200/90 dark:bg-slate-800"
                     }`}
                   />
 
                   {/* Description */}
                   <p
-                    className={`text-sm leading-relaxed font-medium transition-colors duration-500 ${
+                    className={`text-sm leading-relaxed font-medium transition-colors duration-300 ${
                       isActive ? "text-emerald-50" : "text-slate-500 dark:text-slate-400"
                     }`}
                   >
@@ -393,17 +301,55 @@ export default function FeaturesSection() {
                   </p>
                 </div>
 
-                {/* Card image */}
-                <div className="relative mt-6 w-full overflow-visible">
-                  <div className="relative h-[200px] w-full overflow-hidden rounded-b-[2.2rem] rounded-t-[1.2rem] shadow-md border-t border-black/5 bg-slate-900">
+                {/* Card Image Container with Inverted Scoop Cutout */}
+                <div className="relative mt-8 w-full overflow-visible pb-2">
+                  <div
+                    className={`relative h-[220px] w-full overflow-hidden transition-all duration-500 shadow-inner bg-slate-900 ${
+                      isActive ? "rounded-[1.9rem]" : "rounded-[1.7rem]"
+                    }`}
+                    style={
+                      isActive
+                        ? {
+                            WebkitMaskImage:
+                              "radial-gradient(circle 64px at 24px calc(100% - 24px), transparent 63px, black 64px)",
+                            maskImage:
+                              "radial-gradient(circle 64px at 24px calc(100% - 24px), transparent 63px, black 64px)",
+                          }
+                        : undefined
+                    }
+                  >
                     <Image
                       src={service.imageSrc}
                       alt={service.title}
                       fill
                       sizes="33vw"
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                   </div>
+
+                  {/* Overlapping Bottom-Left Circular Button (Active Card Only, PURE WHITE CIRCLE) */}
+                  {isActive && (
+                    <motion.div
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0, opacity: 0 }}
+                      transition={{ type: "spring", stiffness: 420, damping: 24 }}
+                      className="absolute -bottom-3 -left-3 z-30"
+                    >
+                      <Link
+                        href={service.href}
+                        onClick={(e) => e.stopPropagation()}
+                        aria-label={`Akses Layanan ${service.title}`}
+                        style={{ backgroundColor: "#ffffff" }}
+                        className="flex h-[72px] w-[72px] items-center justify-center rounded-full border-[4px] border-[#047857] shadow-2xl transition-transform duration-300 hover:scale-110 active:scale-95 cursor-pointer"
+                      >
+                        <Icon
+                          icon="solar:arrow-right-up-linear"
+                          className="h-9 w-9 text-[#047857] stroke-[3]"
+                        />
+                      </Link>
+                    </motion.div>
+                  )}
                 </div>
               </motion.div>
             );
@@ -416,14 +362,14 @@ export default function FeaturesSection() {
             <button
               onClick={handlePrev}
               aria-label="Previous service"
-              className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-slate-200 bg-white text-slate-700 shadow-sm transition-all hover:border-[#16a34a] hover:bg-[#16a34a]/10 hover:text-[#16a34a] active:scale-95 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 cursor-pointer"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 shadow-sm transition-all hover:border-[#10b981] hover:text-[#10b981] active:scale-95 cursor-pointer"
             >
               <Icon icon="solar:alt-arrow-left-linear" className="h-5 w-5" />
             </button>
             <button
               onClick={handleNext}
               aria-label="Next service"
-              className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-slate-200 bg-white text-slate-700 shadow-sm transition-all hover:border-[#16a34a] hover:bg-[#16a34a]/10 hover:text-[#16a34a] active:scale-95 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 cursor-pointer"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 shadow-sm transition-all hover:border-[#10b981] hover:text-[#10b981] active:scale-95 cursor-pointer"
             >
               <Icon icon="solar:alt-arrow-right-linear" className="h-5 w-5" />
             </button>
@@ -437,7 +383,7 @@ export default function FeaturesSection() {
                 aria-label={`Go to slide ${idx + 1}`}
                 className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
                   idx === activeIndex
-                    ? "w-10 bg-[#16a34a]"
+                    ? "w-10 bg-[#10b981]"
                     : "w-3 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600"
                 }`}
               />
@@ -450,7 +396,7 @@ export default function FeaturesSection() {
           <div className="mx-auto max-w-4xl text-center px-2">
             <h3 className="text-2xl sm:text-4xl md:text-[2.6rem] font-extrabold leading-snug sm:leading-tight text-slate-900 dark:text-white">
               <span className="text-slate-900 dark:text-white">Platform kami</span>{" "}
-              <span className="text-[#16a34a]">secara aktif</span>{" "}
+              <span className="text-[#10b981]">secara aktif</span>{" "}
               <span className="text-slate-900 dark:text-white">terhubung untuk</span>{" "}
               <span className="inline-flex items-center justify-center rounded-full bg-emerald-600 px-3 py-1 text-white sm:px-4 sm:py-1.5 align-middle shadow-md shadow-emerald-500/20">
                 <Icon icon="solar:compass-bold" className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
