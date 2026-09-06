@@ -13,7 +13,7 @@ import {
 
 export default function AuthLockBanner() {
   return (
-    <section className="relative overflow-hidden py-16 px-4 sm:px-6 lg:px-8">
+    <section className="relative overflow-hidden bg-white py-16 px-4 sm:px-6 lg:px-8 dark:bg-slate-900">
       {/* Background Decorative Glow */}
       <div className="pointer-events-none absolute inset-0 -z-10 flex items-center justify-center">
         <div className="h-[400px] w-[600px] rounded-full bg-emerald-500/10 blur-[120px] hidden dark:block" />
