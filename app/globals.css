@@ -451,6 +451,12 @@ body {
   color: #f8fafc;
 }
 
+/* Keep the landing page dark canvas uniform from top to bottom. */
+.dark .landing-surface > section {
+  background-color: #020617 !important;
+  background-image: none !important;
+}
+
 .dark {
   color-scheme: dark;
 }
