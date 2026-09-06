@@ -7,7 +7,7 @@ import Reveal from "@/components/ui/Reveal";
 
 export default function TechSection() {
   return (
-    <section className="relative overflow-hidden px-4 pb-28 pt-12 sm:px-6 lg:px-8">
+    <section className="relative overflow-hidden bg-white px-4 pb-28 pt-12 dark:bg-slate-900 sm:px-6 lg:px-8">
       {/* Dark mode ambient glow */}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-96 hidden dark:block">
         <div className="absolute bottom-0 left-1/2 h-[26rem] w-[50rem] -translate-x-1/2 animate-blob rounded-full bg-emerald-500/10 blur-[130px]" />

@@ -271,7 +271,7 @@ export default function TestimoniSection() {
   return (
     <>
       {/* ── CAROUSEL ── */}
-      <section className="relative bg-white px-4 py-16 sm:py-24 dark:bg-slate-950 sm:px-6 lg:px-8 overflow-hidden">
+      <section className="relative bg-white px-4 py-16 sm:py-24 dark:bg-slate-900 sm:px-6 lg:px-8 overflow-hidden">
         <div className="mx-auto max-w-7xl">
           <Reveal className="mx-auto max-w-2xl text-center px-2">
             <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white sm:text-4xl">
@@ -400,7 +400,7 @@ export default function TestimoniSection() {
       </section>
 
       {/* ── FEEDBACK FORM ── */}
-      <section className="relative bg-white px-4 py-16 sm:py-24 dark:bg-slate-950 sm:px-6 lg:px-8">
+      <section className="relative bg-white px-4 py-16 sm:py-24 dark:bg-slate-900 sm:px-6 lg:px-8">
         <div className="relative mx-auto max-w-3xl">
           <Reveal className="text-center mb-8 sm:mb-12 px-2">
             <span className="inline-flex items-center gap-2 rounded-full border border-emerald-300/80 bg-emerald-50 px-4 py-1.5 text-xs font-bold text-emerald-700 shadow-sm dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-300 mb-3 sm:mb-4">

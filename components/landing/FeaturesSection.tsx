@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Icon } from "@iconify/react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import Reveal from "@/components/ui/Reveal";
 
 interface ServiceCardData {
@@ -412,6 +412,19 @@ export default function FeaturesSection() {
               <span className="text-slate-900 dark:text-white">dengan dampak</span>{" "}
               <span className="text-yellow-400"> nyata.</span>
             </h3>
+
+            <div className="mt-8 flex flex-col items-center gap-4">
+              <p className="text-base font-semibold text-slate-600 dark:text-slate-300 sm:text-lg">
+                Mau bergabung dengan komunitas UMKM?
+              </p>
+              <Link
+                href="/komunitas"
+                className="group inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-6 py-3 text-sm font-extrabold text-white shadow-lg shadow-emerald-500/20 transition-all duration-300 hover:scale-105 hover:bg-emerald-700"
+              >
+                Jelajahi Resource Hub & Komunitas
+                <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+              </Link>
+            </div>
           </div>
         </Reveal>
       </div>
