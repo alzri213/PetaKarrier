@@ -119,13 +119,13 @@ Banyak orang — terutama anak muda dan calon wirausaha pemula — punya keingin
 ### Screenshot Aplikasi
 
 <div align="center">
-  <img src="[URL_SCREENSHOT_1]" alt="Analisis Potensi Usaha" width="800"/>
+  <img src="https://github.com/user-attachments/assets/13755580-1a5a-4916-a3ac-f67ff1002335" alt="Analisis Potensi Usaha" width="800"/>
   <p><em>Analisis Potensi Usaha - Kuesioner dan hasil rekomendasi jenis usaha</em></p>
   
-  <img src="[URL_SCREENSHOT_2]" alt="Kalkulator Modal BEP" width="800"/>
+  <img src="https://github.com/user-attachments/assets/a7223f7a-1f34-4f31-935e-4e58f9976ec0" alt="Kalkulator Modal BEP" width="800"/>
   <p><em>Kalkulator Modal & BEP - Estimasi modal dan waktu balik modal</em></p>
   
-  <img src="[URL_SCREENSHOT_3]" alt="Peta UMR Indonesia" width="800"/>
+  <img src="https://github.com/user-attachments/assets/97d10f90-ff88-465d-a674-5a68086a9ce2" alt="Peta UMR Indonesia" width="800"/>
   <p><em>Peta UMR Indonesia - Visualisasi data UMR per wilayah</em></p>
 </div>
 
