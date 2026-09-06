@@ -117,7 +117,7 @@ export async function POST(request: NextRequest) {
     const emailPass = getEnvValue("EMAIL_PASS").replace(/\s+/g, "");
 
     const resendApiKey = getEnvValue("RESEND_API_KEY");
-    const resendFromEmail = getEnvValue("RESEND_FROM_EMAIL");
+    const resendFromEmail = getEnvValue("RESEND_FROM_EMAIL", "onboarding@resend.dev");
 
     if ((!emailUser || !emailPass || !Number.isFinite(emailPort)) && !resendApiKey) {
       console.error("EMAIL_USER or EMAIL_PASS tidak ditemukan di environment variables");
@@ -245,13 +245,6 @@ export async function POST(request: NextRequest) {
     let messageId = "";
 
     if (resendApiKey) {
-      if (!resendFromEmail) {
-        return NextResponse.json(
-          { error: "RESEND_FROM_EMAIL wajib diisi saat Resend digunakan." },
-          { status: 500 }
-        );
-      }
-
       const resendResponse = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: {
