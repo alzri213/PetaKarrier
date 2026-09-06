@@ -10,6 +10,11 @@ function generateOTP(): string {
   return randomInt(100000, 1000000).toString();
 }
 
+function getEnvValue(name: string, fallback = ""): string {
+  const value = process.env[name]?.trim() || fallback;
+  return value.replace(/^(['"])(.*)\1$/, "$2").trim();
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { email: rawEmail, password: rawPassword, recaptchaToken } = await request.json();
@@ -105,7 +110,13 @@ export async function POST(request: NextRequest) {
     const otp = generateOTP();
     const hashedOTP = await bcrypt.hash(otp, 10);
 
-    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+    const emailHost = getEnvValue("EMAIL_HOST", "smtp.gmail.com");
+    const emailPort = Number.parseInt(getEnvValue("EMAIL_PORT", "587"), 10);
+    const emailSecure = getEnvValue("EMAIL_SECURE", "false") === "true";
+    const emailUser = getEnvValue("EMAIL_USER");
+    const emailPass = getEnvValue("EMAIL_PASS");
+
+    if (!emailUser || !emailPass || !Number.isFinite(emailPort)) {
       console.error("EMAIL_USER or EMAIL_PASS tidak ditemukan di environment variables");
       return NextResponse.json(
         { error: "Konfigurasi email server tidak lengkap" },
@@ -114,17 +125,17 @@ export async function POST(request: NextRequest) {
     }
 
     const transporter = nodemailer.createTransport({
-      host: process.env.EMAIL_HOST || "smtp.gmail.com",
-      port: parseInt(process.env.EMAIL_PORT || "587"),
-      secure: process.env.EMAIL_SECURE === "true",
+      host: emailHost,
+      port: emailPort,
+      secure: emailSecure,
       auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
+        user: emailUser,
+        pass: emailPass,
       },
     });
 
     const mailOptions = {
-      from: `"PetaKarier Security" <${process.env.EMAIL_USER}>`,
+      from: `"PetaKarier Security" <${emailUser}>`,
       to: email,
       subject: "Kode OTP Login Anda - PetaKarier",
       html: `
@@ -250,10 +261,16 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     console.error("Error sending OTP:", error);
+    const errorCode = error && typeof error === "object" && "code" in error
+      ? String(error.code)
+      : "";
+    const errorMessage = error instanceof Error ? error.message.toLowerCase() : "";
+    const isSmtpAuthError = errorCode === "EAUTH" || errorMessage.includes("authentication");
     return NextResponse.json(
       {
-        error: "Gagal mengirim kode OTP. Silakan coba lagi.",
-        details: error instanceof Error ? error.message : "Unknown error",
+        error: isSmtpAuthError
+          ? "SMTP Gmail menolak login. Pastikan EMAIL_USER dan App Password Gmail di Vercel Production benar, tanpa tanda kutip."
+          : "Gagal mengirim email OTP. Periksa konfigurasi SMTP di Vercel Production.",
       },
       { status: 500 }
     );
