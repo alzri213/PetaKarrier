@@ -550,6 +550,15 @@ export default function AccessibilityPanel() {
             className="a11y-drawer fixed right-0 top-0 z-[80] flex h-full w-full sm:max-w-[420px] flex-col
                        border-l border-slate-200 bg-white text-slate-900 shadow-2xl
                        dark:border-slate-800 dark:bg-[#060a14] dark:text-slate-100 overflow-hidden"
+            style={{
+              filter:
+                settings.saturationMode === "monochrome"
+                  ? "grayscale(100%)"
+                  : settings.saturationMode === "saturated"
+                    ? "saturate(180%)"
+                    : "none",
+            }}
+            data-saturation-mode={settings.saturationMode}
             role="dialog"
             aria-modal="true"
             aria-label="Menu Aksesibilitas"

@@ -176,12 +176,10 @@ html.a11y-monochrome section:not(:has(#a11y-trigger)):not(:has(#chat-ai-trigger)
 /* Keep every visible widget in sync with the selected color mode. */
 html.a11y-saturate #a11y-trigger,
 html.a11y-saturate #chat-ai-trigger,
-html.a11y-saturate .a11y-drawer,
 html.a11y-saturate .chat-ai-widget,
 html.a11y-saturate [aria-label*="Pembaca Suara"],
 html.a11y-monochrome #a11y-trigger,
 html.a11y-monochrome #chat-ai-trigger,
-html.a11y-monochrome .a11y-drawer,
 html.a11y-monochrome .chat-ai-widget,
 html.a11y-monochrome [aria-label*="Pembaca Suara"] {
   filter: saturate(180%) !important;
@@ -189,7 +187,6 @@ html.a11y-monochrome [aria-label*="Pembaca Suara"] {
 
 html.a11y-monochrome #a11y-trigger,
 html.a11y-monochrome #chat-ai-trigger,
-html.a11y-monochrome .a11y-drawer,
 html.a11y-monochrome .chat-ai-widget,
 html.a11y-monochrome [aria-label*="Pembaca Suara"] {
   filter: grayscale(100%) !important;
@@ -265,11 +262,24 @@ html.a11y-lh-2 main li {
   display: flex !important;
 }
 
-/* Ensure accessibility panel and voice player are never affected by filters */
+/* Keep the draggable widget stable; the drawer itself follows the selected mode below. */
 .a11y-drawer,
 aside[aria-label*="Pembaca Suara"] {
-  filter: none !important;
   transform: none !important;
+}
+
+/* The drawer is rendered outside main/header/footer, so its own state must
+   win over the light/dark surface rules above. */
+html.a11y-monochrome .a11y-drawer[data-saturation-mode="monochrome"],
+html.a11y-monochrome .a11y-drawer[data-saturation-mode="monochrome"] *,
+.a11y-drawer[data-saturation-mode="monochrome"] {
+  filter: grayscale(100%) !important;
+}
+
+html.a11y-saturate .a11y-drawer[data-saturation-mode="saturated"],
+html.a11y-saturate .a11y-drawer[data-saturation-mode="saturated"] *,
+.a11y-drawer[data-saturation-mode="saturated"] {
+  filter: saturate(180%) !important;
 }
 
 html.a11y-panel-open #a11y-trigger,
@@ -333,6 +343,9 @@ html:not(.dark) .a11y-drawer .text-slate-300 {
   color: #334155 !important;
 }
 
+/* Apply the selected color mode to the accessibility drawer itself. This is
+   intentionally placed after the drawer theme overrides so it cannot be
+   cancelled by the widget protection rules above. */
 /* 9. Kurangi Animasi (Reduced Motion) */
 html.a11y-reduced-motion,
 html.a11y-reduced-motion * {
