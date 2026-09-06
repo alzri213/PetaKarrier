@@ -191,19 +191,40 @@ export default function Navbar() {
           </Link>
 
           {/* Centered Navigation Links */}
-          <div className="hidden lg:flex items-center gap-8">
+          <div className="hidden lg:flex items-center gap-1">
             {NAV_LINKS.map((link) => {
               const active = pathname.startsWith(link.href);
               return (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`text-sm font-medium transition-all duration-200 ${active
-                      ? "text-[#00df82] font-bold"
-                      : "text-slate-600 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white"
-                    }`}
+                  className="relative group px-4 py-2"
                 >
-                  {link.label}
+                  <span className={`relative text-sm font-medium transition-all duration-300 ${active
+                      ? "text-[#00df82] font-extrabold drop-shadow-[0_0_8px_rgba(0,223,130,0.5)]"
+                      : "text-slate-600 group-hover:text-slate-950 dark:text-slate-300 dark:group-hover:text-white"
+                    }`}>
+                    {link.label}
+                  </span>
+                  
+                  {/* Active Underline with Glow - Expands from Center */}
+                  {active && (
+                    <motion.span
+                      layoutId="navbar-underline"
+                      className="absolute -bottom-1 left-0 right-0 h-[3px] bg-gradient-to-r from-emerald-400 via-[#00df82] to-emerald-400 rounded-full shadow-[0_0_12px_rgba(0,223,130,0.6),0_0_20px_rgba(0,223,130,0.3)]"
+                      initial={false}
+                      transition={{
+                        type: "spring",
+                        stiffness: 380,
+                        damping: 28,
+                      }}
+                    />
+                  )}
+                  
+                  {/* Hover Underline - Expands from Center */}
+                  {!active && (
+                    <span className="absolute -bottom-1 left-1/2 right-1/2 h-[2px] bg-gradient-to-r from-transparent via-slate-400 to-transparent dark:via-slate-500 rounded-full group-hover:left-0 group-hover:right-0 transition-all duration-300 ease-out opacity-0 group-hover:opacity-100" />
+                  )}
                 </Link>
               );
             })}
@@ -468,12 +489,30 @@ export default function Navbar() {
                         key={link.href}
                         href={link.href}
                         onClick={() => setOpen(false)}
-                        className={`rounded-xl px-4 py-3 text-sm font-medium transition ${active
-                            ? "bg-emerald-50 text-[#00df82] dark:bg-emerald-950/60 dark:text-[#00df82] font-bold"
+                        className={`relative overflow-hidden rounded-xl px-4 py-3 text-sm font-medium transition-all duration-300 ${active
+                            ? "bg-gradient-to-r from-emerald-500/10 via-emerald-400/15 to-emerald-500/10 text-[#00df82] dark:bg-gradient-to-r dark:from-emerald-900/30 dark:via-emerald-800/40 dark:to-emerald-900/30 font-extrabold shadow-[inset_0_0_20px_rgba(0,223,130,0.15)]"
                             : "text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-900 dark:hover:text-white"
                           }`}
                       >
                         {link.label}
+                        
+                        {/* Active Glow Bar on Left with Pulse Effect */}
+                        {active && (
+                          <>
+                            <motion.span
+                              layoutId="mobile-active-nav"
+                              className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-emerald-400 via-[#00df82] to-emerald-400 rounded-r-full shadow-[0_0_10px_rgba(0,223,130,0.8),0_0_20px_rgba(0,223,130,0.4)]"
+                              initial={false}
+                              transition={{
+                                type: "spring",
+                                stiffness: 380,
+                                damping: 28,
+                              }}
+                            />
+                            {/* Pulse Effect */}
+                            <span className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-emerald-400 via-[#00df82] to-emerald-400 rounded-r-full animate-pulse opacity-40" />
+                          </>
+                        )}
                       </Link>
                     );
                   })}
