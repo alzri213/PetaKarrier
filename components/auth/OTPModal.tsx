@@ -178,7 +178,7 @@ export default function OTPModal({ isOpen, onClose, onVerify, email, onResend }:
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4">
         {/* Backdrop */}
         <motion.div
           initial={{ opacity: 0 }}
@@ -195,11 +195,11 @@ export default function OTPModal({ isOpen, onClose, onVerify, email, onResend }:
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
           transition={{ type: "spring", damping: 25, stiffness: 300 }}
-          className="relative w-full max-w-md rounded-3xl border border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-[#0a0f1d] overflow-hidden"
+          className="relative max-h-[calc(100dvh-1.5rem)] w-full max-w-md overflow-y-auto rounded-3xl border border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-[#0a0f1d] sm:max-h-[calc(100dvh-2rem)]"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="relative border-b border-slate-200 dark:border-slate-800 bg-gradient-to-br from-emerald-50 to-white dark:from-emerald-950/20 dark:to-slate-900 px-6 py-6">
+          <div className="relative border-b border-slate-200 bg-gradient-to-br from-emerald-50 to-white px-5 py-5 dark:border-slate-800 dark:from-emerald-950/20 dark:to-slate-900 sm:px-6 sm:py-6">
             <button
               onClick={onClose}
               disabled={isVerifying}
@@ -208,15 +208,15 @@ export default function OTPModal({ isOpen, onClose, onVerify, email, onResend }:
               <X className="h-5 w-5" />
             </button>
 
-            <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#00df82]/20 text-[#00df82]">
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#00df82]/20 text-[#00df82] sm:h-12 sm:w-12">
                 <Shield className="h-6 w-6" />
               </div>
-              <div>
-                <h3 className="text-lg font-extrabold text-slate-900 dark:text-white">
+              <div className="min-w-0 pr-7">
+                <h3 className="text-lg font-extrabold leading-tight text-slate-900 dark:text-white sm:text-xl">
                   Verifikasi Keamanan
                 </h3>
-                <p className="text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                <p className="mt-1.5 max-w-[34ch] text-xs leading-[1.55] text-slate-500 dark:text-slate-400 sm:max-w-none">
                   Masukkan kode OTP dari email Anda. Jika belum terlihat, cek folder Spam, Promotions, atau Semua Email.
                 </p>
               </div>
@@ -224,11 +224,11 @@ export default function OTPModal({ isOpen, onClose, onVerify, email, onResend }:
           </div>
 
           {/* Content */}
-          <div className="px-6 py-6 space-y-5">
+          <div className="space-y-5 px-5 py-5 sm:px-6 sm:py-6">
             {/* Email Info */}
-            <div className="flex items-center gap-2 rounded-xl bg-slate-50 dark:bg-slate-900/50 px-4 py-3 border border-slate-200 dark:border-slate-800">
+            <div className="flex min-w-0 items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-800 dark:bg-slate-900/50">
               <Mail className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-              <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 truncate">
+              <span className="truncate text-sm font-semibold text-slate-700 dark:text-slate-300">
                 {maskEmail(email)}
               </span>
             </div>
@@ -268,7 +268,7 @@ export default function OTPModal({ isOpen, onClose, onVerify, email, onResend }:
               <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 text-center">
                 Masukkan Kode OTP (6 Digit)
               </label>
-              <div className="flex justify-center gap-2 sm:gap-3" onPaste={handlePaste}>
+              <div className="flex justify-center gap-1.5 sm:gap-3" onPaste={handlePaste}>
                 {otp.map((digit, index) => (
                   <input
                     key={index}
@@ -282,7 +282,7 @@ export default function OTPModal({ isOpen, onClose, onVerify, email, onResend }:
                     onChange={(e) => handleChange(index, e.target.value)}
                     onKeyDown={(e) => handleKeyDown(index, e)}
                     disabled={isVerifying || success}
-                    className={`h-12 w-12 sm:h-14 sm:w-14 rounded-xl border-2 text-center text-xl font-bold transition outline-none ${
+                    className={`h-12 w-11 rounded-xl border-2 text-center text-xl font-bold transition outline-none sm:h-14 sm:w-14 ${
                       digit
                         ? "border-[#00df82] bg-emerald-50 text-slate-900 dark:bg-emerald-950/30 dark:text-white"
                         : "border-slate-200 bg-slate-50 text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
