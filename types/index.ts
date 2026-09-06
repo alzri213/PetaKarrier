@@ -50,6 +50,7 @@ export interface ProfilUser {
   budget: number;
   waktu: "full" | "parttime" | "sampling" | "fleksibel";
   pengalaman: "pemula" | "menengah" | "mahir" | "pernah" | "sudah";
+  kotaId?: string;
 }
 
 export interface Rekomendasi {

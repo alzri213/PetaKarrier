@@ -18,13 +18,22 @@ interface UsahaItem {
   kategori?: string;
   emoji?: string;
   labaEstimasi?: number;
+  revenueBulanan?: number;
+  bahanBakuBulanan?: number;
+  gajiKaryawan?: number;
+  promosiBulanan?: number;
+  marginBulanan?: number;
 }
 
 interface KotaItem {
   id: string;
   nama: string;
   provinsi?: string;
+  wilayah?: string;
   umr: number;
+  sewaTempat?: number;
+  utilitas?: number;
+  retribusi?: number;
 }
 
 interface UMRComparisonProps {
@@ -82,7 +91,12 @@ export default function UMRComparison({
     return rawUsaha.map((u) => ({
       ...u,
       nama: u.nama.replace(/\s*\(.*\)/, ""),
-      labaEstimasi: u.labaEstimasi ?? 7200000,
+      revenueBulanan: u.revenueBulanan ?? 14000000,
+      bahanBakuBulanan: u.bahanBakuBulanan ?? 3500000,
+      gajiKaryawan: u.gajiKaryawan ?? 0,
+      promosiBulanan: u.promosiBulanan ?? 500000,
+      marginBulanan: u.marginBulanan ?? 5000000,
+      labaEstimasi: u.labaEstimasi ?? (u.marginBulanan ?? 5000000),
     }));
   }, [rawUsaha]);
 
@@ -103,28 +117,22 @@ export default function UMRComparison({
     usaha.nama.toLowerCase().includes(usahaSearch.trim().toLowerCase())
   );
 
-  // Restore from unified local storage & PostgreSQL database on mount
+  // Restore saved state from local storage or database on mount
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
-    // 1. Unified local storage
-    const unified = getLocalSessionState();
-    if (unified) {
-      if (unified.selectedKotaId) {
-        const match = kotaList.find((k) => k.id === unified.selectedKotaId || k.id.toLowerCase() === unified.selectedKotaId.toLowerCase());
-        if (match) setSelectedKotaId(match.id);
-      }
-      if (unified.selectedUsahaId) {
-        const match = usahaList.find((u) => u.id === unified.selectedUsahaId || u.id.toLowerCase() === unified.selectedUsahaId.toLowerCase());
-        if (match) setSelectedUsahaId(match.id);
-      }
+    const saved = getLocalSessionState();
+    if (saved?.selectedKotaId && kotaList.some((k) => k.id === saved.selectedKotaId)) {
+      setSelectedKotaId(saved.selectedKotaId);
+    }
+    if (saved?.selectedUsahaId && usahaList.some((u) => u.id === saved.selectedUsahaId)) {
+      setSelectedUsahaId(saved.selectedUsahaId);
     }
 
-    // 2. PostgreSQL database check
     getUserActiveAnalisis().then((dbData) => {
       if (dbData) {
         if (dbData.kotaId) {
           const targetKota = dbData.kotaId;
-          const match = kotaList.find((k) => k.id === targetKota || k.id.toLowerCase() === targetKota.toLowerCase());
+          const match = kotaList.find((k) => k.id === targetKota || k.nama.toLowerCase().includes(targetKota.toLowerCase()));
           if (match) setSelectedKotaId(match.id);
         }
         if (dbData.usahaId) {
@@ -161,16 +169,71 @@ export default function UMRComparison({
 
   const stats = useMemo(() => {
     const umr = selectedKota.umr;
-    const base = selectedUsaha.labaEstimasi || 6400000;
-    const factor = umr / 3000000; // normalise around mid-range province
-    const profit = Math.round(base * factor * 0.7); // realistic scale
 
+    // Indeks elastisitas daya beli daerah (Purchasing Power Parity) berbasis UMR
+    const dayaBeliIndex = Math.pow(umr / 3_000_000, 0.4);
+
+    // Komponen finansial spesifik jenis usaha
+    const baseRevenue = selectedUsaha.revenueBulanan || 14_000_000;
+    const baseBahanBaku = selectedUsaha.bahanBakuBulanan || 3_500_000;
+    const baseGaji = selectedUsaha.gajiKaryawan || 0;
+    const basePromosi = selectedUsaha.promosiBulanan || 500_000;
+
+    // Biaya overhead lokasi riil daerah (sewa tempat, utilitas, retribusi)
+    const sewa = selectedKota.sewaTempat ?? 800_000;
+    const utilitas = selectedKota.utilitas ?? 450_000;
+    const retribusi = selectedKota.retribusi ?? 50_000;
+    const biayaLokasi = Math.round(sewa * 0.35 + utilitas * 0.6 + retribusi);
+
+    // Pendapatan realistis terskala daya beli lokal
+    const revenue = Math.round(baseRevenue * dayaBeliIndex * 0.75);
+
+    // Beban operasional riil (bahan baku & promosi terskala + upah kerja lokal + overhead lokasi)
+    const opex = Math.round(
+      (baseBahanBaku + baseGaji * 0.5 + basePromosi * 0.6) * (0.8 + 0.2 * dayaBeliIndex) + biayaLokasi
+    );
+
+    // Laba bersih bulanan riil (dengan batas bawah rasional)
+    const profit = Math.max(1_200_000, revenue - opex);
+
+    // Komparasi terhadap UMR
     const ratio = Number((profit / umr).toFixed(2));
+    const ratioPct = Math.round((profit / umr) * 100);
     const selisihPct = Math.round(((profit - umr) / umr) * 100);
-    const umrBarPct = 38;
-    const profitBarPct = Math.min(95, Math.round(umrBarPct * (profit / umr)));
 
-    return { umr, profit, ratio, selisihPct, umrBarPct, profitBarPct };
+    // Visualisasi progress bar dinamis
+    const umrBarPct = 38;
+    const profitBarPct = Math.min(95, Math.max(15, Math.round(umrBarPct * (profit / umr))));
+
+    // Tolok ukur kelayakan ekonomi menurut standar ketenagakerjaan BPS & ILO
+    let kelayakanStatus = "Sangat Layak";
+    let kelayakanBg = "bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-[#00df82]";
+    let kelayakanDesc = "Surplus signifikan di atas penghasilan pekerja formal regional.";
+
+    if (ratio < 1.0) {
+      kelayakanStatus = "Di Bawah Standar UMR";
+      kelayakanBg = "bg-rose-500/10 border-rose-500/30 text-rose-600 dark:text-rose-400";
+      kelayakanDesc = "Hasil usaha masih berada di bawah standar upah minimum formal.";
+    } else if (ratio < 1.4) {
+      kelayakanStatus = "Cukup Layak";
+      kelayakanBg = "bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400";
+      kelayakanDesc = "Setara dengan upah minimum regional; cukup menutup kebutuhan hidup standar.";
+    }
+
+    return {
+      umr,
+      profit,
+      revenue,
+      opex,
+      ratio,
+      ratioPct,
+      selisihPct,
+      umrBarPct,
+      profitBarPct,
+      kelayakanStatus,
+      kelayakanBg,
+      kelayakanDesc,
+    };
   }, [selectedKota, selectedUsaha]);
 
   return (
@@ -434,14 +497,22 @@ export default function UMRComparison({
           {/* Left Column: Big Ratio Highlight */}
           <div className="lg:col-span-4 flex flex-col justify-center border-b lg:border-b-0 lg:border-r border-slate-100 dark:border-slate-800 pb-6 lg:pb-0 lg:pr-8">
             <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-2">
-              RASIO KEUNTUNGAN
+              KOMPARASI TERHADAP UMR
             </span>
             <div className="flex items-baseline gap-2">
               <span className="text-4xl sm:text-5xl font-black text-emerald-600 dark:text-[#00df82] tracking-tight">
-                {stats.ratio}×
+                {stats.ratioPct}%
               </span>
               <span className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">
                 UMR
+              </span>
+            </div>
+            <span className="mt-1 text-[11px] font-bold text-slate-500 dark:text-slate-400">
+              Setara {stats.ratio}× Standar Upah Regional
+            </span>
+            <div className="mt-2.5">
+              <span className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[10px] font-extrabold ${stats.kelayakanBg}`}>
+                {stats.kelayakanStatus}
               </span>
             </div>
           </div>
@@ -453,11 +524,15 @@ export default function UMRComparison({
               <b className="font-extrabold text-emerald-600 dark:text-[#00df82]">
                 {selectedUsaha.nama}
               </b>{" "}
-              di {selectedKota.nama} setara dengan{" "}
+              di {selectedKota.nama} mencapai{" "}
               <b className="font-extrabold text-emerald-600 dark:text-[#00df82]">
-                {stats.ratio}× UMR {selectedKota.nama}
+                {formatRupiah(stats.profit)} / bulan
+              </b>{" "}
+              atau setara{" "}
+              <b className="font-extrabold text-emerald-600 dark:text-[#00df82]">
+                {stats.ratioPct}% ({stats.ratio}× UMR {selectedKota.nama})
               </b>
-              , dengan kalkulasi estimasi modal awal kembali penuh dalam tempo 8 bulan operasional konsisten.
+              . {stats.kelayakanDesc}
             </p>
 
             {/* SDG 8 Row */}
@@ -477,6 +552,11 @@ export default function UMRComparison({
               Modal awal usahamu setara dengan sekitar 1,5 bulan UMR {selectedKota.nama} — potensi baliknya{" "}
               <b className="font-extrabold text-emerald-600 dark:text-[#00df82]">lebih cepat</b> dibanding rata-rata usaha sejenis.
             </p>
+
+            {/* Educational Formula Card */}
+            <div className="rounded-xl border border-slate-200/80 bg-slate-50/80 p-2.5 text-[11px] text-slate-600 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400">
+              <span className="font-bold text-slate-800 dark:text-slate-200">Rumus Komparasi:</span> Estimasi Profit Bulanan ({formatRupiah(stats.profit)}) ÷ UMR {selectedKota.nama} ({formatRupiah(stats.umr)}) = <b className="text-emerald-600 dark:text-[#00df82]">{stats.ratioPct}% ({stats.ratio}× UMR)</b>
+            </div>
           </div>
         </div>
       </motion.div>

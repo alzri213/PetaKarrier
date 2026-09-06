@@ -21,6 +21,9 @@ import {
   Loader2,
 } from "lucide-react";
 import type { Rekomendasi } from "@/types";
+import { getLocalSessionState, setLocalSessionState } from "@/lib/utils/sessionSync";
+import { kotaSeedList } from "@/prisma/seed-data";
+import { formatRupiah } from "@/lib/utils/formatCurrency";
 
 function formatModalJuta(min: number, max: number): string {
   const minJuta = Math.round(min / 1_000_000);
@@ -38,20 +41,32 @@ export default function HasilRekomendasi() {
 
   const [rekomendasi, setRekomendasi] = useState<Rekomendasi[] | null>(null);
   const [profil, setProfil] = useState<{
-    profil: { minat: string[]; pengalaman: string };
+    profil: { minat: string[]; pengalaman: string; budget?: number };
     kota: string;
   } | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let localDataFound = false;
+    let resolvedKota = "";
+
+    const unified = getLocalSessionState();
+    if (unified?.selectedKotaId) {
+      resolvedKota = unified.selectedKotaId;
+    }
+
     // Read profil and rekomendasi from localStorage
     try {
       const stored = localStorage.getItem("PetaKarrier-profil");
       if (stored) {
         const parsed = JSON.parse(stored);
         if (parsed.analisisId === analisisId || !parsed.analisisId || analisisId.startsWith("local-")) {
-          setProfil(parsed);
+          const parsedKota = parsed.kota || parsed.provinsi || parsed.profil?.kotaId || resolvedKota;
+          if (parsedKota) resolvedKota = parsedKota;
+          setProfil({
+            profil: parsed.profil || { minat: [], pengalaman: "pemula" },
+            kota: resolvedKota || "dki-jakarta",
+          });
           if (parsed.rekomendasi && Array.isArray(parsed.rekomendasi) && parsed.rekomendasi.length > 0) {
             setRekomendasi(parsed.rekomendasi);
             localDataFound = true;
@@ -73,15 +88,21 @@ export default function HasilRekomendasi() {
           const data = await res.json();
           if (data.rekomendasi && Array.isArray(data.rekomendasi) && data.rekomendasi.length > 0) {
             setRekomendasi(data.rekomendasi);
-            if (data.minat) {
-              setProfil((prev) => ({
-                profil: {
-                  minat: data.minat || [],
-                  pengalaman: data.pengalaman || "pemula",
-                },
-                kota: prev?.kota || "jakarta",
-              }));
-            }
+            const apiKota = data.kotaId || resolvedKota || "dki-jakarta";
+            resolvedKota = apiKota;
+            setProfil({
+              profil: {
+                minat: data.minat || [],
+                pengalaman: data.pengalaman || "pemula",
+                budget: data.budget,
+              },
+              kota: apiKota,
+            });
+            setLocalSessionState({
+              analisisId,
+              selectedKotaId: apiKota,
+              selectedUsahaId: data.usahaId || data.rekomendasi[0]?.usaha.id,
+            });
           }
         }
       } catch {
@@ -94,9 +115,12 @@ export default function HasilRekomendasi() {
     fetchData();
   }, [analisisId]);
 
-  const kota = profil?.kota || "jakarta";
+  const kota = profil?.kota || getLocalSessionState()?.selectedKotaId || "dki-jakarta";
+  const kotaObj = kotaSeedList.find((k) => k.id === kota || k.id.toLowerCase() === kota.toLowerCase());
+  const namaKota = kotaObj?.nama ? `${kotaObj.nama}${kotaObj.wilayah ? ` (${kotaObj.wilayah})` : ""}` : kota;
   const minatList = profil?.profil?.minat || [];
   const keahlian = profil?.profil?.pengalaman || "pemula";
+  const budgetUser = profil?.profil?.budget;
 
   const BADGE_CONFIGS = [
     { text: "Potensi Tinggi", icon: Coffee },
@@ -148,7 +172,7 @@ export default function HasilRekomendasi() {
             {minatList.length > 0
               ? minatList.join("/").toLowerCase()
               : "kuliner/jasa"}
-            , keahlian {keahlian}, dan estimasi modal yang Anda miliki.
+            , keahlian {keahlian}{budgetUser ? `, estimasi modal ${formatRupiah(budgetUser)}` : ""}, serta domisili di wilayah {namaKota}.
           </p>
         </motion.div>
 
@@ -206,11 +230,16 @@ export default function HasilRekomendasi() {
                     {/* CTA Button */}
                     <button
                       type="button"
-                      onClick={() =>
+                      onClick={() => {
+                        const targetKota = kota || "jawa-barat";
+                        setLocalSessionState({
+                          selectedUsahaId: item.usaha.id,
+                          selectedKotaId: targetKota,
+                        });
                         router.push(
-                          `/kalkulator?usahaId=${item.usaha.id}&kota=${kota}`
-                        )
-                      }
+                          `/kalkulator?usahaId=${item.usaha.id}&kota=${targetKota}`
+                        );
+                      }}
                       className="mt-5 group flex w-full items-center justify-center gap-2 rounded-full bg-[#00df82] py-3.5 px-4 text-xs sm:text-sm font-bold text-slate-950 shadow-md shadow-emerald-500/20 transition-all hover:bg-[#00c975] hover:shadow-lg hover:shadow-emerald-500/30 active:scale-[0.98]"
                     >
                       <span>Lanjut ke Kalkulator Modal</span>

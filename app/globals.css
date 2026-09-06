@@ -158,37 +158,12 @@ html.a11y-high-contrast textarea {
   border-color: currentColor !important;
 }
 
-/* 2. Color Saturation & Monochrome */
-html.a11y-saturate main,
-html.a11y-saturate header,
-html.a11y-saturate footer,
-html.a11y-saturate section:not(:has(#a11y-trigger)):not(:has(#chat-ai-trigger)) {
+/* 2. Color Saturation & Monochrome (Universal Root Coverage) */
+html.a11y-saturate {
   filter: saturate(180%) !important;
 }
 
-html.a11y-monochrome main,
-html.a11y-monochrome header,
-html.a11y-monochrome footer,
-html.a11y-monochrome section:not(:has(#a11y-trigger)):not(:has(#chat-ai-trigger)) {
-  filter: grayscale(100%) !important;
-}
-
-/* Keep every visible widget in sync with the selected color mode. */
-html.a11y-saturate #a11y-trigger,
-html.a11y-saturate #chat-ai-trigger,
-html.a11y-saturate .chat-ai-widget,
-html.a11y-saturate [aria-label*="Pembaca Suara"],
-html.a11y-monochrome #a11y-trigger,
-html.a11y-monochrome #chat-ai-trigger,
-html.a11y-monochrome .chat-ai-widget,
-html.a11y-monochrome [aria-label*="Pembaca Suara"] {
-  filter: saturate(180%) !important;
-}
-
-html.a11y-monochrome #a11y-trigger,
-html.a11y-monochrome #chat-ai-trigger,
-html.a11y-monochrome .chat-ai-widget,
-html.a11y-monochrome [aria-label*="Pembaca Suara"] {
+html.a11y-monochrome {
   filter: grayscale(100%) !important;
 }
 
@@ -256,30 +231,15 @@ html.a11y-lh-2 main li {
 #chat-ai-trigger {
   position: fixed !important;
   z-index: 9999 !important;
-  filter: none !important;
   opacity: 1 !important;
   visibility: visible !important;
   display: flex !important;
 }
 
-/* Keep the draggable widget stable; the drawer itself follows the selected mode below. */
+/* Keep the draggable widget stable */
 .a11y-drawer,
 aside[aria-label*="Pembaca Suara"] {
   transform: none !important;
-}
-
-/* The drawer is rendered outside main/header/footer, so its own state must
-   win over the light/dark surface rules above. */
-html.a11y-monochrome .a11y-drawer[data-saturation-mode="monochrome"],
-html.a11y-monochrome .a11y-drawer[data-saturation-mode="monochrome"] *,
-.a11y-drawer[data-saturation-mode="monochrome"] {
-  filter: grayscale(100%) !important;
-}
-
-html.a11y-saturate .a11y-drawer[data-saturation-mode="saturated"],
-html.a11y-saturate .a11y-drawer[data-saturation-mode="saturated"] *,
-.a11y-drawer[data-saturation-mode="saturated"] {
-  filter: saturate(180%) !important;
 }
 
 html.a11y-panel-open #a11y-trigger,
