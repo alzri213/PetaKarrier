@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useSyncExternalStore } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Accessibility,
@@ -16,7 +16,6 @@ import {
   ArrowUpDown,
   X,
   PanelRightOpen,
-  Moon,
   Sun,
   RotateCcw,
   Square,
@@ -106,8 +105,12 @@ function saveSettings(s: A11ySettings) {
 
 export default function AccessibilityPanel() {
   const [isOpen, setIsOpen] = useState(false);
-  const [settings, setSettings] = useState<A11ySettings>(DEFAULTS);
-  const [mounted, setMounted] = useState(false);
+  const [settings, setSettings] = useState<A11ySettings>(() => loadSettings());
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
   const [currentSpokenText, setCurrentSpokenText] = useState<string>("");
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [readingRulerY, setReadingRulerY] = useState(300);
@@ -117,14 +120,7 @@ export default function AccessibilityPanel() {
 
   const { setTheme, resolvedTheme } = useTheme();
 
-  /* ── 1. Mount & load from localStorage ── */
-  useEffect(() => {
-    const loaded = loadSettings();
-    setSettings(loaded);
-    setMounted(true);
-  }, []);
-
-  /* ── 2. Reading Ruler Mouse Tracking ── */
+  /* ── 1. Reading Ruler Mouse Tracking ── */
   useEffect(() => {
     if (!settings.isReadingRuler) return;
     const handlePointerMove = (e: PointerEvent) => {
@@ -272,7 +268,6 @@ export default function AccessibilityPanel() {
     if (!mounted) return;
 
     if (!settings.isVoiceActive) {
-      stopSpeech();
       return;
     }
 

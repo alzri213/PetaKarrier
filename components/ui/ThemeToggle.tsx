@@ -1,7 +1,7 @@
 "use client";
 
 import { useTheme } from "next-themes";
-import { useEffect, useState, useRef } from "react";
+import { useRef, useSyncExternalStore } from "react";
 import { Sun, Moon } from "lucide-react";
 import { motion } from "framer-motion";
 import { toggleThemeSmoothly } from "@/lib/utils/themeTransition";
@@ -12,12 +12,12 @@ interface ThemeToggleProps {
 
 export default function ThemeToggle({ className = "" }: ThemeToggleProps) {
   const { setTheme, resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
   const buttonRef = useRef<HTMLButtonElement>(null);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   if (!mounted) {
     return (
