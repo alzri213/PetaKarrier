@@ -114,7 +114,7 @@ export async function POST(request: NextRequest) {
     const emailPort = Number.parseInt(getEnvValue("EMAIL_PORT", "587"), 10);
     const emailSecure = getEnvValue("EMAIL_SECURE", "false") === "true";
     const emailUser = getEnvValue("EMAIL_USER");
-    const emailPass = getEnvValue("EMAIL_PASS");
+    const emailPass = getEnvValue("EMAIL_PASS").replace(/\s+/g, "");
 
     if (!emailUser || !emailPass || !Number.isFinite(emailPort)) {
       console.error("EMAIL_USER or EMAIL_PASS tidak ditemukan di environment variables");
