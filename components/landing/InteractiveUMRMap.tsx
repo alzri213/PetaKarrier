@@ -690,7 +690,11 @@ export default function InteractiveUMRMap() {
                     }}
                     className="transition-all duration-150 cursor-pointer ease-out"
                   >
-                    <title>{`${prov.name} (${prov.wilayah}) - UMR: ${formatRupiah(prov.avgUmr)}`}</title>
+                    <title>
+                      {isLoggedIn
+                        ? `${prov.name} (${prov.wilayah}) - UMR: ${formatRupiah(prov.avgUmr)}`
+                        : `${prov.name} (${prov.wilayah})`}
+                    </title>
                   </path>
                 );
               })}
