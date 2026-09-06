@@ -263,7 +263,6 @@ html.a11y-lh-2 main li {
   opacity: 1 !important;
   visibility: visible !important;
   display: flex !important;
-  transform: none !important;
 }
 
 /* Ensure accessibility panel and voice player are never affected by filters */

@@ -266,8 +266,8 @@ export default function ChatAI() {
         id="chat-ai-trigger"
         drag
         dragMomentum={false}
-        dragElastic={0.1}
-        whileDrag={{ scale: 1.15, cursor: "grabbing" }}
+        dragElastic={0}
+        whileDrag={{ cursor: "grabbing" }}
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
         onDragStart={() => {
@@ -282,7 +282,8 @@ export default function ChatAI() {
           if (isDraggingRef.current) return;
           setIsOpen((v) => !v);
         }}
-        className="fixed bottom-5 right-4 sm:right-6 z-[45] flex h-14 w-14 items-center justify-center
+        style={{ touchAction: "none", willChange: "transform" }}
+        className="fixed bottom-5 right-4 sm:right-6 z-[45] flex h-14 w-14 transform-gpu items-center justify-center
                    rounded-full bg-[#00df82] text-slate-950 shadow-xl shadow-emerald-500/30
                    transition-shadow duration-300 hover:bg-[#00c975]
                    border-2 border-emerald-300/60 cursor-grab active:cursor-grabbing touch-none select-none"
