@@ -11,26 +11,53 @@ const WIDGETS: Array<{
   label: string;
   icon: typeof MessageCircle;
 }> = [
-  { id: "chat-ai-trigger", label: "Chat AI Widget", icon: MessageCircle },
   { id: "a11y-trigger", label: "Aksesibilitas Widget", icon: Accessibility },
+  { id: "chat-ai-trigger", label: "Chat AI Widget", icon: MessageCircle },
 ];
+
+const WIDGET_SETTINGS_KEY = "petakarier_mobile_widgets";
 
 function setWidgetVisibility(id: WidgetId, enabled: boolean) {
   document.getElementById(id)?.classList.toggle("mobile-widget-disabled", !enabled);
 }
 
 export default function MobileWidgetControls() {
-  const [enabledWidgets, setEnabledWidgets] = useState<Record<WidgetId, boolean>>({
-    "chat-ai-trigger": true,
-    "a11y-trigger": true,
+  const [enabledWidgets, setEnabledWidgets] = useState<Record<WidgetId, boolean>>(() => {
+    const defaults = {
+      "chat-ai-trigger": true,
+      "a11y-trigger": true,
+    };
+
+    if (typeof window === "undefined") return defaults;
+
+    try {
+      const stored = localStorage.getItem(WIDGET_SETTINGS_KEY);
+      if (!stored) return defaults;
+
+      const parsed = JSON.parse(stored) as Partial<Record<WidgetId, boolean>>;
+      return {
+        "chat-ai-trigger":
+          typeof parsed["chat-ai-trigger"] === "boolean"
+            ? parsed["chat-ai-trigger"]
+            : defaults["chat-ai-trigger"],
+        "a11y-trigger":
+          typeof parsed["a11y-trigger"] === "boolean"
+            ? parsed["a11y-trigger"]
+            : defaults["a11y-trigger"],
+      };
+    } catch {
+      return defaults;
+    }
   });
 
   useEffect(() => {
     WIDGETS.forEach(({ id }) => setWidgetVisibility(id, enabledWidgets[id]));
 
-    return () => {
-      WIDGETS.forEach(({ id }) => setWidgetVisibility(id, true));
-    };
+    try {
+      localStorage.setItem(WIDGET_SETTINGS_KEY, JSON.stringify(enabledWidgets));
+    } catch {
+      // Widget visibility still works for the current session if storage is blocked.
+    }
   }, [enabledWidgets]);
 
   const toggleWidget = (id: WidgetId) => {

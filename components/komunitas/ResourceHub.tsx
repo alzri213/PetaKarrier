@@ -143,10 +143,19 @@ export default function ResourceHub() {
   const [isDraggingState, setIsDraggingState] = useState(false);
   const total = RESOURCES.length;
   const resp = useResponsive();
+  const isMobile = resp.cardW === 240;
 
   const isDragging = useRef(false);
   const startX = useRef(0);
   const didDrag = useRef(false);
+  const dragOffsetRef = useRef(0);
+  const dragFrameRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (dragFrameRef.current !== null) cancelAnimationFrame(dragFrameRef.current);
+    };
+  }, []);
 
   // Smooth target navigation
   const goTo = useCallback(
@@ -173,6 +182,7 @@ export default function ResourceHub() {
     setIsDraggingState(true);
     didDrag.current = false;
     startX.current = e.clientX;
+    dragOffsetRef.current = 0;
     setDragOffset(0);
   };
 
@@ -182,7 +192,13 @@ export default function ResourceHub() {
     if (Math.abs(dx) > 6) {
       didDrag.current = true;
     }
-    setDragOffset(dx / resp.pxPerCard);
+    dragOffsetRef.current = dx / resp.pxPerCard;
+    if (dragFrameRef.current !== null) return;
+
+    dragFrameRef.current = requestAnimationFrame(() => {
+      dragFrameRef.current = null;
+      setDragOffset(dragOffsetRef.current);
+    });
   };
 
   const handlePointerUp = () => {
@@ -190,9 +206,15 @@ export default function ResourceHub() {
     isDragging.current = false;
     setIsDraggingState(false);
 
-    const steps = Math.round(dragOffset);
+    if (dragFrameRef.current !== null) {
+      cancelAnimationFrame(dragFrameRef.current);
+      dragFrameRef.current = null;
+    }
+
+    const steps = Math.round(dragOffsetRef.current);
     const target = (((activeIndex - steps) % total) + total) % total;
 
+    dragOffsetRef.current = 0;
     setDragOffset(0);
     setActiveIndex(target);
 
@@ -245,6 +267,7 @@ export default function ResourceHub() {
                 didDrag={didDrag}
                 onSelectCard={() => goTo(idx)}
                 resp={resp}
+                isMobile={isMobile}
               />
             );
           })}
@@ -353,6 +376,7 @@ interface Orbit3DCardProps {
   didDrag: React.RefObject<boolean>;
   onSelectCard: () => void;
   resp: ReturnType<typeof useResponsive>;
+  isMobile: boolean;
 }
 
 function Orbit3DCard({
@@ -362,6 +386,7 @@ function Orbit3DCard({
   didDrag,
   onSelectCard,
   resp,
+  isMobile,
 }: Orbit3DCardProps) {
   const isCenter = Math.abs(liveOffset) < 0.35;
 
@@ -406,7 +431,9 @@ function Orbit3DCard({
       transition={
         isDragging
           ? { duration: 0 }
-          : { type: "spring", stiffness: 280, damping: 28, mass: 0.8 }
+          : isMobile
+            ? { type: "spring", stiffness: 340, damping: 32, mass: 0.7 }
+            : { type: "spring", stiffness: 280, damping: 28, mass: 0.8 }
       }
       style={{
         position: "absolute",
@@ -434,10 +461,12 @@ function Orbit3DCard({
             <img
               src={item.image}
               alt={item.judul}
-              className={`h-full w-full object-cover object-top transition-all duration-500 ${
+              className={`h-full w-full object-cover object-top ${isDragging ? "transition-none" : "transition-all duration-500"} ${
                 isCenter
                   ? "filter brightness-[0.75] contrast-[1.08] blur-0 scale-100"
-                  : "filter brightness-[0.32] contrast-[0.95] blur-[5px] scale-105 opacity-40"
+                  : isDragging && isMobile
+                    ? "filter brightness-[0.38] contrast-[0.95] blur-[2px] scale-105 opacity-50"
+                    : "filter brightness-[0.32] contrast-[0.95] blur-[5px] scale-105 opacity-40"
               }`}
             />
             {/* Elegant glassmorphism readability overlay */}

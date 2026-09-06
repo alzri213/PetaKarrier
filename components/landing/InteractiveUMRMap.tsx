@@ -160,13 +160,43 @@ export default function InteractiveUMRMap() {
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const panRef = useRef(pan);
+  const zoomRef = useRef(zoom);
+  const mapFrameRef = useRef<number | null>(null);
+  const pendingPanRef = useRef(pan);
+  const pendingZoomRef = useRef(zoom);
+
+  const scheduleMapUpdate = (nextPan: { x: number; y: number }, nextZoom = zoomRef.current) => {
+    pendingPanRef.current = nextPan;
+    pendingZoomRef.current = nextZoom;
+    if (mapFrameRef.current !== null) return;
+
+    mapFrameRef.current = requestAnimationFrame(() => {
+      mapFrameRef.current = null;
+      panRef.current = pendingPanRef.current;
+      zoomRef.current = pendingZoomRef.current;
+      setPan(pendingPanRef.current);
+      setZoom(pendingZoomRef.current);
+    });
+  };
+
+  useEffect(() => {
+    return () => {
+      if (mapFrameRef.current !== null) cancelAnimationFrame(mapFrameRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     if (!isLoggedIn) setSelectedProvince(null);
   }, [isLoggedIn]);
 
   const selectProvince = (province: ProvinceMapItem) => {
-    if (!isLoggedIn) return;
+    if (!isLoggedIn) {
+      const returnUrl = `${window.location.pathname}${window.location.search}`;
+      router.push(`/login?callbackUrl=${encodeURIComponent(returnUrl)}`);
+      return;
+    }
+
     setSelectedProvince((prev) => (prev?.id === province.id ? null : province));
   };
 
@@ -261,28 +291,20 @@ export default function InteractiveUMRMap() {
   };
 
   const handleZoomIn = () => {
-    setZoom((z) => {
-      const next = Math.min(Number((z * 1.5).toFixed(2)), MAX_ZOOM);
-      setPan((prev) => clampPan(prev.x, prev.y, next));
-      return next;
-    });
+    const next = Math.min(Number((zoomRef.current * 1.5).toFixed(2)), MAX_ZOOM);
+    scheduleMapUpdate(clampPan(panRef.current.x, panRef.current.y, next), next);
   };
 
   const handleZoomOut = () => {
-    setZoom((z) => {
-      const next = Math.max(Number((z / 1.5).toFixed(2)), MIN_ZOOM);
-      if (next <= 1.05) {
-        setPan({ x: 0, y: 0 });
-        return 1;
-      }
-      setPan((prev) => clampPan(prev.x, prev.y, next));
-      return next;
-    });
+    const next = Math.max(Number((zoomRef.current / 1.5).toFixed(2)), MIN_ZOOM);
+    scheduleMapUpdate(
+      next <= 1.05 ? { x: 0, y: 0 } : clampPan(panRef.current.x, panRef.current.y, next),
+      next <= 1.05 ? 1 : next
+    );
   };
 
   const handleResetZoom = () => {
-    setZoom(1);
-    setPan({ x: 0, y: 0 });
+    scheduleMapUpdate({ x: 0, y: 0 }, 1);
   };
 
   const isDraggingRef = useRef(false);
@@ -313,13 +335,14 @@ export default function InteractiveUMRMap() {
     if (Math.hypot(rawX - pan.x, rawY - pan.y) > 6) {
       isDraggingRef.current = true;
     }
-    const clamped = clampPan(rawX, rawY, zoom);
+    const clamped = clampPan(rawX, rawY, zoomRef.current);
     // Sinkronkan drag start agar respon instan saat arah geser dibalik (tanpa dead-zone)
     dragStartRef.current = {
       x: e.clientX - clamped.x,
       y: e.clientY - clamped.y,
     };
-    setPan(clamped);
+    panRef.current = clamped;
+    scheduleMapUpdate(clamped);
   };
 
   const handleMouseUp = () => {
@@ -340,7 +363,7 @@ export default function InteractiveUMRMap() {
       touchStartPosRef.current = { x: t.clientX, y: t.clientY };
       setIsPanning(true);
       isDraggingRef.current = false;
-      dragStartRef.current = { x: t.clientX - pan.x, y: t.clientY - pan.y };
+      dragStartRef.current = { x: t.clientX - panRef.current.x, y: t.clientY - panRef.current.y };
       touchStartDistRef.current = null;
     } else if (e.touches.length === 2) {
       setIsPanning(false);
@@ -364,24 +387,25 @@ export default function InteractiveUMRMap() {
       }
       const rawX = t.clientX - dragStartRef.current.x;
       const rawY = t.clientY - dragStartRef.current.y;
-      const clamped = clampPan(rawX, rawY, zoom);
+      const clamped = clampPan(rawX, rawY, zoomRef.current);
       dragStartRef.current = {
         x: t.clientX - clamped.x,
         y: t.clientY - clamped.y,
       };
-      setPan(clamped);
+      panRef.current = clamped;
+      scheduleMapUpdate(clamped);
     } else if (e.touches.length === 2 && touchStartDistRef.current !== null) {
       const dist = Math.hypot(
         e.touches[0].clientX - e.touches[1].clientX,
         e.touches[0].clientY - e.touches[1].clientY
       );
       const scale = dist / touchStartDistRef.current;
-      const nextZoom = Math.min(
-        Math.max(Number((touchStartZoomRef.current * scale).toFixed(2)), MIN_ZOOM),
-        MAX_ZOOM
-      );
-      setZoom(nextZoom);
-      setPan((prev) => (nextZoom <= 1.05 ? { x: 0, y: 0 } : clampPan(prev.x, prev.y, nextZoom)));
+      const nextZoom = Math.min(Math.max(touchStartZoomRef.current * scale, MIN_ZOOM), MAX_ZOOM);
+      const stableZoom = nextZoom <= 1.05 ? 1 : Number(nextZoom.toFixed(2));
+      const nextPan = stableZoom <= 1.05
+        ? { x: 0, y: 0 }
+        : clampPan(panRef.current.x, panRef.current.y, stableZoom);
+      scheduleMapUpdate(nextPan, stableZoom);
     }
   };
 
@@ -389,8 +413,8 @@ export default function InteractiveUMRMap() {
     if (e.touches.length === 0) {
       setIsPanning(false);
       touchStartDistRef.current = null;
-      if (zoom <= 1.05) {
-        setPan({ x: 0, y: 0 });
+      if (zoomRef.current <= 1.05) {
+        scheduleMapUpdate({ x: 0, y: 0 }, 1);
       }
       const duration = Date.now() - touchStartTimeRef.current;
       if (duration < 250) {
@@ -403,7 +427,7 @@ export default function InteractiveUMRMap() {
     } else if (e.touches.length === 1) {
       const t = e.touches[0];
       setIsPanning(true);
-      dragStartRef.current = { x: t.clientX - pan.x, y: t.clientY - pan.y };
+      dragStartRef.current = { x: t.clientX - panRef.current.x, y: t.clientY - panRef.current.y };
       touchStartDistRef.current = null;
     }
   };
@@ -562,6 +586,8 @@ export default function InteractiveUMRMap() {
             style={{
               transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
               transformOrigin: "center center",
+              willChange: "transform",
+              backfaceVisibility: "hidden",
             }}
           >
             {isLoading ? (
@@ -572,10 +598,13 @@ export default function InteractiveUMRMap() {
             ) : (
               <svg
                 viewBox="0 0 1000 380"
-                className={`w-full h-full max-h-full filter ${
-                  isDark
-                    ? "drop-shadow-[0_12px_24px_rgba(0,0,0,0.4)]"
-                    : "drop-shadow-[0_8px_16px_rgba(2,132,199,0.15)]"
+                preserveAspectRatio="xMidYMid meet"
+                className={`h-full w-full max-h-full overflow-visible ${
+                  isPanning
+                    ? ""
+                    : isDark
+                      ? "filter drop-shadow-[0_12px_24px_rgba(0,0,0,0.4)]"
+                      : "filter drop-shadow-[0_8px_16px_rgba(2,132,199,0.15)]"
                 }`}
               >
                 <defs>
@@ -590,9 +619,6 @@ export default function InteractiveUMRMap() {
                     <stop offset="100%" stopColor={isDark ? "#000000" : "#0284c7"} stopOpacity={isDark ? "0.25" : "0.14"} />
                   </radialGradient>
                 </defs>
-
-                {/* Ocean Depth Vignette Layer */}
-                <rect x="0" y="0" width="1000" height="380" fill="url(#ocean-depth-vignette)" pointerEvents="none" />
 
                 {/* Tipografi Nama Laut Nusantara (Gaya Atlas Resmi) */}
                 <g
@@ -729,15 +755,17 @@ export default function InteractiveUMRMap() {
                           >
                             <title>{`${city.name} (${city.provinsi}) - Pusat Kegiatan Ekonomi`}</title>
                             {/* Radar ripple beacon */}
-                            <circle
-                              r={isCapital ? 6.5 : 4}
-                              fill="none"
-                              stroke={isCapital ? (isDark ? "#00df82" : "#059669") : isHub ? "#f59e0b" : isDark ? "#38bdf8" : "#0284c7"}
-                              strokeWidth="0.8"
-                              opacity="0.75"
-                              className="animate-ping"
-                              style={{ animationDuration: isCapital ? "2.2s" : "3.2s" }}
-                            />
+                            {!isPanning && (
+                              <circle
+                                r={isCapital ? 6.5 : 4}
+                                fill="none"
+                                stroke={isCapital ? (isDark ? "#00df82" : "#059669") : isHub ? "#f59e0b" : isDark ? "#38bdf8" : "#0284c7"}
+                                strokeWidth="0.8"
+                                opacity="0.75"
+                                className="animate-ping"
+                                style={{ animationDuration: isCapital ? "2.2s" : "3.2s" }}
+                              />
+                            )}
                             {/* Center pinpoint */}
                             <circle
                               r={isCapital ? 3 : 1.8}

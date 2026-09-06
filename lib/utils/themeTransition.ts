@@ -15,24 +15,34 @@ export function toggleThemeSmoothly(
   const isDark = currentResolvedTheme === "dark";
   const nextTheme = isDark ? "light" : "dark";
 
-  // A full-root clip-path transition is expensive on mobile, especially over
-  // pages containing maps, images, and backdrop filters.
+  const transitionDocument = typeof document !== "undefined" ? document : null;
   const isMobile =
     typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches;
+  const reducedMotion =
+    typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const isViewTransitionSupported =
+    typeof transitionDocument?.startViewTransition === "function" &&
+    !reducedMotion;
 
+  const root = transitionDocument?.documentElement;
+  const finish = () => root?.classList.remove("theme-switching");
+
+  // Avoid capturing the whole document on phones. Pages with maps, blur,
+  // images, and floating widgets make mobile View Transitions expensive.
   if (isMobile) {
-    window.requestAnimationFrame(() => setTheme(nextTheme));
+    root?.classList.add("theme-switching");
+    window.requestAnimationFrame(() => {
+      setTheme(nextTheme);
+      window.setTimeout(finish, reducedMotion ? 0 : 80);
+    });
     return;
   }
 
-  // Check if browser supports the View Transitions API and user does not prefer reduced motion
-  const transitionDocument = typeof document !== "undefined" ? document : null;
-  const isViewTransitionSupported =
-    typeof transitionDocument?.startViewTransition === "function" &&
-    !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
+  // Keep fallback theme changes cheap on browsers without View Transitions.
   if (!isViewTransitionSupported) {
+    root?.classList.add("theme-switching");
     setTheme(nextTheme);
+    window.setTimeout(finish, reducedMotion ? 0 : 120);
     return;
   }
 
@@ -59,6 +69,9 @@ export function toggleThemeSmoothly(
   ) * 1.15;
 
   try {
+    // Prevent dozens of independent transition-colors rules from competing
+    // with the single document-level transition below.
+    root?.classList.add("theme-switching");
     const transition = transitionDocument?.startViewTransition?.(() => {
       setTheme(nextTheme);
     });
@@ -74,15 +87,18 @@ export function toggleThemeSmoothly(
           clipPath: clipPath,
         },
         {
-          duration: 500,
+          duration: window.matchMedia("(max-width: 767px)").matches ? 320 : 420,
           easing: "cubic-bezier(0.16, 1, 0.3, 1)",
           pseudoElement: "::view-transition-new(root)",
         }
       );
+      window.setTimeout(finish, 430);
     }).catch(() => {
+      finish();
       setTheme(nextTheme);
     });
   } catch {
+    finish();
     setTheme(nextTheme);
   }
 }

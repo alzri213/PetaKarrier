@@ -134,23 +134,27 @@ export default function FeaturesSection() {
             1. MOBILE CAROUSEL SLIDER VIEW (< md)
         ══════════════════════════════════════════════════════════════ */}
         <div
-          className="mt-8 md:hidden cursor-grab active:cursor-grabbing select-none"
-          onPointerDown={handlePointerDown}
-          onPointerMove={handlePointerMove}
-          onPointerUp={handlePointerUp}
-          onPointerCancel={handlePointerUp}
+          className="mt-8 select-none md:hidden"
         >
-          <AnimatePresence mode="wait" custom={direction}>
-            <motion.div
-              key={currentService.id}
-              custom={direction}
-              variants={slideVariants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-              className="relative flex flex-col justify-between overflow-visible rounded-[2.2rem] bg-gradient-to-b from-[#059669] via-[#047857] to-[#065f46] text-white border-4 border-[#10b981] p-6 pt-7 shadow-2xl shadow-emerald-600/35"
-            >
+          <div
+            className="relative isolate overflow-hidden rounded-[2.2rem] cursor-grab active:cursor-grabbing"
+            style={{ touchAction: "pan-y" }}
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+            onPointerCancel={handlePointerUp}
+          >
+            <AnimatePresence mode="wait" custom={direction}>
+              <motion.div
+                key={currentService.id}
+                custom={direction}
+                variants={slideVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1] }}
+                className="relative flex transform-gpu flex-col justify-between overflow-hidden rounded-[2.2rem] border-4 border-[#10b981] bg-gradient-to-b from-[#059669] via-[#047857] to-[#065f46] p-6 pt-7 text-white shadow-xl shadow-emerald-600/25 will-change-transform"
+              >
               {/* Header Title */}
               <div>
                 <span className="inline-block rounded-full bg-white/20 backdrop-blur-md px-3 py-1 text-[10px] font-extrabold text-white mb-2.5">
@@ -170,15 +174,9 @@ export default function FeaturesSection() {
               </p>
 
               {/* Card Image Container with Scoop Cutout */}
-              <div className="relative mt-6 w-full overflow-visible pb-3">
+              <div className="relative mt-6 w-full">
                 <div
-                  className="relative h-52 w-full overflow-hidden rounded-[1.8rem] shadow-inner bg-slate-900"
-                  style={{
-                    WebkitMaskImage:
-                      "radial-gradient(circle 62px at 24px calc(100% - 24px), transparent 61px, black 62px)",
-                    maskImage:
-                      "radial-gradient(circle 62px at 24px calc(100% - 24px), transparent 61px, black 62px)",
-                  }}
+                  className="relative h-52 w-full overflow-hidden rounded-[1.8rem] bg-slate-900 shadow-inner"
                 >
                   <Image
                     src={currentService.imageSrc}
@@ -189,29 +187,19 @@ export default function FeaturesSection() {
                   />
                 </div>
 
-                {/* Overlapping Bottom-Left Circular Button (STARK PURE WHITE) */}
-                <div className="absolute -bottom-2 -left-2 z-30">
-                  <Link
-                    href={currentService.href}
-                    aria-label={`Buka ${currentService.title}`}
-                    style={{ backgroundColor: "#ffffff" }}
-                    className="flex h-[66px] w-[66px] items-center justify-center rounded-full border-[3.5px] border-[#047857] shadow-2xl transition-transform active:scale-95 cursor-pointer"
-                  >
-                    <Icon icon="solar:arrow-right-up-linear" className="h-8 w-8 text-[#047857] stroke-[3]" />
-                  </Link>
-                </div>
               </div>
 
               {/* Direct Link button */}
               <Link
                 href={currentService.href}
-                className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-xs font-black text-[#047857] shadow-lg transition hover:bg-emerald-50 active:scale-95 cursor-pointer"
+                className="mt-4 flex w-full min-w-0 items-center justify-between gap-2 rounded-2xl bg-white px-4 py-3 text-[11px] font-black text-[#047857] shadow-lg transition-colors hover:bg-emerald-50 active:scale-[0.98] cursor-pointer sm:px-5 sm:text-xs"
               >
-                <span>Buka Layanan {currentService.title}</span>
-                <Icon icon="solar:arrow-right-linear" className="h-4 w-4" />
+                <span className="min-w-0 truncate">Buka Layanan {currentService.title}</span>
+                <Icon icon="solar:arrow-right-linear" className="h-4 w-4 shrink-0" />
               </Link>
-            </motion.div>
-          </AnimatePresence>
+              </motion.div>
+            </AnimatePresence>
+          </div>
 
           {/* Centered Bottom Navigation Controls */}
           <div className="mt-6 flex items-center justify-center gap-4">

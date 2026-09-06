@@ -439,7 +439,7 @@ export default function ChatAI() {
                             <button
                               type="button"
                               onClick={() => deleteConversation(conversation.id)}
-                              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-slate-400 opacity-0 transition hover:bg-red-50 hover:text-red-600 group-hover:opacity-100 dark:hover:bg-red-950/40 dark:hover:text-red-400"
+                              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-slate-400 opacity-100 transition hover:bg-red-50 hover:text-red-600 sm:h-7 sm:w-7 sm:opacity-0 sm:group-hover:opacity-100 dark:hover:bg-red-950/40 dark:hover:text-red-400"
                               title="Hapus percakapan"
                               aria-label={`Hapus ${conversation.title}`}
                             >

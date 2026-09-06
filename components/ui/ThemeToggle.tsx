@@ -30,8 +30,14 @@ export default function ThemeToggle({ className = "" }: ThemeToggleProps) {
   const isDark = resolvedTheme === "dark";
 
   const handleToggle = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const toggle = buttonRef.current || e.currentTarget;
+    toggle.classList.remove("theme-toggle-switching");
+    void toggle.offsetWidth;
+    toggle.classList.add("theme-toggle-switching");
+    window.setTimeout(() => toggle.classList.remove("theme-toggle-switching"), 280);
+
     // Get the exact center coordinate of the button
-    const btn = buttonRef.current || e.currentTarget;
+    const btn = toggle;
     if (btn && typeof btn.getBoundingClientRect === "function") {
       const rect = btn.getBoundingClientRect();
       const x = rect.left + rect.width / 2;
