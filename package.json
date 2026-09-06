@@ -8,6 +8,8 @@
     "vercel-build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
+    "test": "node --import tsx --test tests/**/*.test.ts",
+    "test:coverage": "node --import tsx --test --experimental-test-coverage tests/**/*.test.ts",
     "db:seed": "tsx prisma/seed.ts"
   },
   "prisma": {
