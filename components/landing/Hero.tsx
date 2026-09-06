@@ -64,9 +64,9 @@ export default function Hero() {
       <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-24
         bg-gradient-to-b from-white/80 via-white/20 to-transparent
         dark:from-slate-950 dark:via-slate-950/70 dark:to-transparent" />
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-44
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-56
         bg-gradient-to-b from-transparent via-white/80 to-white
-        dark:via-slate-950/80 dark:to-[#030712]" />
+        dark:via-[#020617]/80 dark:to-[#020617]" />
 
       {/* ── Background: satellite map + interactive spotlight ── */}
       <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">

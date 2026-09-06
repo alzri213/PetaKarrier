@@ -554,7 +554,7 @@ export default function AccessibilityPanel() {
               mass: 0.8,
             }}
             className="a11y-drawer fixed right-0 top-0 z-[80] flex h-full w-full sm:max-w-[420px] flex-col
-                       border-l border-slate-200 bg-[#060a14] text-slate-100 shadow-2xl
+                       border-l border-slate-200 bg-white text-slate-900 shadow-2xl
                        dark:border-slate-800 dark:bg-[#060a14] dark:text-slate-100 overflow-hidden"
             role="dialog"
             aria-modal="true"
@@ -565,7 +565,8 @@ export default function AccessibilityPanel() {
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1, duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="shrink-0 border-b border-slate-800/80 bg-[#0a101f]/90 px-6 py-4.5 backdrop-blur-xl"
+              className="shrink-0 border-b border-slate-200 bg-slate-50/95 px-6 py-4.5 backdrop-blur-xl
+                         dark:border-slate-800/80 dark:bg-[#0a101f]/90"
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -573,11 +574,11 @@ export default function AccessibilityPanel() {
                     <PanelRightOpen className="h-5 w-5" />
                   </div>
                   <div>
-                    <h2 className="text-base font-extrabold tracking-tight text-white">
+                    <h2 className="text-base font-extrabold tracking-tight text-slate-900 dark:text-white">
                       Menu Aksesibilitas
                     </h2>
-                    <p className="text-[11px] font-semibold text-slate-400">
-                      Pintasan Cepat: <kbd className="rounded bg-slate-800 border border-slate-700 px-1 py-0.5 font-mono text-[10px] font-bold text-emerald-400">CTRL+U</kbd>
+                    <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                      Pintasan Cepat: <kbd className="rounded bg-slate-200 border border-slate-300 px-1 py-0.5 font-mono text-[10px] font-bold text-emerald-600 dark:bg-slate-800 dark:border-slate-700 dark:text-emerald-400">CTRL+U</kbd>
                     </p>
                   </div>
                 </div>
@@ -588,8 +589,9 @@ export default function AccessibilityPanel() {
                   transition={{ type: "spring", stiffness: 400, damping: 17 }}
                   type="button"
                   onClick={() => setIsOpen(false)}
-                  className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-800
-                             bg-slate-900 text-slate-400 shadow-sm transition hover:bg-slate-800 hover:text-white cursor-pointer"
+                  className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-300
+                             bg-white text-slate-500 shadow-sm transition hover:bg-slate-100 hover:text-slate-900
+                             dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white cursor-pointer"
                   aria-label="Tutup menu aksesibilitas"
                 >
                   <X className="h-4 w-4" />
