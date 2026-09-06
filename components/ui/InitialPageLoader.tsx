@@ -24,16 +24,16 @@ export default function InitialPageLoader() {
       return;
     }
 
-    // Step 1: Switch from Phase 1 (Radar & Tips) to Phase 2 (Chart Skeleton Preview) after 2.3s
+    // Keep the first-load screen short so mobile hydration does not feel blocked.
     const phaseTimer = setTimeout(() => {
       setPhase(2);
-    }, 2300);
+    }, 1500);
 
-    // Step 2: Complete loading and reveal website after 4.5s
+    // Reveal the page before the loader becomes a performance bottleneck.
     const completeTimer = setTimeout(() => {
       setIsVisible(false);
       sessionStorage.setItem("petakarier_loaded", "true");
-    }, 4500);
+    }, 3000);
 
     // Rotating tips
     const tipInterval = setInterval(() => {
@@ -54,12 +54,12 @@ export default function InitialPageLoader() {
         <motion.div
           key="initial-loader"
           initial={{ opacity: 1 }}
-          exit={{ opacity: 0, scale: 1.03, filter: "blur(10px)" }}
-          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          className="fixed inset-0 z-[99999] flex flex-col items-center justify-center bg-slate-50 text-slate-900 select-none px-4 dark:bg-[#050914] dark:text-white"
+          exit={{ opacity: 0, scale: 1.01 }}
+          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+          className="fixed inset-0 z-[99999] flex transform-gpu flex-col items-center justify-center bg-slate-50 px-4 text-slate-900 select-none will-change-[opacity,transform] dark:bg-[#050914] dark:text-white"
         >
           {/* Subtle Ambient Background Glow */}
-          <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+          <div className="pointer-events-none absolute inset-0 -z-10 hidden overflow-hidden sm:block">
             <div className="absolute left-1/2 top-1/2 h-[500px] w-[700px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-emerald-400/[0.08] blur-[150px] dark:bg-[#00df82]/[0.06]" />
           </div>
 
@@ -92,7 +92,7 @@ export default function InitialPageLoader() {
                 {/* Precision Circular Spinner with Organic Glowing Arc (Zero Square Clipping) */}
                 <div className="relative my-10 flex h-20 w-20 items-center justify-center">
                   {/* Soft Organic Radial Glow */}
-                  <div className="pointer-events-none absolute h-16 w-16 rounded-full bg-[#00df82]/20 blur-xl" />
+                  <div className="pointer-events-none absolute hidden h-16 w-16 rounded-full bg-[#00df82]/20 blur-xl sm:block" />
 
                   {/* Static Background Ring */}
                   <svg className="absolute inset-0 h-full w-full overflow-visible" viewBox="0 0 100 100">
@@ -150,7 +150,7 @@ export default function InitialPageLoader() {
                   initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2, duration: 0.4 }}
-                  className="mt-10 flex items-center gap-3 rounded-2xl border border-slate-200 bg-white/80 px-5 py-3.5 shadow-xl backdrop-blur-md max-w-lg text-left dark:border-slate-800/80 dark:bg-[#0a1120]/80"
+                  className="mt-10 flex max-w-lg items-center gap-3 rounded-2xl border border-slate-200 bg-white/80 px-5 py-3.5 text-left shadow-xl sm:backdrop-blur-md dark:border-slate-800/80 dark:bg-[#0a1120]/80"
                 >
                   <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-[#00df82]/10 border border-[#00df82]/20 text-[#00df82]">
                     <Lightbulb className="h-4 w-4" />
@@ -179,7 +179,7 @@ export default function InitialPageLoader() {
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 1.05, y: -10 }}
                 transition={{ duration: 0.45 }}
-                className="w-full max-w-lg rounded-3xl border border-slate-200 bg-white/90 p-6 sm:p-7 shadow-2xl backdrop-blur-xl dark:border-slate-800/80 dark:bg-[#070e1c]/90"
+                className="w-full max-w-lg rounded-3xl border border-slate-200 bg-white/90 p-6 shadow-2xl sm:p-7 sm:backdrop-blur-xl dark:border-slate-800/80 dark:bg-[#070e1c]/90"
               >
                 {/* Header Skeleton Mockup */}
                 <div className="flex items-center justify-between">

@@ -163,21 +163,40 @@ export default function InteractiveUMRMap() {
   const panRef = useRef(pan);
   const zoomRef = useRef(zoom);
   const mapFrameRef = useRef<number | null>(null);
+  const mapVisualRef = useRef<HTMLDivElement>(null);
   const pendingPanRef = useRef(pan);
   const pendingZoomRef = useRef(zoom);
+  const pendingCommitRef = useRef(false);
 
-  const scheduleMapUpdate = (nextPan: { x: number; y: number }, nextZoom = zoomRef.current) => {
+  const scheduleMapUpdate = (
+    nextPan: { x: number; y: number },
+    nextZoom = zoomRef.current,
+    commitState = true
+  ) => {
     pendingPanRef.current = nextPan;
     pendingZoomRef.current = nextZoom;
+    pendingCommitRef.current = pendingCommitRef.current || commitState;
     if (mapFrameRef.current !== null) return;
 
     mapFrameRef.current = requestAnimationFrame(() => {
       mapFrameRef.current = null;
       panRef.current = pendingPanRef.current;
       zoomRef.current = pendingZoomRef.current;
-      setPan(pendingPanRef.current);
-      setZoom(pendingZoomRef.current);
+      const visual = mapVisualRef.current;
+      if (visual) {
+        visual.style.transform = `translate3d(${panRef.current.x}px, ${panRef.current.y}px, 0) scale(${zoomRef.current})`;
+      }
+      if (pendingCommitRef.current) {
+        setPan(pendingPanRef.current);
+        setZoom(pendingZoomRef.current);
+        pendingCommitRef.current = false;
+      }
     });
+  };
+
+  const commitMapPosition = () => {
+    pendingCommitRef.current = true;
+    scheduleMapUpdate(panRef.current, zoomRef.current, true);
   };
 
   useEffect(() => {
@@ -318,7 +337,7 @@ export default function InteractiveUMRMap() {
   const handleMouseDown = (e: React.MouseEvent) => {
     setIsPanning(true);
     isDraggingRef.current = false;
-    dragStartRef.current = { x: e.clientX - pan.x, y: e.clientY - pan.y };
+    dragStartRef.current = { x: e.clientX - panRef.current.x, y: e.clientY - panRef.current.y };
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
@@ -342,14 +361,16 @@ export default function InteractiveUMRMap() {
       y: e.clientY - clamped.y,
     };
     panRef.current = clamped;
-    scheduleMapUpdate(clamped);
+    scheduleMapUpdate(clamped, zoomRef.current, false);
   };
 
   const handleMouseUp = () => {
     setIsPanning(false);
-    if (zoom <= 1.05) {
-      setPan({ x: 0, y: 0 });
+    if (zoomRef.current <= 1.05) {
+      panRef.current = { x: 0, y: 0 };
+      scheduleMapUpdate({ x: 0, y: 0 }, 1, false);
     }
+    commitMapPosition();
     setTimeout(() => {
       isDraggingRef.current = false;
     }, 60);
@@ -366,14 +387,14 @@ export default function InteractiveUMRMap() {
       dragStartRef.current = { x: t.clientX - panRef.current.x, y: t.clientY - panRef.current.y };
       touchStartDistRef.current = null;
     } else if (e.touches.length === 2) {
-      setIsPanning(false);
+      setIsPanning(true);
       isDraggingRef.current = true;
       const dist = Math.hypot(
         e.touches[0].clientX - e.touches[1].clientX,
         e.touches[0].clientY - e.touches[1].clientY
       );
       touchStartDistRef.current = dist;
-      touchStartZoomRef.current = zoom;
+      touchStartZoomRef.current = zoomRef.current;
     }
   };
 
@@ -393,7 +414,7 @@ export default function InteractiveUMRMap() {
         y: t.clientY - clamped.y,
       };
       panRef.current = clamped;
-      scheduleMapUpdate(clamped);
+      scheduleMapUpdate(clamped, zoomRef.current, false);
     } else if (e.touches.length === 2 && touchStartDistRef.current !== null) {
       const dist = Math.hypot(
         e.touches[0].clientX - e.touches[1].clientX,
@@ -405,7 +426,9 @@ export default function InteractiveUMRMap() {
       const nextPan = stableZoom <= 1.05
         ? { x: 0, y: 0 }
         : clampPan(panRef.current.x, panRef.current.y, stableZoom);
-      scheduleMapUpdate(nextPan, stableZoom);
+      panRef.current = nextPan;
+      zoomRef.current = stableZoom;
+      scheduleMapUpdate(nextPan, stableZoom, false);
     }
   };
 
@@ -414,8 +437,11 @@ export default function InteractiveUMRMap() {
       setIsPanning(false);
       touchStartDistRef.current = null;
       if (zoomRef.current <= 1.05) {
-        scheduleMapUpdate({ x: 0, y: 0 }, 1);
+        panRef.current = { x: 0, y: 0 };
+        zoomRef.current = 1;
+        scheduleMapUpdate({ x: 0, y: 0 }, 1, false);
       }
+      commitMapPosition();
       const duration = Date.now() - touchStartTimeRef.current;
       if (duration < 250) {
         isDraggingRef.current = false;
@@ -580,11 +606,12 @@ export default function InteractiveUMRMap() {
           )}
 
           <div
+            ref={mapVisualRef}
             className={`w-full h-full flex items-center justify-center ${
               isPanning ? "transition-none" : "transition-transform duration-150 ease-out"
             }`}
             style={{
-              transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+              transform: `translate3d(${pan.x}px, ${pan.y}px, 0) scale(${zoom})`,
               transformOrigin: "center center",
               willChange: "transform",
               backfaceVisibility: "hidden",
@@ -716,11 +743,7 @@ export default function InteractiveUMRMap() {
                     }}
                     className="transition-all duration-150 cursor-pointer ease-out"
                   >
-                    <title>
-                      {isLoggedIn
-                        ? `${prov.name} (${prov.wilayah}) - UMR: ${formatRupiah(prov.avgUmr)}`
-                        : `${prov.name} (${prov.wilayah})`}
-                    </title>
+                    <title>{`${prov.name} (${prov.wilayah})`}</title>
                   </path>
                 );
               })}
