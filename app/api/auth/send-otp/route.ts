@@ -241,7 +241,37 @@ export async function POST(request: NextRequest) {
       `,
     };
 
-    await transporter.sendMail(mailOptions);
+    const delivery = await transporter.sendMail({
+      ...mailOptions,
+      envelope: {
+        from: emailUser,
+        to: [email],
+      },
+    });
+
+    const acceptedRecipients = delivery.accepted.map((recipient) =>
+      typeof recipient === "string" ? recipient.toLowerCase() : recipient.address.toLowerCase()
+    );
+
+    if (!acceptedRecipients.includes(email)) {
+      console.error("OTP email was not accepted for the requested recipient", {
+        email,
+        accepted: delivery.accepted,
+        rejected: delivery.rejected,
+        messageId: delivery.messageId,
+      });
+      return NextResponse.json(
+        { error: "Email OTP ditolak oleh server tujuan. Periksa alamat email dan folder spam." },
+        { status: 502 }
+      );
+    }
+
+    console.info("OTP email accepted by SMTP provider", {
+      email,
+      accepted: delivery.accepted,
+      rejected: delivery.rejected,
+      messageId: delivery.messageId,
+    });
 
     await prisma.otpVerification.create({
       data: {
