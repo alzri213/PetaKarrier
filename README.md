@@ -458,17 +458,17 @@ const response = await fetch('/api/analisis', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
-    minat: ["kuliner"],
+    minat: ["Kuliner"],
     skill: ["memasak", "manajemen"],
-    modal: 15000000,
-    lokasiKota: "Kota Bandung",
-    jamKerja: "full-time"
+    budget: 15000000,
+    waktu: "full",
+    pengalaman: "pemula"
   })
 });
 const data = await response.json();
 ```
 
-📖 **[Dokumentasi API Lengkap](./docs/API.md)** _(opsional)_
+📖 **[Dokumentasi API Lengkap](./docs/API.md)**
 
 ---
 
