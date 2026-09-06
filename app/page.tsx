@@ -2,6 +2,7 @@ import Hero from "@/components/landing/Hero";
 import UMRMapSection from "@/components/landing/UMRMapSection";
 import EvidenceSection from "@/components/landing/EvidenceSection";
 import FeaturesSection from "@/components/landing/FeaturesSection";
+import ServicesSection from "@/components/landing/ServicesSection";
 import SdgSection from "@/components/landing/SdgSection";
 import LandingGate from "@/components/landing/LandingGate";
 
@@ -13,6 +14,7 @@ export default function Home() {
       <EvidenceSection />
       <FeaturesSection />
       <SdgSection />
+      <ServicesSection />
       <LandingGate />
     </div>
   );

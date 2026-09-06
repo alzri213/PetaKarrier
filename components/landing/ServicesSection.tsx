@@ -125,7 +125,7 @@ export default function ServicesSection() {
             </h2>
           </div>
           <p className="max-w-md text-sm leading-relaxed font-medium text-slate-500 dark:text-slate-400 md:text-right">
-            Temukan berbagai peluang dan layanan lengkap untuk membangun bisnis UMKM yang berkelanjutan.
+            Temukan berbagai peluang dan layanan lengkap untuk membangun bisnis UMKM yang berkelanjutan. Jelajahi juga Resource Hub untuk panduan legalitas dan jejaring komunitas.
           </p>
         </div>
 
