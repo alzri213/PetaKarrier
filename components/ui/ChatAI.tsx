@@ -304,7 +304,7 @@ export default function ChatAI() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ type: "spring", damping: 28, stiffness: 340, mass: 0.8 }}
-            className="fixed bottom-20 right-3 sm:right-6 z-[57] flex w-[calc(100vw-1.5rem)] max-w-[420px] sm:w-[420px]
+            className="chat-ai-widget fixed bottom-20 right-3 sm:right-6 z-[57] flex w-[calc(100vw-1.5rem)] max-w-[420px] sm:w-[420px]
                        flex-col overflow-hidden rounded-[2rem] border border-slate-200
                        bg-white shadow-2xl shadow-slate-400/30 dark:border-white/15
                        dark:bg-[#0a0f1d] dark:shadow-black/80"

@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import {
-  Lock,
   ArrowRight,
+  Lock,
   ShieldCheck,
   Zap,
   FileSpreadsheet,
@@ -27,10 +28,27 @@ export default function AuthLockBanner() {
           transition={{ duration: 0.6 }}
           className="relative overflow-hidden rounded-[2.5rem] border-2 border-emerald-500/40 bg-gradient-to-b from-white via-emerald-50/30 to-white p-8 sm:p-12 lg:p-14 shadow-2xl dark:border-emerald-500/30 dark:from-[#0a0f1d] dark:via-[#06121e] dark:to-[#0a0f1d] text-center"
         >
-          {/* Top Lock Badge */}
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#00df82]/20 border border-[#00df82]/40 text-[#00df82] shadow-lg shadow-emerald-500/20">
-            <Lock className="h-8 w-8 text-[#00df82] animate-pulse" />
-          </div>
+          {/* Brand badge */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.86 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+            className="group/logo relative mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-[#00df82]/45 bg-white p-2 shadow-lg shadow-emerald-500/20 transition-transform duration-300 hover:scale-105 dark:bg-[#0d1424]"
+          >
+            <span className="pointer-events-none absolute -inset-1.5 rounded-[1.15rem] border border-[#00df82]/45 opacity-0 transition-opacity duration-300 group-hover/logo:opacity-100 motion-safe:animate-[logo-ring_2.8s_ease-out_infinite]" />
+            <Image
+              src="/logo-utama.png"
+              alt="Logo PetaKarier"
+              width={48}
+              height={48}
+              priority
+              className="relative h-full w-full object-contain transition-transform duration-500 group-hover/logo:rotate-6"
+            />
+            <span className="absolute -bottom-2 -right-2 flex h-7 w-7 items-center justify-center rounded-lg border-2 border-white bg-[#00df82] text-slate-950 shadow-md transition-transform duration-300 group-hover/logo:scale-110 dark:border-[#0d1424]">
+              <Lock className="h-3.5 w-3.5" strokeWidth={2.8} />
+            </span>
+          </motion.div>
 
           <div className="mt-6 space-y-3">
             <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/60 dark:text-[#00df82]">

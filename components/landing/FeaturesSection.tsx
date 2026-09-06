@@ -272,9 +272,15 @@ export default function FeaturesSection() {
 
                     {/* Top-Right Arrow Circle Button (ONLY on Inactive Cards, exactly like reference) */}
                     {!isActive && (
-                      <div className="flex h-13 w-13 shrink-0 items-center justify-center rounded-full bg-[#10b981] text-white shadow-md transition-all duration-300 group-hover:scale-110 group-hover:bg-[#059669]">
-                        <Icon icon="solar:arrow-right-up-linear" className="h-6 w-6 text-white stroke-[2.5]" />
-                      </div>
+                      <Link
+                        href={service.href}
+                        onClick={(event) => event.stopPropagation()}
+                        aria-label={`Buka ${service.title}`}
+                        className="group/arrow relative flex h-13 w-13 shrink-0 items-center justify-center rounded-full bg-[#10b981] text-white shadow-md transition-[transform,background-color] duration-300 hover:scale-110 hover:bg-[#059669] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#10b981] focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
+                      >
+                        <span className="pointer-events-none absolute inset-[-5px] rounded-full border border-[#10b981]/60 opacity-0 transition-opacity duration-300 group-hover/arrow:opacity-100 group-focus-visible/arrow:opacity-100 motion-safe:animate-[arrow-spark_2.2s_ease-out_infinite]" />
+                        <Icon icon="solar:arrow-right-up-linear" className="relative h-6 w-6 text-white stroke-[2.5] transition-transform duration-300 group-hover/arrow:-translate-y-0.5 group-hover/arrow:translate-x-0.5" />
+                      </Link>
                     )}
                   </div>
 
@@ -334,13 +340,18 @@ export default function FeaturesSection() {
                         href={service.href}
                         onClick={(e) => e.stopPropagation()}
                         aria-label={`Akses Layanan ${service.title}`}
+                        title={`Buka layanan ${service.title}`}
                         style={{ backgroundColor: "#ffffff" }}
-                        className="flex h-[72px] w-[72px] items-center justify-center rounded-full border-[4px] border-[#047857] shadow-2xl transition-transform duration-300 hover:scale-110 active:scale-95 cursor-pointer"
+                        className="group/active-arrow relative flex h-[72px] w-[72px] items-center justify-center rounded-full border-[4px] border-[#047857] shadow-2xl transition-[transform,box-shadow] duration-300 hover:scale-110 hover:shadow-[0_0_0_8px_rgba(0,223,130,0.16),0_12px_28px_rgba(0,0,0,0.22)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00df82] focus-visible:ring-offset-2 active:scale-95 cursor-pointer"
                       >
+                        <span className="pointer-events-none absolute inset-[-7px] rounded-full border-2 border-[#00df82]/70 opacity-0 transition-opacity duration-300 group-hover/active-arrow:opacity-100 group-focus-visible/active-arrow:opacity-100 motion-safe:animate-[arrow-spark_2.4s_ease-out_infinite]" />
                         <Icon
                           icon="solar:arrow-right-up-linear"
-                          className="h-9 w-9 text-[#047857] stroke-[3]"
+                          className="relative h-9 w-9 text-[#047857] stroke-[3] transition-transform duration-300 group-hover/active-arrow:-translate-y-0.5 group-hover/active-arrow:translate-x-0.5"
                         />
+                        <span className="pointer-events-none absolute left-1/2 top-full mt-2 -translate-x-1/2 whitespace-nowrap rounded-lg bg-slate-950 px-2.5 py-1 text-[10px] font-bold text-white opacity-0 shadow-lg transition-[opacity,transform] duration-200 group-hover/active-arrow:-translate-y-0.5 group-hover/active-arrow:opacity-100 group-focus-visible/active-arrow:-translate-y-0.5 group-focus-visible/active-arrow:opacity-100">
+                          Klik untuk membuka
+                        </span>
                       </Link>
                     </motion.div>
                   )}

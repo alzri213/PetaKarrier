@@ -53,15 +53,15 @@ export default function EvidenceSection() {
         {/* Showcase Banner & Real Photo Evidence */}
         <Reveal delay={0.2} className="mt-12">
           <div className="relative overflow-hidden rounded-[2.5rem] border-2 border-slate-200 bg-white shadow-xl transition-colors duration-500 dark:border-slate-800 dark:bg-slate-900">
-            <div className="grid lg:grid-cols-12 items-center">
+            <div className="grid items-stretch lg:grid-cols-12">
               {/* Image side */}
-              <div className="lg:col-span-7 relative h-72 sm:h-96 lg:h-[450px] w-full overflow-hidden">
+              <div className="relative h-72 w-full self-stretch overflow-hidden sm:h-96 lg:col-span-7 lg:h-auto lg:min-h-[450px]">
                 <Image
                   src="/umkm-indonesia-hero.jpg"
                   alt="Wirausaha Muda UMKM Indonesia"
                   fill
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 58vw, 700px"
-                  className="object-cover scale-[1.16] sm:scale-[1.18] object-center transition-transform duration-700 hover:scale-[1.20]"
+                  className="object-cover object-center scale-105 transition-transform duration-700 hover:scale-110"
                   priority
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent lg:bg-gradient-to-r lg:from-transparent lg:to-white/90 dark:lg:to-slate-900/90" />

@@ -27,13 +27,13 @@ export default function InitialPageLoader() {
     // Keep the first-load screen short so mobile hydration does not feel blocked.
     const phaseTimer = setTimeout(() => {
       setPhase(2);
-    }, 1500);
+    }, 1800);
 
     // Reveal the page before the loader becomes a performance bottleneck.
     const completeTimer = setTimeout(() => {
       setIsVisible(false);
       sessionStorage.setItem("petakarier_loaded", "true");
-    }, 3000);
+    }, 3800);
 
     // Rotating tips
     const tipInterval = setInterval(() => {
