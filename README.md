@@ -131,7 +131,7 @@ Banyak orang — terutama anak muda dan calon wirausaha pemula — punya keingin
 
 ### Video Demo
 
-📹 **[Link Video Demo](https://drive.google.com/drive/folders/1jPTVLXgYmvJtBYm7kkJduMeJCyXXFILw)
+📹 **[Link Video Demo](https://drive.google.com/drive/folders/1jPTVLXgYmvJtBYm7kkJduMeJCyXXFILw)**
 ---
 
 ## 🛠️ Teknologi
