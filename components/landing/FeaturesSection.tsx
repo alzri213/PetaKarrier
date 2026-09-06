@@ -119,7 +119,13 @@ export default function FeaturesSection() {
           </Reveal>
           <Reveal delay={0.1} className="w-full md:w-auto">
             <p className="mx-auto md:mx-0 max-w-sm text-xs sm:text-sm leading-relaxed font-medium text-slate-500 dark:text-slate-400 md:text-right">
-              Temukan berbagai peluang dan layanan lengkap untuk membangun bisnis UMKM yang berkelanjutan.
+              Temukan berbagai peluang dan layanan lengkap untuk membangun bisnis UMKM yang berkelanjutan. {" "}
+              <Link
+                href="/komunitas"
+                className="font-bold text-emerald-600 transition-colors hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300"
+              >
+                Lihat Resource Hub & Komunitas
+              </Link>
             </p>
           </Reveal>
         </div>
