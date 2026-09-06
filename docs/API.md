@@ -3,7 +3,7 @@
 Dokumentasi endpoint HTTP untuk aplikasi PetaKarier. Semua endpoint menggunakan base URL aplikasi yang sedang berjalan.
 
 - **Local:** `http://localhost:3000`
-- **Production:** [gunakan URL deployment PetaKarier Anda](https://petakarier.vercel.app/)
+- **Production:** [Peta Karrier](https://petakarier.vercel.app/)
 - Format request dan response: `application/json`
 
 > Endpoint yang menggunakan database memerlukan konfigurasi Prisma/database yang valid. Endpoint AI memerlukan salah satu environment variable `GEMINI_API_KEY`, `GOOGLE_API_KEY`, atau `GOOGLE_GENERATIVE_AI_API_KEY`.
