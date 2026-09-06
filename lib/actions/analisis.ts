@@ -56,6 +56,7 @@ export async function submitAnalisisAction(
         pengalaman: profil.pengalaman,
         rekomendasi: JSON.parse(JSON.stringify(rekomendasi)),
         usahaId: defaultUsahaId,
+        kotaId: profil.kotaId,
       },
     });
     analisisId = created.id;

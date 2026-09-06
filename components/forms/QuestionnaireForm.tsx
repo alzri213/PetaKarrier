@@ -68,6 +68,34 @@ const SKILL_TAGS: { label: string; dataTags: string[] }[] = [
   { label: "Ketelitian Finansial", dataTags: ["ketelitian"] },
 ];
 
+// Convert stored skill tags or labels back to exact SKILL_TAGS labels
+function mapSkillsToLabels(stored: string[]): string[] {
+  if (!Array.isArray(stored)) return [];
+  const labels = new Set<string>();
+
+  for (const item of stored) {
+    if (!item) continue;
+    // 1. Direct label match
+    const exact = SKILL_TAGS.find(
+      (st) => st.label.trim().toLowerCase() === item.trim().toLowerCase()
+    );
+    if (exact) {
+      labels.add(exact.label);
+      continue;
+    }
+    // 2. Data tag match (e.g. "memasak" -> "Memasak & Racik Minuman")
+    const byTag = SKILL_TAGS.find((st) =>
+      st.dataTags.some((t) => t.trim().toLowerCase() === item.trim().toLowerCase())
+    );
+    if (byTag) {
+      labels.add(byTag.label);
+      continue;
+    }
+  }
+
+  return Array.from(labels).slice(0, 3);
+}
+
 const ANALISIS_STEPS_TEXT = [
   "Membaca profil preferensi dan kompetensi...",
   "Mencocokkan karakteristik dengan data usaha & standar upah 38 provinsi...",
@@ -91,6 +119,7 @@ export default function QuestionnaireForm() {
   const [waktu, setWaktu] = useState<string>("");
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [daftarProvinsi, setDaftarProvinsi] = useState<{ id: string; nama: string; wilayah?: string }[]>(DAFTAR_PROVINSI_FALLBACK);
+  const [isRestored, setIsRestored] = useState<boolean>(false);
 
   // Fetch 38 provinsi dari API database
   useEffect(() => {
@@ -106,81 +135,146 @@ export default function QuestionnaireForm() {
 
   // Restore form state from localStorage & database on mount
   useEffect(() => {
+    let hasSavedModal = false;
+    let hasLoadedSaved = false;
+
     try {
       const saved = localStorage.getItem(LS_FORM_KEY);
       if (saved) {
         const data = JSON.parse(saved);
-        if (data.minat)          setMinat(data.minat);
-        if (data.keahlian)       setKeahlian(data.keahlian);
-        if (data.modalValue)     setModalValue(data.modalValue);
+        if (data.minat && Array.isArray(data.minat) && data.minat.length > 0) {
+          setMinat((data.minat as KategoriUsaha[]).slice(0, 3));
+        }
+        if (data.keahlian) setKeahlian(data.keahlian);
+        if (data.modalValue !== undefined && data.modalValue !== null && !isNaN(Number(data.modalValue))) {
+          setModalValue(Number(data.modalValue));
+          hasSavedModal = true;
+        }
         if (data.selectedProvinsi) setSelectedProvinsi(data.selectedProvinsi);
-        if (data.waktu)          setWaktu(data.waktu);
-        if (data.selectedSkills) setSelectedSkills(data.selectedSkills);
+        if (data.waktu) setWaktu(data.waktu);
+        if (data.selectedSkills) setSelectedSkills(mapSkillsToLabels(data.selectedSkills));
         if (data.step !== undefined) setStep(data.step);
-      } else {
-        const unified = getLocalSessionState();
-        if (unified?.profil) {
-          if (unified.profil.minat) setMinat(unified.profil.minat as KategoriUsaha[]);
-          if (unified.profil.budget) setModalValue(unified.profil.budget);
-          if (unified.profil.waktu) setWaktu(unified.profil.waktu);
-          if (unified.profil.pengalaman) setKeahlian(unified.profil.pengalaman);
+        hasLoadedSaved = true;
+      }
+
+      const unified = getLocalSessionState();
+      if (unified) {
+        if (!hasLoadedSaved) {
+          if (unified.profil?.minat && unified.profil.minat.length > 0) {
+            setMinat((unified.profil.minat as KategoriUsaha[]).slice(0, 3));
+          }
+          if (unified.profil?.skill && unified.profil.skill.length > 0) {
+            setSelectedSkills(mapSkillsToLabels(unified.profil.skill));
+          }
+          if (unified.profil?.waktu) setWaktu(unified.profil.waktu);
+          if (unified.profil?.pengalaman) setKeahlian(unified.profil.pengalaman);
           if (unified.selectedKotaId) setSelectedProvinsi(unified.selectedKotaId);
+          hasLoadedSaved = true;
+        }
+        if (!hasSavedModal) {
+          if (unified.profil?.budget) {
+            setModalValue(Number(unified.profil.budget));
+            hasSavedModal = true;
+          } else if (unified.modalAwal) {
+            setModalValue(Number(unified.modalAwal));
+            hasSavedModal = true;
+          }
         }
       }
     } catch {}
 
     // Check database for logged in user's latest analysis
-    getUserActiveAnalisis().then((dbAnalisis) => {
-      if (dbAnalisis) {
-        if (dbAnalisis.minat && dbAnalisis.minat.length > 0) {
-          setMinat(dbAnalisis.minat as KategoriUsaha[]);
-        }
-        if (dbAnalisis.budget) setModalValue(dbAnalisis.budget);
-        if (dbAnalisis.waktu) setWaktu(dbAnalisis.waktu);
-        if (dbAnalisis.pengalaman) setKeahlian(dbAnalisis.pengalaman);
-        if (dbAnalisis.kotaId) setSelectedProvinsi(dbAnalisis.kotaId);
+    getUserActiveAnalisis()
+      .then((dbAnalisis) => {
+        if (dbAnalisis) {
+          if (!hasLoadedSaved) {
+            if (dbAnalisis.minat && dbAnalisis.minat.length > 0) {
+              setMinat((dbAnalisis.minat as KategoriUsaha[]).slice(0, 3));
+            }
+            if (dbAnalisis.skill && dbAnalisis.skill.length > 0) {
+              setSelectedSkills(mapSkillsToLabels(dbAnalisis.skill));
+            }
+            if (dbAnalisis.waktu) setWaktu(dbAnalisis.waktu);
+            if (dbAnalisis.pengalaman) setKeahlian(dbAnalisis.pengalaman);
+            if (dbAnalisis.kotaId) setSelectedProvinsi(dbAnalisis.kotaId);
+          }
+          if (!hasSavedModal && dbAnalisis.budget) {
+            setModalValue(Number(dbAnalisis.budget));
+            hasSavedModal = true;
+          }
 
-        setLocalSessionState({
-          analisisId: dbAnalisis.id,
-          selectedUsahaId: dbAnalisis.usahaId || "kedai-kopi",
-          selectedKotaId: dbAnalisis.kotaId || "dki-jakarta",
-          skala: dbAnalisis.skala || "sedang",
-          profil: {
-            minat: dbAnalisis.minat,
-            skill: dbAnalisis.skill,
-            budget: dbAnalisis.budget,
-            waktu: dbAnalisis.waktu,
-            pengalaman: dbAnalisis.pengalaman,
-          },
-          rekomendasi: (dbAnalisis.rekomendasi as any) || undefined,
-        });
-      }
-    }).catch(() => {});
+          setLocalSessionState({
+            analisisId: dbAnalisis.id,
+            selectedUsahaId: dbAnalisis.usahaId || "kedai-kopi",
+            selectedKotaId: dbAnalisis.kotaId || "dki-jakarta",
+            skala: dbAnalisis.skala || "sedang",
+            profil: {
+              minat: dbAnalisis.minat,
+              skill: dbAnalisis.skill,
+              budget: dbAnalisis.budget,
+              waktu: dbAnalisis.waktu,
+              pengalaman: dbAnalisis.pengalaman,
+            },
+            rekomendasi: (dbAnalisis.rekomendasi as any) || undefined,
+          });
+        }
+      })
+      .catch(() => {})
+      .finally(() => {
+        setIsRestored(true);
+      });
+
+    setIsRestored(true);
   }, []);
 
-  // Persist form state to localStorage on every change
+  // Persist form state to localStorage on every change (only after initial restoration is complete)
   useEffect(() => {
+    if (!isRestored) return;
     try {
-      localStorage.setItem(LS_FORM_KEY, JSON.stringify({
-        step, minat, keahlian, modalValue, selectedProvinsi, waktu, selectedSkills,
-      }));
+      localStorage.setItem(
+        LS_FORM_KEY,
+        JSON.stringify({
+          step,
+          minat,
+          keahlian,
+          modalValue,
+          selectedProvinsi,
+          waktu,
+          selectedSkills,
+        })
+      );
     } catch {}
-  }, [step, minat, keahlian, modalValue, selectedProvinsi, waktu, selectedSkills]);
+  }, [isRestored, step, minat, keahlian, modalValue, selectedProvinsi, waktu, selectedSkills]);
 
   // Loading & Results
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loadingTextIndex, setLoadingTextIndex] = useState(0);
 
   const toggleMinat = (k: KategoriUsaha) => {
-    setMinat((prev) =>
-      prev.includes(k) ? prev.filter((item) => item !== k) : [...prev, k]
-    );
+    setMinat((prev) => {
+      if (prev.includes(k)) {
+        return prev.filter((item) => item !== k);
+      }
+      if (prev.length >= 3) {
+        toast.error("Maksimal 3 bidang usaha yang dapat dipilih.");
+        return prev;
+      }
+      return [...prev, k];
+    });
   };
 
   const toggleSkill = (s: string) => {
-    setSelectedSkills((prev) =>
-      prev.includes(s) ? prev.filter((item) => item !== s) : [...prev, s]
-    );
+    setSelectedSkills((prev) => {
+      const validLabels = mapSkillsToLabels(prev);
+      if (validLabels.includes(s)) {
+        return validLabels.filter((item) => item !== s);
+      }
+      if (validLabels.length >= 3) {
+        toast.error("Maksimal 3 keahlian yang dapat dipilih.");
+        return validLabels;
+      }
+      return [...validLabels, s];
+    });
   };
 
   // Slider progress percentage for custom fill track (2M to 80M)
@@ -203,6 +297,10 @@ export default function QuestionnaireForm() {
       toast.error("Pilih minimal 1 bidang usaha yang diminati.");
       return;
     }
+    if (minat.length > 3) {
+      toast.error("Maksimal 3 bidang usaha yang dapat dipilih.");
+      return;
+    }
     if (!keahlian) {
       toast.error("Pilih tingkat keahlian teknis Anda.");
       return;
@@ -217,6 +315,10 @@ export default function QuestionnaireForm() {
     }
     if (!waktu) {
       toast.error("Pilih komitmen waktu operasional usaha.");
+      return;
+    }
+    if (selectedSkills.length > 3) {
+      toast.error("Maksimal 3 keahlian yang dapat dipilih.");
       return;
     }
 
@@ -243,6 +345,7 @@ export default function QuestionnaireForm() {
       budget: modalValue,
       waktu: waktu as "full" | "parttime" | "sampling" | "fleksibel",
       pengalaman: keahlian as "pemula" | "menengah" | "mahir",
+      kotaId: selectedProvinsi || "dki-jakarta",
     };
 
     try {
@@ -255,7 +358,13 @@ export default function QuestionnaireForm() {
 
       setLocalSessionState({
         analisisId: res.id,
-        profil,
+        profil: {
+          minat,
+          skill: selectedSkills,
+          budget: modalValue,
+          waktu,
+          pengalaman: keahlian,
+        },
         rekomendasi: res.rekomendasi,
         selectedUsahaId: defaultUsahaId,
         selectedKotaId: selectedProvinsi || "dki-jakarta",
@@ -268,11 +377,23 @@ export default function QuestionnaireForm() {
           profil,
           analisisId: res.id,
           provinsi: selectedProvinsi,
+          kota: selectedProvinsi,
           rekomendasi: res.rekomendasi,
         })
       );
-      // Clear temporary draft form state after successful submit
-      localStorage.removeItem(LS_FORM_KEY);
+      // Persist the latest configured inputs so user sees their last input if returning
+      localStorage.setItem(
+        LS_FORM_KEY,
+        JSON.stringify({
+          step: 0,
+          minat,
+          keahlian,
+          modalValue,
+          selectedProvinsi,
+          waktu,
+          selectedSkills,
+        })
+      );
       router.push(`/analisis/${res.id}`);
     } catch (err) {
       clearInterval(interval);
@@ -343,7 +464,7 @@ export default function QuestionnaireForm() {
                       : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
                   }`}
                 >
-                  1. Minat & Skill
+                  1. Preferensi & Modal
                 </button>
 
                 <button
@@ -355,7 +476,7 @@ export default function QuestionnaireForm() {
                       : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
                   }`}
                 >
-                  2. Modal Awal
+                  2. Wilayah & Waktu
                 </button>
 
                 <span
@@ -419,15 +540,27 @@ export default function QuestionnaireForm() {
 
                     {/* Field 1: Pilih Bidang Usaha yang Diminati */}
                     <div className="space-y-3">
-                      <label className="text-sm sm:text-base font-bold text-slate-800 dark:text-slate-200">
-                        Pilih Bidang Usaha yang Anda Minati
-                      </label>
+                      <div className="flex items-center justify-between">
+                        <label className="text-sm sm:text-base font-bold text-slate-800 dark:text-slate-200">
+                          Pilih Bidang Usaha yang Anda Minati
+                        </label>
+                        <span
+                          className={`text-xs font-semibold px-2.5 py-0.5 rounded-full transition-colors ${
+                            minat.length >= 3
+                              ? "bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-300/80 dark:border-amber-700/60"
+                              : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
+                          }`}
+                        >
+                          {minat.length}/3 dipilih
+                        </span>
+                      </div>
                       <p className="text-xs text-slate-500 dark:text-slate-400 -mt-1">
-                        Pilih satu atau lebih bidang yang sesuai dengan minat Anda
+                        Pilih 1 sampai 3 bidang yang sesuai dengan minat Anda (maksimal 3)
                       </p>
                       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
                         {KATEGORI_LIST.map((k) => {
                           const isSelected = minat.includes(k.key);
+                          const isMaxReached = minat.length >= 3 && !isSelected;
                           return (
                             <button
                               key={k.key}
@@ -436,7 +569,9 @@ export default function QuestionnaireForm() {
                               className={`rounded-xl px-3 py-2.5 text-xs sm:text-sm font-semibold transition-all duration-200 text-center ${
                                 isSelected
                                   ? "bg-[#00df82] text-slate-950 shadow-lg shadow-emerald-500/30 ring-2 ring-emerald-400/60 font-bold scale-[0.98]"
-                                  : "border border-slate-200 bg-white text-slate-700 hover:border-emerald-400 hover:bg-emerald-50 hover:text-slate-950 active:scale-95 dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-300 dark:hover:border-emerald-500/50 dark:hover:bg-slate-800 dark:hover:text-white"
+                                  : isMaxReached
+                                    ? "border border-slate-200/50 bg-slate-50/50 text-slate-400 opacity-60 dark:border-slate-800 dark:bg-slate-900/40 dark:text-slate-500"
+                                    : "border border-slate-200 bg-white text-slate-700 hover:border-emerald-400 hover:bg-emerald-50 hover:text-slate-950 active:scale-95 dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-300 dark:hover:border-emerald-500/50 dark:hover:bg-slate-800 dark:hover:text-white"
                               }`}
                             >
                               {k.label}
@@ -537,7 +672,7 @@ export default function QuestionnaireForm() {
                   >
                     <div>
                       <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white">
-                        Langkah 2: Parameter Modal & Wilayah
+                        Langkah 2: Parameter Wilayah & Komitmen Usaha
                       </h2>
                     </div>
 
@@ -587,12 +722,27 @@ export default function QuestionnaireForm() {
 
                     {/* Field 3: Keahlian Spesifik */}
                     <div className="space-y-3">
-                      <label className="text-sm sm:text-base font-bold text-slate-800 dark:text-slate-200">
-                        Keahlian Spesifik yang Dimiliki
-                      </label>
+                      <div className="flex items-center justify-between">
+                        <label className="text-sm sm:text-base font-bold text-slate-800 dark:text-slate-200">
+                          Keahlian Spesifik yang Dimiliki
+                        </label>
+                        <span
+                          className={`text-xs font-semibold px-2.5 py-0.5 rounded-full transition-colors ${
+                            selectedSkills.length >= 3
+                              ? "bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-300/80 dark:border-amber-700/60"
+                              : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
+                          }`}
+                        >
+                          {selectedSkills.length}/3 dipilih
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 -mt-1">
+                        Pilih hingga 3 keahlian yang paling Anda kuasai (maksimal 3)
+                      </p>
                       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                         {SKILL_TAGS.map((s) => {
                           const isSkillActive = selectedSkills.includes(s.label);
+                          const isMaxReached = selectedSkills.length >= 3 && !isSkillActive;
                           return (
                             <button
                               key={s.label}
@@ -600,8 +750,10 @@ export default function QuestionnaireForm() {
                               onClick={() => toggleSkill(s.label)}
                               className={`min-h-10 rounded-lg px-2.5 py-2 text-center text-[11px] font-semibold leading-tight transition sm:text-xs ${
                                 isSkillActive
-                                  ? "bg-[#00df82] text-slate-950 font-bold"
-                                  : "border border-slate-200 bg-slate-100 text-slate-700 hover:border-emerald-400 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-slate-600"
+                                  ? "bg-[#00df82] text-slate-950 font-bold shadow-md shadow-emerald-500/20 ring-2 ring-emerald-400/60 scale-[0.98]"
+                                  : isMaxReached
+                                    ? "border border-slate-200/50 bg-slate-100/50 text-slate-400 opacity-60 dark:border-slate-800 dark:bg-slate-900/40 dark:text-slate-600 cursor-not-allowed"
+                                    : "border border-slate-200 bg-slate-100 text-slate-700 hover:border-emerald-400 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-slate-600"
                               }`}
                             >
                               {s.label}

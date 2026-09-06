@@ -22,6 +22,8 @@ export async function GET(request: Request) {
         minat: analisis.minat,
         pengalaman: analisis.pengalaman,
         budget: analisis.budget,
+        kotaId: analisis.kotaId,
+        usahaId: analisis.usahaId,
       });
     }
 

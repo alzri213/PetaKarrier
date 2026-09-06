@@ -180,12 +180,12 @@ export default function ModalCalculator({
         setSelectedKotaId(unified.selectedKotaId);
         setActiveKotaId(unified.selectedKotaId);
       }
-      if (unified.modalAwal) {
+      if (!queryUsahaId && unified.modalAwal) {
         setModalAwal(unified.modalAwal);
         setModalAwalStr(unified.modalAwal.toLocaleString("id-ID"));
         setActiveModalAwal(unified.modalAwal);
       }
-      if (unified.operasional) {
+      if (!queryUsahaId && unified.operasional) {
         setOperasional(unified.operasional);
         setOperasionalStr(unified.operasional.toLocaleString("id-ID"));
         setActiveOperasional(unified.operasional);
@@ -206,7 +206,7 @@ export default function ModalCalculator({
           setSelectedKotaId(dbData.kotaId);
           setActiveKotaId(dbData.kotaId);
         }
-        if (dbData.hasilModal && typeof dbData.hasilModal === "object") {
+        if (!queryUsahaId && dbData.hasilModal && typeof dbData.hasilModal === "object") {
           const hm = dbData.hasilModal as Record<string, unknown>;
           const savedModalAwal = typeof hm.modalAwal === "number" ? hm.modalAwal : null;
           const savedOperasional = typeof hm.operasional === "number" ? hm.operasional : null;
