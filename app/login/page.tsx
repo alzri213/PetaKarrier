@@ -168,11 +168,11 @@ function LoginForm() {
         redirect: false,
       });
 
-      if (result?.error) {
+      if (!result?.ok || result.error) {
         setError("Email atau password salah. Silakan coba lagi.");
       } else {
-        router.push(callbackUrl);
-        router.refresh();
+        // Force a fresh server render so the newly-created session cookie is read immediately.
+        window.location.assign(callbackUrl);
       }
     } catch (err) {
       throw err; // Re-throw to be caught by OTPModal
