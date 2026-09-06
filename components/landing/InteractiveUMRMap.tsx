@@ -17,7 +17,7 @@ import {
   Globe2,
   X,
   RotateCcw,
-  Sparkles,
+  Map,
   MapPin,
   Lock,
   Compass,
@@ -501,7 +501,7 @@ export default function InteractiveUMRMap() {
 
             {selectedProvince && (
               <span className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-emerald-300 bg-emerald-100/90 px-3 py-1 text-[11px] font-extrabold leading-none text-emerald-900 shadow-sm dark:border-emerald-500/30 dark:bg-emerald-950/40 dark:text-[#00df82] sm:text-xs">
-                <Sparkles className="h-3 w-3" />
+                <Map className="h-3 w-3" />
                 <span>
                   {selectedProvince.name} • {formatRupiah(selectedProvince.avgUmr)}
                 </span>
