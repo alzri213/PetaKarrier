@@ -216,8 +216,8 @@ export default function OTPModal({ isOpen, onClose, onVerify, email, onResend }:
                 <h3 className="text-lg font-extrabold text-slate-900 dark:text-white">
                   Verifikasi Keamanan
                 </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Masukkan kode OTP yang dikirim ke email Anda
+                <p className="text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                  Masukkan kode OTP dari email Anda. Jika belum terlihat, cek folder Spam, Promotions, atau Semua Email.
                 </p>
               </div>
             </div>

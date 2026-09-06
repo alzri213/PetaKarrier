@@ -116,20 +116,17 @@ export async function POST(request: NextRequest) {
     const emailUser = getEnvValue("EMAIL_USER");
     const emailPass = getEnvValue("EMAIL_PASS").replace(/\s+/g, "");
 
-    const resendApiKey = getEnvValue("RESEND_API_KEY");
-    const resendFromEmail = getEnvValue("RESEND_FROM_EMAIL", "onboarding@resend.dev");
-
-    if ((!emailUser || !emailPass || !Number.isFinite(emailPort)) && !resendApiKey) {
+    if (!emailUser || !emailPass || !Number.isFinite(emailPort)) {
       console.error("EMAIL_USER or EMAIL_PASS tidak ditemukan di environment variables");
       return NextResponse.json(
-        { error: "Konfigurasi email server tidak lengkap. Isi Resend atau SMTP di Vercel Production." },
+        { error: "Konfigurasi email server tidak lengkap" },
         { status: 500 }
       );
     }
 
     const mailOptions = {
-      from: `"PetaKarier Security" <${resendFromEmail || emailUser}>`,
-      replyTo: resendFromEmail || emailUser,
+      from: `"PetaKarier Security" <${emailUser}>`,
+      replyTo: emailUser,
       to: email,
       subject: "Kode OTP Login PetaKarier",
       headers: {
@@ -240,66 +237,31 @@ export async function POST(request: NextRequest) {
       `,
     };
 
-    let acceptedRecipients: string[] = [];
-    let rejectedRecipients: string[] = [];
-    let messageId = "";
+    const transporter = nodemailer.createTransport({
+      host: emailHost,
+      port: emailPort,
+      secure: emailSecure,
+      auth: {
+        user: emailUser,
+        pass: emailPass,
+      },
+    });
 
-    if (resendApiKey) {
-      const resendResponse = await fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${resendApiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          from: mailOptions.from,
-          to: [email],
-          reply_to: mailOptions.replyTo,
-          subject: mailOptions.subject,
-          html: mailOptions.html,
-          text: mailOptions.text,
-          headers: mailOptions.headers,
-        }),
-      });
+    const delivery = await transporter.sendMail({
+      ...mailOptions,
+      envelope: {
+        from: emailUser,
+        to: [email],
+      },
+    });
 
-      const resendData = await resendResponse.json();
-      if (!resendResponse.ok) {
-        console.error("Resend rejected OTP email", resendData);
-        return NextResponse.json(
-          { error: "Resend menolak email OTP. Periksa API key dan domain pengirim." },
-          { status: 502 }
-        );
-      }
-
-      acceptedRecipients = [email];
-      messageId = resendData.id || "resend-accepted";
-    } else {
-      const transporter = nodemailer.createTransport({
-        host: emailHost,
-        port: emailPort,
-        secure: emailSecure,
-        auth: {
-          user: emailUser,
-          pass: emailPass,
-        },
-      });
-
-      const delivery = await transporter.sendMail({
-        ...mailOptions,
-        envelope: {
-          from: emailUser,
-          to: [email],
-        },
-      });
-
-      acceptedRecipients = delivery.accepted.map((recipient) =>
-        typeof recipient === "string" ? recipient.toLowerCase() : recipient.address.toLowerCase()
-      );
-      rejectedRecipients = delivery.rejected.map((recipient) =>
-        typeof recipient === "string" ? recipient.toLowerCase() : recipient.address.toLowerCase()
-      );
-      messageId = delivery.messageId;
-    }
+    const acceptedRecipients = delivery.accepted.map((recipient) =>
+      typeof recipient === "string" ? recipient.toLowerCase() : recipient.address.toLowerCase()
+    );
+    const rejectedRecipients = delivery.rejected.map((recipient) =>
+      typeof recipient === "string" ? recipient.toLowerCase() : recipient.address.toLowerCase()
+    );
+    const messageId = delivery.messageId;
 
     if (!acceptedRecipients.includes(email)) {
       console.error("OTP email was not accepted for the requested recipient", {
