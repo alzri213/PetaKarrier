@@ -4,14 +4,12 @@ import { prisma } from "@/lib/prisma";
 export async function GET() {
   try {
     let rows: any[] = [];
-    if ("provinsi" in prisma && typeof (prisma as any).provinsi?.findMany === "function") {
-      rows = await (prisma as any).provinsi.findMany({
+    if (prisma.provinsi && typeof prisma.provinsi.findMany === "function") {
+      rows = await prisma.provinsi.findMany({
         orderBy: { nama: "asc" },
       });
     } else {
-      rows = await prisma.$queryRawUnsafe<any[]>(
-        'SELECT id, nama, wilayah, "avgUmr", "minUmr", "maxUmr", "cityCount", "topSector", "svgPath", "centroidX", "centroidY" FROM "Provinsi" ORDER BY nama ASC'
-      );
+      rows = await prisma.$queryRaw<any[]>`SELECT id, nama, wilayah, "avgUmr", "minUmr", "maxUmr", "cityCount", "topSector", "svgPath", "centroidX", "centroidY" FROM "Provinsi" ORDER BY nama ASC`;
     }
 
     return NextResponse.json(

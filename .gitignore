@@ -41,3 +41,7 @@ yarn-error.log*
 next-env.d.ts
 .agents
 .vercel
+
+# backup files
+*.bak
+README.md.bak
